@@ -1,3 +1,7 @@
-# Violet Accentuation Dark High Contrast Theme
+# Extensions for Visual Studio Code
 
-Default Dark High Contrast Theme with Violet accentuation color.
+This repo contains some vscode extensions & themes:
+
+|Type|Name|Description|
+|:---:|:---:|:---:|
+|Theme|[Custom Accentuation Color Dark High Contrast](./cacdhc/)|Default Dark High Contrast Theme with customizable accentuation color|

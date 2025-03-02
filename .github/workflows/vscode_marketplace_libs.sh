@@ -18,23 +18,28 @@ function checkTag() {
         echo "Missing GIT_TAG script argument"
         exit 2
     fi
+    _export EXTENSION_SHORT="${GIT_TAG/_v*/}"
+    if [ -z "$EXTENSION_SHORT" ]; then
+        echo "Cannot parse extension from tag $GIT_TAG"
+        exit 2
+    fi
     _export GIT_ROOT_PATH="$(git rev-parse --show-toplevel)"
-    if ! [ -f "${GIT_ROOT_PATH}/package.json" ]; then
-        echo "File is not defined under ${GIT_ROOT_PATH}/package.json"
+    if ! [ -f "${GIT_ROOT_PATH}/${EXTENSION_SHORT}/package.json" ]; then
+        echo "File is not defined under ${GIT_ROOT_PATH}/${EXTENSION_SHORT}/package.json"
         exit 2
     fi
-    _export EXTENSION_NAME="$(jq -r '.name // empty' "${GIT_ROOT_PATH}/package.json")"
+    _export EXTENSION_NAME="$(jq -r '.name // empty' "${GIT_ROOT_PATH}/${EXTENSION_SHORT}/package.json")"
     if [ -z "$EXTENSION_NAME" ]; then
-        echo "Cannot parse vscode extension name from file ${GIT_ROOT_PATH}/package.json"
+        echo "Cannot parse vscode extension name from file ${GIT_ROOT_PATH}/${EXTENSION_SHORT}/package.json"
         exit 2
     fi
-    _export EXTENSION_PUBLISHER="$(jq -r '.publisher // empty' "${GIT_ROOT_PATH}/package.json")"
+    _export EXTENSION_PUBLISHER="$(jq -r '.publisher // empty' "${GIT_ROOT_PATH}/${EXTENSION_SHORT}/package.json")"
     if [ -z "$EXTENSION_PUBLISHER" ]; then
-        echo "Cannot parse vscode extension publisher from file ${GIT_ROOT_PATH}/package.json"
+        echo "Cannot parse vscode extension publisher from file ${GIT_ROOT_PATH}/${EXTENSION_SHORT}/package.json"
         exit 2
     fi
     _export EXTENSION_FQDN="${EXTENSION_PUBLISHER}.${EXTENSION_NAME}"
-    _export EXTENSION_VERSION="${GIT_TAG/v/}"
+    _export EXTENSION_VERSION="${GIT_TAG/*_v/}"
     if [ -z "$EXTENSION_VERSION" ]; then
         echo "Cannot parse version from tag $GIT_TAG"
         exit 2
@@ -47,24 +52,24 @@ function checkTag() {
 }
 
 function setVersion() {
-    PACKAGE_DATA=$(jq . "${GIT_ROOT_PATH}/package.json")
+    PACKAGE_DATA=$(jq . "${GIT_ROOT_PATH}/${EXTENSION_SHORT}/package.json")
     if [ -z "$PACKAGE_DATA" ]; then
-        echo "Cannot parse json data from template file ${GIT_ROOT_PATH}/package.json"
+        echo "Cannot parse json data from template file ${GIT_ROOT_PATH}/${EXTENSION_SHORT}/package.json"
         exit 3
     fi
     PACKAGE_VERSION=$(jq -r '.version // empty' <<<"$PACKAGE_DATA")
     if [ -z "$PACKAGE_VERSION" ]; then
-        echo "Cannot parse version to replace from template file ${GIT_ROOT_PATH}/package.json"
+        echo "Cannot parse version to replace from template file ${GIT_ROOT_PATH}/${EXTENSION_SHORT}/package.json"
         exit 3
     fi
-    jq -r '.version = "'"$EXTENSION_VERSION"'"' <<<"$PACKAGE_DATA" >"${GIT_ROOT_PATH}/package.json"
-    echo "Version $EXTENSION_VERSION updated successfully to file ${GIT_ROOT_PATH}/package.json"
-    jq . "${GIT_ROOT_PATH}/package.json" || cat "${GIT_ROOT_PATH}/package.json"
+    jq -r '.version = "'"$EXTENSION_VERSION"'"' <<<"$PACKAGE_DATA" >"${GIT_ROOT_PATH}/${EXTENSION_SHORT}/package.json"
+    echo "Version $EXTENSION_VERSION updated successfully to file ${GIT_ROOT_PATH}/${EXTENSION_SHORT}/package.json"
+    jq . "${GIT_ROOT_PATH}/${EXTENSION_SHORT}/package.json" || cat "${GIT_ROOT_PATH}/${EXTENSION_SHORT}/package.json"
 }
 
 function build() {
-    (cd "${GIT_ROOT_PATH}" && vsce package)
-    _export PACKAGE_PATH="${GIT_ROOT_PATH}/${EXTENSION_NAME}-${EXTENSION_VERSION}.vsix"
+    (cd "${GIT_ROOT_PATH}/${EXTENSION_SHORT}" && vsce package)
+    _export PACKAGE_PATH="${GIT_ROOT_PATH}/${EXTENSION_SHORT}/${EXTENSION_NAME}-${EXTENSION_VERSION}.vsix"
     if ! [ -f "$PACKAGE_PATH" ]; then
         echo "Missing package $PACKAGE_PATH despite build finished successfully"
         exit 4
@@ -78,7 +83,7 @@ function publish() {
         echo "Missing PAT for vsce. Please declare a GitHub secret named VSCE_PAT"
         exit 5
     fi
-    (cd "${GIT_ROOT_PATH}" && vsce publish --pat "$VSCE_PAT")
+    (cd "${GIT_ROOT_PATH}/${EXTENSION_SHORT}" && vsce publish --pat "$VSCE_PAT")
 }
 
 function checkPublication() {

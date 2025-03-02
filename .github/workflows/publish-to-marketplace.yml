@@ -5,7 +5,7 @@ on:
     branches:
       - ci
     tags:
-      - "v*"
+      - "cacdhc_v*"
 jobs:
   publish-vscode-extension:
     runs-on: ubuntu-latest
@@ -22,7 +22,7 @@ jobs:
           source "${GITHUB_WORKSPACE}/.github/workflows/vscode_marketplace_libs.sh"
           TAG="${GITHUB_REF##*/}"
           if [ "$GITHUB_REF_TYPE" == "branch" ]; then
-            TAG="v0.0.0"
+          TAG="cacdhc_v0.0.1"
           fi
           checkTag "$TAG"
       - name: Set version
@@ -52,7 +52,7 @@ jobs:
         uses: action-pack/github-release@v2
         with:
           tag: ${{ github.ref }}
-          title: "${{ env.EXTENSION_NAME }} v${{ env.EXTENSION_VERSION }}"
+          title: "${{ env.EXTENSION_NAME }}_v${{ env.EXTENSION_VERSION }}"
           body: |
             `code --install-extension ${{ env.EXTENSION_FQDN }}@${{ env.EXTENSION_VERSION }}`
 

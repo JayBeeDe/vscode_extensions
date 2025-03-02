@@ -1,0 +1,51 @@
+{
+  "name": "custom-accentuation-color-dark-high-contrast",
+  "displayName": "Custom Accentuation Color Dark High Contrast",
+  "description": "Default Dark High Contrast Theme with customizable accentuation color",
+  "icon": "icon.png",
+  "publisher": "JayBeeDe",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/JayBeeDe/vscode_extensions.git"
+  },
+  "version": "0.0.0",
+  "engines": {
+    "vscode": "^1.67.0"
+  },
+  "activationEvents": [
+    "onCommand:extension.changeAccentuationColor",
+    "onDidChangeConfiguration:cacdhc.accentuationColor",
+    "*"
+  ],
+  "main": "extension.js",
+  "categories": [
+    "Themes"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "extension.changeAccentuationColor",
+        "title": "Change Accentuation Color"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Theme Settings",
+      "properties": {
+        "cacdhc.accentuationColor": {
+          "type": "string",
+          "default": "#ffff00",
+          "description": "Custom accentuation color for the theme",
+          "format": "color"
+        }
+      }
+    },
+    "themes": [
+      {
+        "label": "Custom Accentuation Color Dark High Contrast",
+        "uiTheme": "hc-black",
+        "path": "./themes/theme.json"
+      }
+    ]
+  }
+}
