@@ -52,8 +52,11 @@ jobs:
         uses: action-pack/github-release@v2
         with:
           tag: ${{ github.ref }}
-          title: "${{ env.EXTENSION_NAME }}_v${{ env.EXTENSION_VERSION }}"
+          title: "${{ env.EXTENSION_SHORT }}_v${{ env.EXTENSION_VERSION }}"
           body: |
+            A new release is available for the following vscode extension:
+            ${{ env.EXTENSION_NAME }}
+
             `code --install-extension ${{ env.EXTENSION_FQDN }}@${{ env.EXTENSION_VERSION }}`
 
             **Visual Studio Marketplace**: https://marketplace.visualstudio.com/items?itemName=${{ env.EXTENSION_FQDN }}

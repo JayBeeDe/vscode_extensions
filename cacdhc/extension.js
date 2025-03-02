@@ -232,7 +232,7 @@ async function activate(context) {
 
         // 1st wizard with first color of the pre-selection as example and current extension's vscode setting value
         selectedColor = await colorChoiceSelect({ example: Object.keys(colors)[0], defaultValue: hex2colorName(config.get(configPropertyName)) });
-        if (selectedColor.label === customLabel) {
+        if (selectedColor?.label === customLabel) {
             // custom color selected
             // 2nd wizard with first color of the pre-selection as example and current extension's vscode setting value
             let defaultValue = name2colorHex(config.get(configPropertyName))
@@ -301,6 +301,7 @@ function updateThemeColor(colorHex) {
     });
     if (changedFlag) {
         fs.writeFileSync(themePath, JSON.stringify(theme, null, 4), "utf8");
+        vscode.commands.executeCommand("workbench.action.reloadWindow");
     }
     return changedFlag;
 }

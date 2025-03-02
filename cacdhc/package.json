@@ -12,6 +12,14 @@
   "engines": {
     "vscode": "^1.67.0"
   },
+  "files": [
+    "extension.js",
+    "icon.png",
+    "images",
+    "LICENSE",
+    "README.md",
+    "themes/theme.json"
+  ],
   "activationEvents": [
     "onCommand:extension.changeAccentuationColor",
     "onDidChangeConfiguration:cacdhc.accentuationColor",
