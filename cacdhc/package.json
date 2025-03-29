@@ -20,6 +20,9 @@
     "README.md",
     "themes/theme.json"
   ],
+  "scripts": {
+    "package": "vsce package"
+  },
   "activationEvents": [
     "onCommand:extension.changeAccentuationColor",
     "onDidChangeConfiguration:cacdhc.accentuationColor",

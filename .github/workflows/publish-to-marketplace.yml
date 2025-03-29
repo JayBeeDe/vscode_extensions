@@ -6,6 +6,7 @@ on:
       - ci
     tags:
       - "cacdhc_v*"
+      - "gvo_v*"
 jobs:
   publish-vscode-extension:
     runs-on: ubuntu-latest

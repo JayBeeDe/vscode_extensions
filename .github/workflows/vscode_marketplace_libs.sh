@@ -68,7 +68,7 @@ function setVersion() {
 }
 
 function build() {
-    (cd "${GIT_ROOT_PATH}/${EXTENSION_SHORT}" && vsce package)
+    (cd "${GIT_ROOT_PATH}/${EXTENSION_SHORT}" && npm run package)
     _export PACKAGE_PATH="${GIT_ROOT_PATH}/${EXTENSION_SHORT}/${EXTENSION_NAME}-${EXTENSION_VERSION}.vsix"
     if ! [ -f "$PACKAGE_PATH" ]; then
         echo "Missing package $PACKAGE_PATH despite build finished successfully"

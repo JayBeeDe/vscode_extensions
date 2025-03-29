@@ -1,0 +1,153 @@
+{
+  "name": "git-view-online",
+  "displayName": "Git View Online",
+  "description": "Extension to open or copy the URL to the file of a Git-based Web platform such as GitHub, GitLab, Bitbucket, no matter whether public/private, self hosted/on premise",
+  "icon": "icon.png",
+  "publisher": "JayBeeDe",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/JayBeeDe/vscode_extensions.git"
+  },
+  "version": "0.0.0",
+  "engines": {
+    "vscode": "^1.67.0"
+  },
+  "files": [
+    "cmd.class.js",
+    "extension.constants.js",
+    "extension.js",
+    "file.class.js",
+    "icon.png",
+    "images",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "prepackage": "npm install",
+    "package": "npm run prepackage && vsce package"
+  },
+  "dependencies": {
+    "nunjucks": "^3.2.4"
+  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "extension.js",
+  "categories": [
+    "SCM Providers",
+    "Other"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "gitViewOnline.openUrl",
+        "title": "Open Git View Online"
+      },
+      {
+        "command": "gitViewOnline.copyUrl",
+        "title": "Copy Git View Online URL to Clipboard"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Extension Settings",
+      "properties": {
+        "gitViewOnline.gitPath": {
+          "type": "string",
+          "default": "git",
+          "description": "Git custom binary path"
+        },
+        "gitViewOnline.providers": {
+          "type": "array",
+          "default": [
+            {
+              "remoteUrl": "^(git@|https://)(github\\.com)(:|/)(.*)(\\.git)$",
+              "baseUrl": "https://$2",
+              "repoPath": "$4",
+              "repoType": "GitHub"
+            }
+          ],
+          "description": "Providers",
+          "items": {
+            "type": "object",
+            "properties": {
+              "remoteUrl": {
+                "type": "string",
+                "description": "Regexp to match remote url from URL returned by `git remote get-url origin` command"
+              },
+              "baseUrl": {
+                "type": "string",
+                "description": "Regexp to transform remote url to web endpoint"
+              },
+              "repoPath": {
+                "type": "string",
+                "description": "Regexp to transform remote url to path to repo (<repoNamespace>/<repoName>)"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "Bitbucket",
+                  "GitHub",
+                  "GitLab"
+                ],
+                "description": "Type of git repo"
+              }
+            },
+            "required": [
+              "remoteUrl",
+              "baseUrl",
+              "repoPath",
+              "type"
+            ]
+          }
+        },
+        "gitViewOnline.forceCommitHash": {
+          "type": "boolean",
+          "default": false,
+          "description": "If enabled, always use commit hashes rather than branch name"
+        },
+        "gitViewOnline.copyLinkType": {
+          "type": "string",
+          "enum": [
+            "raw",
+            "markdown",
+            "jira",
+            "html"
+          ],
+          "default": "raw",
+          "description": "Link type format"
+        },
+        "gitViewOnline.copyLinkTitleFormat": {
+          "type": "string",
+          "default": "{{ filePath }} {% if lines == 1 %}line {{ line }}{% elif lines > 1 %}lines {{ lineStart }} to {{ lineStop }} {% endif %}{% if branch is defined %}{{ branch }} branch{% else %} commit {{ hashShort }}{% endif %} in {{ repoType }} repo {{ repoPath }}",
+          "description": "Link type format jinja templating",
+          "markdownDescription": "You can use the following built-in variables: `filePath`, `dirName`, `fileName`, `repoPath`, `repoDir`, `repoName`, `repoType`, `branchOrCommit`, `hashLong`, `hashShort`, `branch`, `line`, `lines`, `lineStart`, `lineStop`, `baseUrl`, `url`"
+        }
+      }
+    },
+    "keybindings": [
+      {
+        "command": "gitViewOnline.openUrl",
+        "key": "ctrl+b",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "gitViewOnline.copyUrl",
+        "key": "ctrl+shift+b",
+        "when": "editorTextFocus"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "gitViewOnline.openUrl",
+          "group": "navigation@99"
+        },
+        {
+          "command": "gitViewOnline.copyUrl",
+          "group": "6_copypath@99"
+        }
+      ]
+    }
+  }
+}
