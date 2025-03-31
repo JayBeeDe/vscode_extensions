@@ -20,6 +20,7 @@
     "icon.png",
     "images",
     "LICENSE",
+    "node_modules",
     "README.md"
   ],
   "scripts": {
