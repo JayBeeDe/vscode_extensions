@@ -1,5 +1,5 @@
-const { File } = require('./file.class');
-const { Git } = require('./cmd.class');
+const { File } = require("./file.class");
+const { Git } = require("./cmd.class");
 const { GVO, URL_TEMPLATES, LINK_TEMPLATES, MSG } = require("./extension.constants.js");
 const nunjucks = require("nunjucks");
 const path = require("path");
@@ -7,6 +7,13 @@ const vscode = require("vscode");
 nunjucks.configure({ autoescape: true });
 
 function activate(context) {
+    if (!context.globalState.get(`${GVO}.firstActivation`, false)) {
+        context.globalState.update(`${GVO}.firstActivation`, true).then(() => {
+            // to avoid application restart need upon installation
+            vscode.commands.executeCommand("workbench.action.reloadWindow");
+        });
+    }
+
     // Command to open the url in the browser
     let openCommand = vscode.commands.registerCommand(`${GVO}.openUrl`, (uri) => {
         handleCommand(uri, (data) => {
