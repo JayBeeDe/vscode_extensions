@@ -16,7 +16,7 @@ const LINK_TEMPLATES = {
 const MSG = {
     "COPY_URL_OPEN": "URL copied to clipboard!",
     "COPY_URL_OPEN_LINK": "Open URL",
-    "NO_EDITOR": "No active editor found!"
+    "NO_FILE": "No active file found!"
 };
 
 module.exports = { GVO, URL_TEMPLATES, LINK_TEMPLATES, MSG };

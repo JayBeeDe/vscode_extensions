@@ -41,11 +41,11 @@ function activate(context) {
 
 function handleCommand(uri, action) {
     const editor = vscode.window.activeTextEditor;
-    if (!editor) {
-        vscode.window.showErrorMessage(MSG.NO_EDITOR);
+    filePath = uri ? uri.fsPath : editor.document.uri.fsPath;
+    if (!filePath) {
+        vscode.window.showErrorMessage(MSG.NO_FILE);
         return;
     }
-    filePath = uri ? uri.fsPath : editor.document.uri.fsPath;
     let file;
     (async () => {
         file = new File(filePath);
@@ -55,7 +55,7 @@ function handleCommand(uri, action) {
             vscode.window.showErrorMessage(error.message);
             return;
         }
-        if (!editor.selection.isEmpty && editor.document.uri.fsPath === file.path) {
+        if (editor && !editor.selection.isEmpty && editor.document.uri.fsPath === file.path) {
             file.lineStart = editor.selection.start.line + 1;
             file.lineStop = editor.selection.end.line + 1;
         }
