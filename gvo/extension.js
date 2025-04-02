@@ -115,7 +115,13 @@ function handleFile(context, action, file) {
 
 function handleUrlData(context, action, remoteUrl, commit, branch, filePath, lineStart, lineStop) {
 
-    const [baseUrl, repoPath, repoType] = transformUrlFromProviders(context, remoteUrl);
+    let baseUrl, repoPath, repoType;
+    try {
+        [baseUrl, repoPath, repoType] = transformUrlFromProviders(context, remoteUrl);
+    } catch (error) {
+        vscode.window.showErrorMessage(error.message);
+        return;
+    }
     console.log(`${remoteUrl} has been transformed to baseUrl=${baseUrl}, repoPath=${repoPath}, repoType=${repoType}`);
 
     let branchOrCommit = branch;
@@ -178,7 +184,7 @@ function transformUrlFromProviders(context, url) {
             return [url.replace(searchRegex, item.baseUrl), url.replace(searchRegex, item.repoPath), item.repoType];
         }
     }
-    return [url, "GitHub"];
+    throw new Error(`${url} ${MSG.NO_PROVIDER}`);
 }
 
 function deactivate() { }

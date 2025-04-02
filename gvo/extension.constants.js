@@ -16,7 +16,8 @@ const LINK_TEMPLATES = {
 const MSG = {
     "COPY_URL_OPEN": "URL copied to clipboard!",
     "COPY_URL_OPEN_LINK": "Open URL",
-    "NO_FILE": "No active file found!"
+    "NO_FILE": "No active file found!",
+    "NO_PROVIDER": "has no provider URL matching. Please check gitViewOnline.providers setting!"
 };
 
 module.exports = { GVO, URL_TEMPLATES, LINK_TEMPLATES, MSG };
