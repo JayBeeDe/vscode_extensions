@@ -1,7 +1,8 @@
 const fs = require("fs").promises;
+const os = require("os");
 
 class File {
-    constructor(path, cwd = "/") {
+    constructor(path, cwd = this.getRootPath()) {
         this.cwd = cwd;
         this.path = path;
         this.exists = false;
@@ -43,6 +44,12 @@ class File {
         } catch (error) {
             throw new Error(`Cannot read ${this.type} ${this.path}`);
         }
+    }
+    getRootPath() {
+        if (os.platform() === "win32") {
+            return path.parse(process.cwd()).root; // Typically "C:\\"
+        }
+        return "/"; // Linux/macOS root
     }
 }
 

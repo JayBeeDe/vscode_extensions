@@ -3,7 +3,7 @@ const { File } = require('./file.class');
 const path = require("path");
 
 class Cmd {
-    constructor(bin, cwd = "/") {
+    constructor(bin, cwd) {
         this.bin = bin;
         this.cwd = cwd;
     }
