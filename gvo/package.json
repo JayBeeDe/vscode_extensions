@@ -84,7 +84,7 @@
                 "type": "string",
                 "description": "Regexp to transform remote url to path to repo (<repoNamespace>/<repoName>)"
               },
-              "type": {
+              "repoType": {
                 "type": "string",
                 "enum": [
                   "Bitbucket",
