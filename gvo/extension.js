@@ -1,4 +1,4 @@
-const { File } = require("./file.class");
+const { File, Package } = require("./file.class");
 const { Git } = require("./cmd.class");
 const { GVO, URL_TEMPLATES, LINK_TEMPLATES, MSG } = require("./extension.constants.js");
 const nunjucks = require("nunjucks");
@@ -13,17 +13,38 @@ function activate(context) {
             vscode.commands.executeCommand("workbench.action.reloadWindow");
         });
     }
+    let packageObj;
+    (async () => {
+        packageObj = new Package(path.join(__dirname, "package.json"));
+        try {
+            await packageObj.init(); // Initialize the file
+        } catch (error) {
+            vscode.window.showErrorMessage(error.message);
+            return; // Exit on error
+        }
+        packageObj.getDefaultConfiguration(`${GVO}.providers`)
+            .then((defaultProviders) => {
+
+                // get default configuration from package json file because that's the only way to get default configuration
+                console.log("Updating defaultProviders...", defaultProviders);
+                context.globalState.update(`${GVO}.defaultProviders`, defaultProviders);
+                // save it for later to not have to retrieve it at each command run
+            })
+            .catch((error) => {
+                vscode.window.showErrorMessage(error.message);
+            });
+    })();
 
     // Command to open the url in the browser
     let openCommand = vscode.commands.registerCommand(`${GVO}.openUrl`, (uri) => {
-        handleCommand(uri, (data) => {
+        handleCommand(context, uri, (data) => {
             vscode.env.openExternal(vscode.Uri.parse(data.url));
         });
     });
 
     // Command to copy the url to the clipboard
     let copyCommand = vscode.commands.registerCommand(`${GVO}.copyUrl`, (uri) => {
-        handleCommand(uri, (data) => {
+        handleCommand(context, uri, (data) => {
             vscode.env.clipboard.writeText(data.link).then(() => {
                 vscode.window.showInformationMessage(vscode.workspace.getConfiguration().get(`${GVO}.copyLinkType`) + " " + MSG.COPY_URL_OPEN, MSG.COPY_URL_OPEN_LINK)
                     .then(selection => {
@@ -39,7 +60,7 @@ function activate(context) {
     context.subscriptions.push(copyCommand);
 }
 
-function handleCommand(uri, action) {
+function handleCommand(context, uri, action) {
     const editor = vscode.window.activeTextEditor;
     filePath = uri ? uri.fsPath : editor.document.uri.fsPath;
     if (!filePath) {
@@ -60,11 +81,11 @@ function handleCommand(uri, action) {
             file.lineStop = editor.selection.end.line + 1;
         }
         console.log(`Processing existing ${file.type} ${file.path}...`);
-        handleFile(file, action);
+        handleFile(context, action, file);
     })();
 }
 
-function handleFile(file, action) {
+function handleFile(context, action, file) {
     let git;
     (async () => {
         git = new Git(vscode.workspace.getConfiguration().get(`${GVO}.gitPath`), file.type === "file" ? path.dirname(file.path) : file.path); // Create an instance of the Cmd class
@@ -88,13 +109,13 @@ function handleFile(file, action) {
             git.getBranch()
         ]);
 
-        data = handleUrlData(action, remoteUrl, commit, branch, file.path.substring(repoPath.length + 1), file.lineStart, file.lineStop);
+        data = handleUrlData(context, action, remoteUrl, commit, branch, file.path.substring(repoPath.length + 1), file.lineStart, file.lineStop);
     })();
 }
 
-function handleUrlData(action, remoteUrl, commit, branch, filePath, lineStart, lineStop) {
+function handleUrlData(context, action, remoteUrl, commit, branch, filePath, lineStart, lineStop) {
 
-    const [baseUrl, repoPath, repoType] = transformUrlFromProvider(remoteUrl);
+    const [baseUrl, repoPath, repoType] = transformUrlFromProviders(context, remoteUrl);
     console.log(`${remoteUrl} has been transformed to baseUrl=${baseUrl}, repoPath=${repoPath}, repoType=${repoType}`);
 
     let branchOrCommit = branch;
@@ -148,8 +169,10 @@ function handleUrlData(action, remoteUrl, commit, branch, filePath, lineStart, l
     }
 }
 
-function transformUrlFromProvider(url) {
-    for (const item of vscode.workspace.getConfiguration().get(`${GVO}.providers`)) {
+function transformUrlFromProviders(context, url) {
+    // avoid user to need to rewrite the default setting for GitHub
+    const providers = [...vscode.workspace.getConfiguration().get(`${GVO}.providers`), ...context.globalState.get(`${GVO}.defaultProviders`, [])];
+    for (const item of providers) {
         let searchRegex = new RegExp(item.remoteUrl);
         if (searchRegex.test(url)) {
             return [url.replace(searchRegex, item.baseUrl), url.replace(searchRegex, item.repoPath), item.repoType];
