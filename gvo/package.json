@@ -120,7 +120,7 @@
         },
         "gitViewOnline.copyLinkTitleFormat": {
           "type": "string",
-          "default": "{{ filePath }} {% if lines == 1 %}line {{ line }}{% elif lines > 1 %}lines {{ lineStart }} to {{ lineStop }} {% endif %}{% if branch is defined %}{{ branch }} branch{% else %} commit {{ hashShort }}{% endif %} in {{ repoType }} repo {{ repoPath }}",
+          "default": "{{ filePath }} {% if lines == 1 %}line {{ line }} {% elif lines > 1 %}lines {{ lineStart }} to {{ lineStop }} {% endif %}{% if branch is defined %}{{ branch }} branch {% else %}{{ hashShort }} commit {% endif %}in {{ repoType }} repo {{ repoPath }}",
           "description": "Link type format jinja templating",
           "markdownDescription": "You can use the following built-in variables: `filePath`, `dirName`, `fileName`, `repoPath`, `repoDir`, `repoName`, `repoType`, `branchOrCommit`, `hashLong`, `hashShort`, `branch`, `line`, `lines`, `lineStart`, `lineStop`, `baseUrl`, `url`"
         }
