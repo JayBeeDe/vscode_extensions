@@ -46,12 +46,16 @@ function activate(context) {
     let copyCommand = vscode.commands.registerCommand(`${GVO}.copyUrl`, (uri) => {
         handleCommand(context, uri, (data) => {
             vscode.env.clipboard.writeText(data.link).then(() => {
-                vscode.window.showInformationMessage(vscode.workspace.getConfiguration().get(`${GVO}.copyLinkType`) + " " + MSG.COPY_URL_OPEN, MSG.COPY_URL_OPEN_LINK)
-                    .then(selection => {
-                        if (selection === MSG.COPY_URL_OPEN_LINK) {
-                            vscode.env.openExternal(vscode.Uri.parse(data.url));
-                        }
-                    });
+                if (vscode.workspace.getConfiguration().get(`${GVO}.copyLinkNotify`)) {
+                    vscode.window.showInformationMessage(vscode.workspace.getConfiguration().get(`${GVO}.copyLinkType`) + " " + MSG.COPY_URL_OPEN, MSG.COPY_URL_OPEN_LINK)
+                        .then(selection => {
+                            if (selection === MSG.COPY_URL_OPEN_LINK) {
+                                vscode.env.openExternal(vscode.Uri.parse(data.url));
+                            }
+                        });
+                } else {
+                    console.log(vscode.workspace.getConfiguration().get(`${GVO}.copyLinkType`) + " " + MSG.COPY_URL_OPEN);
+                }
             });
         });
     });
@@ -77,7 +81,7 @@ function handleCommand(context, uri, action) {
             return;
         }
         if (editor && editor.document.uri.fsPath === file.path) {
-            if (editor.selection.isEmpty) {
+            if (editor.selection.isEmpty && !vscode.workspace.getConfiguration().get(`${GVO}.strictLineSelection`)) {
                 const lines = editor.selections.map(selection => selection.active.line + 1);
                 // GitHub doesn't support discontinuous intervals, or we should generate multiple links ?
                 if (lines.length == 1) {
@@ -86,7 +90,7 @@ function handleCommand(context, uri, action) {
                     file.lines = [lines[0], lines[lines.length - 1]];
                 }
             }
-            else {
+            else if (!editor.selection.isEmpty) {
                 if (editor.selection.start.line === editor.selection.end.line) {
                     file.lines = [editor.selection.start.line + 1];
                 } else {

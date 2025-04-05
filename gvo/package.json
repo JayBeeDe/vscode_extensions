@@ -107,6 +107,16 @@
           "default": false,
           "description": "If enabled, always use commit hashes rather than branch name"
         },
+        "gitViewOnline.strictLineSelection": {
+          "type": "boolean",
+          "default": false,
+          "description": "If enabled, text needs to be selected in order to target line(s)"
+        },
+        "gitViewOnline.copyLinkNotify": {
+          "type": "boolean",
+          "default": true,
+          "description": "If enabled, a notification will be displayed when a link is copied to the clipboard"
+        },
         "gitViewOnline.copyLinkType": {
           "type": "string",
           "enum": [
