@@ -76,9 +76,23 @@ function handleCommand(context, uri, action) {
             vscode.window.showErrorMessage(error.message);
             return;
         }
-        if (editor && !editor.selection.isEmpty && editor.document.uri.fsPath === file.path) {
-            file.lineStart = editor.selection.start.line + 1;
-            file.lineStop = editor.selection.end.line + 1;
+        if (editor && editor.document.uri.fsPath === file.path) {
+            if (editor.selection.isEmpty) {
+                const lines = editor.selections.map(selection => selection.active.line + 1);
+                // GitHub doesn't support discontinuous intervals, or we should generate multiple links ?
+                if (lines.length == 1) {
+                    file.lines = [lines[0]];
+                } else if (lines.length > 1) {
+                    file.lines = [lines[0], lines[lines.length - 1]];
+                }
+            }
+            else {
+                if (editor.selection.start.line === editor.selection.end.line) {
+                    file.lines = [editor.selection.start.line + 1];
+                } else {
+                    file.lines = [editor.selection.start.line + 1, editor.selection.end.line + 1];
+                }
+            }
         }
         console.log(`Processing existing ${file.type} ${file.path}...`);
         handleFile(context, action, file);
@@ -109,11 +123,11 @@ function handleFile(context, action, file) {
             git.getBranch()
         ]);
 
-        data = handleUrlData(context, action, remoteUrl, commit, branch, file.path.substring(repoPath.length + 1), file.lineStart, file.lineStop);
+        data = handleUrlData(context, action, remoteUrl, commit, branch, file.path.substring(repoPath.length + 1), file.lines);
     })();
 }
 
-function handleUrlData(context, action, remoteUrl, commit, branch, filePath, lineStart, lineStop) {
+function handleUrlData(context, action, remoteUrl, commit, branch, filePath, lines) {
 
     let baseUrl, repoPath, repoType;
     try {
@@ -129,14 +143,7 @@ function handleUrlData(context, action, remoteUrl, commit, branch, filePath, lin
         branchOrCommit = commit;
         console.log(`Fallback override to commit`);
     }
-    let lines = 0;
-    if (lineStart) {
-        lines = 1;
-        if (lineStop) {
-            lines += lineStop - lineStart;
-        }
-        console.log(`${lines} line(s) involved`);
-    }
+    console.log(`${lines.length} line(s) involved`);
 
     let data = {
         filePath: filePath, // gvo/extension.js
@@ -150,10 +157,10 @@ function handleUrlData(context, action, remoteUrl, commit, branch, filePath, lin
         hashLong: commit, // cc2c997f3910a86b8f0cadd604df2f5c37dd9916
         hashShort: commit.slice(0, 7), // cc2c997
         branch: branch, // master
-        line: lineStart, // 144
-        lines: lines, // 17
-        lineStart: lineStart, // 132
-        lineStop: lineStop, // 148
+        line: lines.length > 0 ? lines[0] : null, // 144
+        lines: lines.length, // 17
+        lineStart: lines.length > 0 ? lines[0] : null, // 132
+        lineStop: lines.length > 1 ? lines[lines.length - 1] : null, // 148
         baseUrl: baseUrl, // https://github.com/JayBeeDe/vscode_extensions/blob/master/gvo/extension.js#L132-L148
         title: null, // title that will not be send to jinja
         url: null, // final url

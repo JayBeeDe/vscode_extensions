@@ -7,8 +7,7 @@ class File {
         this.path = path;
         this.exists = false;
         this.type = null;
-        this.lineStart = null;
-        this.lineStop = null;
+        this.lines = [];
     }
 
     async init() {
