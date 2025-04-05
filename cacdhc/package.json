@@ -42,6 +42,11 @@
     "*"
   ],
   "main": "extension.js",
+  "browser": "extension.js",
+  "extensionKind": [
+    "ui",
+    "workspace"
+  ],
   "categories": [
     "Themes"
   ],

@@ -1,6 +1,4 @@
 const vscode = require("vscode");
-const fs = require("fs");
-const path = require("path");
 
 const themeFilePath = "./themes/theme.json";
 const configPropertyName = "cacdhc.accentuationColor";
@@ -289,8 +287,17 @@ function hex2colorName(colorHex) {
 // read the theme json static file, create/update the values (if needed) with the new accentuation hexadecimal code
 // returns if has changed or not
 function updateThemeColor(colorHex) {
-    const themePath = path.join(__dirname, themeFilePath);
-    const theme = JSON.parse(fs.readFileSync(themePath, "utf8"));
+    const themePath = vscode.Uri.file(`${__dirname}/${themeFilePath}`);
+    let theme;
+    (async () => {
+        try {
+            const uint8Array = await vscode.workspace.fs.readFile(themePath);
+            const content = new TextDecoder("utf-8").decode(uint8Array);
+            theme = JSON.parse(content);
+        } catch (error) {
+            console.error(`Failed to read or parse the theme file ${themePath.fsPath}`, error);
+        }
+    })();
     let changedFlag = false;
     itemsToUpdate.forEach(item => {
         // hexadecimal colors have to be lowercase in theme settings
@@ -300,7 +307,15 @@ function updateThemeColor(colorHex) {
         }
     });
     if (changedFlag) {
-        fs.writeFileSync(themePath, JSON.stringify(theme, null, 4), "utf8");
+        (async () => {
+            try {
+                const content = JSON.stringify(theme, null, 4);
+                const uint8Array = new TextEncoder().encode(content);
+                await vscode.workspace.fs.writeFile(themePath, uint8Array);
+            } catch (error) {
+                console.error(`Failed to write to the theme file ${themePath.fsPath}`, error);
+            }
+        })();
         vscode.commands.executeCommand("workbench.action.reloadWindow");
     }
     return changedFlag;

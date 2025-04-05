@@ -1,4 +1,5 @@
-*.vsix
 .vscode
+.vscode-test-web
+*.vsix
 node_modules
 package-lock.json
