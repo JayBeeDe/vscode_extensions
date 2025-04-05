@@ -127,7 +127,7 @@ function handleFile(context, action, file) {
             git.getBranch()
         ]);
 
-        data = handleUrlData(context, action, remoteUrl, commit, branch, file.path.substring(repoPath.length + 1), file.lines);
+        data = handleUrlData(context, action, remoteUrl, commit, branch, file.path.substring(repoPath.length + 1).replace("\\g", "/"), file.lines);
     })();
 }
 

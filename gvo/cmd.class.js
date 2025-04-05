@@ -36,7 +36,7 @@ class Cmd {
     // Generic exec function
     exec(command) {
         return new Promise((resolve, reject) => {
-            exec(`${this.bin} ${command}`, { cwd: this.cwd }, (error, stdout) => {
+            exec(`"${this.bin}" ${command}`, { cwd: this.cwd }, (error, stdout) => {
                 if (error) {
                     reject(error);
                 } else {
