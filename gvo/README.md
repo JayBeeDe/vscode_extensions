@@ -64,7 +64,7 @@ Here is the list of the settings, their scopes and their default values:
 |`*`|`gitViewOnline.strictLineSelection`|boolean|`false`|If enabled, text needs to be selected in order to target line(s)|
 |`copyUrl`|`gitViewOnline.copyLinkNotify`|boolean|`true`|If enabled, a notification will be displayed when a link is copied to the clipboard|
 |`copyUrl`|`gitViewOnline.copyLinkType`|string (enum)|`raw`|Link type format: raw, markdown, jira, html|
-|`copyUrl`¹|`gitViewOnline.copyLinkTitleFormat`|string|`{{ filePath }} {% if lines == 1 %}line {{ line }}{% elif lines > 1 %}lines {{ lineStart }} to {{ lineStop }} {% endif %}{% if branch is defined %}{{ branch }} branch{% else %} commit {{ hashShort }}{% endif %} in {{ repoType }} repo {{ repoPath }}`|Jinja template to customize URL title.<br />You can use the following built-in variables: `filePath`, `dirName`, `fileName`, `repoPath`, `repoDir`, `repoName`, `repoType`, `branchOrCommit`, `hashLong`, `hashShort`, `branch`, `line`, `lines`, `lineStart`, `lineStop`, `baseUrl`, `url` |
+|`copyUrl`¹|`gitViewOnline.copyLinkTitleFormat`|string|`{{ filePath }} {% if lines == 1 %}line {{ line }} {% elif lines > 1 %}lines {{ lineStart }} to {{ lineStop }} {% endif %}{% if branch is defined %}{{ branch }} branch {% else %}{{ hashShort }} commit {% endif %}in {{ repoType }} repo {{ repoPath }}`|Jinja template to customize URL title.<br />You can use the following built-in variables: `filePath`, `dirName`, `fileName`, `repoPath`, `repoDir`, `repoName`, `repoType`, `branchOrCommit`, `hashLong`, `hashShort`, `branch`, `line`, `lines`, `lineStart`, `lineStop`, `baseUrl`, `url` |
 
 __
 
