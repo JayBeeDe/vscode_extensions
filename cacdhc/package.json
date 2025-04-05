@@ -2,7 +2,20 @@
   "name": "custom-accentuation-color-dark-high-contrast",
   "displayName": "Custom Accentuation Color Dark High Contrast",
   "description": "Default Dark High Contrast Theme with customizable accentuation color",
+  "galleryBanner": {
+    "color": "#DB7274",
+    "theme": "dark"
+  },
   "icon": "icon.png",
+  "keywords": [
+    "accentuation color",
+    "custom accentuation",
+    "customize color",
+    "dark mode",
+    "dark",
+    "high contrast theme",
+    "high contrast"
+  ],
   "publisher": "JayBeeDe",
   "repository": {
     "type": "git",

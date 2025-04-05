@@ -1,6 +1,6 @@
 # Extensions for Visual Studio Code
 
-![Workflow Status](https://github.com/JayBeeDe/vscode_extensions/actions/workflows/publish-to-marketplace.yml/badge.svg)
+[![Workflow Status](https://github.com/JayBeeDe/vscode_extensions/actions/workflows/publish-to-marketplace.yml/badge.svg)](https://github.com/JayBeeDe/vscode_extensions/actions)
 
 This repo contains some vscode extensions & themes:
 
