@@ -2,7 +2,21 @@
   "name": "git-view-online",
   "displayName": "Git View Online",
   "description": "Extension to open or copy the URL to the file of a Git-based Web platform such as GitHub, GitLab, Bitbucket, no matter whether public/private, self hosted/on premise",
+  "galleryBanner": {
+    "color": "#DB7274",
+    "theme": "dark"
+  },
   "icon": "icon.png",
+  "keywords": [
+    "Bitbucket",
+    "clipboard",
+    "Git",
+    "GitHub",
+    "GitLab",
+    "Markdown URL",
+    "Source Control",
+    "Web Page"
+  ],
   "publisher": "JayBeeDe",
   "repository": {
     "type": "git",
