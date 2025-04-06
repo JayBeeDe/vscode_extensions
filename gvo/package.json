@@ -1,12 +1,17 @@
 {
   "name": "git-view-online",
+  "publisher": "JayBeeDe",
   "displayName": "Git View Online",
   "description": "Extension to open or copy the URL to the file of a Git-based Web platform such as GitHub, GitLab, Bitbucket, no matter whether public/private, self hosted/on premise",
+  "icon": "icon.png",
   "galleryBanner": {
     "color": "#DB7274",
     "theme": "dark"
   },
-  "icon": "icon.png",
+  "categories": [
+    "SCM Providers",
+    "Other"
+  ],
   "keywords": [
     "Bitbucket",
     "clipboard",
@@ -17,7 +22,6 @@
     "Source Control",
     "Web Page"
   ],
-  "publisher": "JayBeeDe",
   "repository": {
     "type": "git",
     "url": "git://github.com/JayBeeDe/vscode_extensions.git"
@@ -26,6 +30,10 @@
   "engines": {
     "vscode": "^1.67.0"
   },
+  "dependencies": {
+    "nunjucks": "^3.2.4"
+  },
+  "main": "extension.js",
   "files": [
     "cmd.class.js",
     "extension.constants.js",
@@ -39,18 +47,11 @@
   ],
   "scripts": {
     "prepackage": "npm install",
-    "package": "npm run prepackage && vsce package"
-  },
-  "dependencies": {
-    "nunjucks": "^3.2.4"
+    "package": "npm run prepackage && vsce package",
+    "desktop": "npm run prepackage && code --wait --extensionDevelopmentPath=${PWD} --disable-extensions"
   },
   "activationEvents": [
     "onStartupFinished"
-  ],
-  "main": "extension.js",
-  "categories": [
-    "SCM Providers",
-    "Other"
   ],
   "contributes": {
     "commands": [
