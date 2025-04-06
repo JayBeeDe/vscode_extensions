@@ -297,16 +297,17 @@ function updateThemeColor(colorHex) {
         } catch (error) {
             console.error(`Failed to read or parse the theme file ${themePath.fsPath}`, error);
         }
-    })();
-    let changedFlag = false;
-    itemsToUpdate.forEach(item => {
-        // hexadecimal colors have to be lowercase in theme settings
-        if (!theme.colors[item] || theme.colors[item].toLowerCase() !== colorHex.toLowerCase()) {
-            theme.colors[item] = colorHex.toLowerCase(); // Update with new color
-            changedFlag = true
+        let changedFlag = false;
+        itemsToUpdate.forEach(item => {
+            // hexadecimal colors have to be lowercase in theme settings
+            if (!theme.colors[item] || theme.colors[item].toLowerCase() !== colorHex.toLowerCase()) {
+                theme.colors[item] = colorHex.toLowerCase(); // Update with new color
+                changedFlag = true
+            }
+        });
+        if (!changedFlag) {
+            return false;
         }
-    });
-    if (changedFlag) {
         (async () => {
             try {
                 const content = JSON.stringify(theme, null, 4);
@@ -315,10 +316,10 @@ function updateThemeColor(colorHex) {
             } catch (error) {
                 console.error(`Failed to write to the theme file ${themePath.fsPath}`, error);
             }
+            vscode.commands.executeCommand("workbench.action.reloadWindow");
+            return true;
         })();
-        vscode.commands.executeCommand("workbench.action.reloadWindow");
-    }
-    return changedFlag;
+    })();
 }
 
 // check (or recheck in case setting change was performed by command) the color

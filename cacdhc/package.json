@@ -1,12 +1,20 @@
 {
   "name": "custom-accentuation-color-dark-high-contrast",
+  "publisher": "JayBeeDe",
   "displayName": "Custom Accentuation Color Dark High Contrast",
   "description": "Default Dark High Contrast Theme with customizable accentuation color",
+  "icon": "icon.png",
   "galleryBanner": {
     "color": "#DB7274",
     "theme": "dark"
   },
-  "icon": "icon.png",
+  "extensionKind": [
+    "ui",
+    "workspace"
+  ],
+  "categories": [
+    "Themes"
+  ],
   "keywords": [
     "accentuation color",
     "custom accentuation",
@@ -16,7 +24,6 @@
     "high contrast theme",
     "high contrast"
   ],
-  "publisher": "JayBeeDe",
   "repository": {
     "type": "git",
     "url": "git://github.com/JayBeeDe/vscode_extensions.git"
@@ -25,6 +32,8 @@
   "engines": {
     "vscode": "^1.67.0"
   },
+  "main": "extension.js",
+  "browser": "extension.js",
   "files": [
     "extension.js",
     "icon.png",
@@ -34,21 +43,14 @@
     "themes/theme.json"
   ],
   "scripts": {
-    "package": "vsce package"
+    "package": "vsce package",
+    "desktop": "code --wait --extensionDevelopmentPath=${PWD} --disable-extensions",
+    "web": "npx @vscode/test-web --extensionDevelopmentPath=. --open-devtools"
   },
   "activationEvents": [
     "onCommand:extension.changeAccentuationColor",
     "onDidChangeConfiguration:cacdhc.accentuationColor",
     "*"
-  ],
-  "main": "extension.js",
-  "browser": "extension.js",
-  "extensionKind": [
-    "ui",
-    "workspace"
-  ],
-  "categories": [
-    "Themes"
   ],
   "contributes": {
     "commands": [
