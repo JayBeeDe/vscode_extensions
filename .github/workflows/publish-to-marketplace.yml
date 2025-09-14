@@ -11,19 +11,29 @@ jobs:
   publish-vscode-extension:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v2
+      - name: Check Initiating User
+        if: github.actor != 'JayBeeDe'
+        run: |
+          echo "::error title=Unauthorized Access::User ${GITHUB_ACTOR} is not authorized."
+          exit 1
       - name: Install packages
-        run: sudo apt-get install -y coreutils git jq npm
+        run: sudo apt-get install -y git jq npm
       - name: Install vsce
         run: npm install -g @vscode/vsce
+      - name: Check out repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Check tag
         run: |
           set -euo pipefail
           source "${GITHUB_WORKSPACE}/.github/workflows/vscode_marketplace_libs.sh"
           TAG="${GITHUB_REF##*/}"
           if [ "$GITHUB_REF_TYPE" == "branch" ]; then
-          TAG="cacdhc_v0.0.1"
+            TAG="cacdhc_v0.0.1"
+          elif !git tag -v "$TAG" > /dev/null 2>&1; then
+            echo "::error::Tag '$TAG' is not signed or could not be verified."
+            exit 1
           fi
           checkTag "$TAG"
       - name: Set version
