@@ -1,13 +1,13 @@
 # Git View Online (GVO)
 
 <div style="text-align: center;">
-    <img src="https://raw.githubusercontent.com/JayBeeDe/vscode_extensions/refs/heads/master/gvo/images/logo.png" title="Git View Online (GVO)" alt="Git View Online (GVO)" width="256" height="256" />
+    <img src="https://raw.githubusercontent.com/JayBeeDe/vscode_extensions/refs/heads/main/gvo/images/logo.png" title="Git View Online (GVO)" alt="Git View Online (GVO)" width="256" height="256" />
 </div>
 
 This vscode extension can be used to open or copy the URL to the file of a Git-based Web platform such as GitHub, GitLab, Bitbucket, no matter whether public/private, self hosted/on premise.
 
 <div style="text-align: center;">
-    <img src="https://raw.githubusercontent.com/JayBeeDe/vscode_extensions/refs/heads/master/gvo/images/screenshots.png" title="Screenshots" alt="Screenshots" />
+    <img src="https://raw.githubusercontent.com/JayBeeDe/vscode_extensions/refs/heads/main/gvo/images/screenshots.png" title="Screenshots" alt="Screenshots" />
 </div>
 
 ## Installation
