@@ -2,6 +2,7 @@ const GVO = "gitViewOnline";
 
 const URL_TEMPLATES = {
     "Bitbucket": "{{ baseUrl }}/projects/{{ repoDir | upper }}/repos/{{ repoName }}/browse/{{ filePath }}?at={% if branchOrCommit == branch %}{{ ('refs/heads/' ~ branch) | urlencode }}{% else %}{{ hashLong }}{% endif %}{% if lines > 0 %}#{{ lineStart }}{% if lines > 1 %}-{{ lineStop }}{% endif %}{% endif %}",
+    "Forgejo": "{{ baseUrl }}/{{ repoPath }}/src/{% if branchOrCommit == branch %}branch{% else %}commit{% endif %}/{{ branchOrCommit | urlencode }}/{{ filePath }}{% if lines > 0 %}#L{{ lineStart }}{% if lines > 1 %}-L{{ lineStop }}{% endif %}{% endif %}",
     "GitHub": "{{ baseUrl }}/{{ repoPath }}/blob/{{ branchOrCommit | urlencode }}/{{ filePath }}{% if lines > 0 %}#L{{ lineStart }}{% if lines > 1 %}-L{{ lineStop }}{% endif %}{% endif %}",
     "GitLab": "{{ baseUrl }}/{{ repoPath }}/-/blob/{{ branchOrCommit | urlencode }}/{{ filePath }}{% if lines > 0 %}#L{{ lineStart }}{% if lines > 1 %}-{{ lineStop }}{% endif %}{% endif %}",
 };

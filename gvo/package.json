@@ -2,7 +2,7 @@
   "name": "git-view-online",
   "publisher": "JayBeeDe",
   "displayName": "Git View Online",
-  "description": "Extension to open or copy the URL to the file of a Git-based Web platform such as GitHub, GitLab, Bitbucket, no matter whether public/private, self hosted/on premise",
+  "description": "Extension to open or copy the URL to the file of a Git-based Web platform such as GitHub, GitLab, Bitbucket, Forgejo, no matter whether public/private, self hosted/on premise",
   "icon": "icon.png",
   "galleryBanner": {
     "color": "#DB7274",
@@ -15,6 +15,7 @@
   "keywords": [
     "Bitbucket",
     "clipboard",
+    "Forgejo",
     "Git",
     "GitHub",
     "GitLab",
@@ -103,6 +104,7 @@
                 "type": "string",
                 "enum": [
                   "Bitbucket",
+                  "Forgejo",
                   "GitHub",
                   "GitLab"
                 ],
