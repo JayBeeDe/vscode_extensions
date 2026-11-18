@@ -83,7 +83,11 @@ function publish() {
         echo "Missing PAT for vsce. Please declare a GitHub secret named VSCE_PAT"
         exit 5
     fi
-    (cd "${GIT_ROOT_PATH}/${EXTENSION_SHORT}" && vsce publish --pat "$VSCE_PAT")
+    if ! [ -f "$PACKAGE_PATH" ]; then
+        echo "Missing package $PACKAGE_PATH to publish"
+        exit 5
+    fi
+    (cd "${GIT_ROOT_PATH}/${EXTENSION_SHORT}" && vsce publish --packagePath "$PACKAGE_PATH" --pat "$VSCE_PAT")
 }
 
 function checkPublication() {

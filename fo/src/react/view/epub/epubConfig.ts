@@ -1,0 +1,548 @@
+import ePub, { Book, Contents, NavItem, Rendition } from 'epubjs';
+import type Section from 'epubjs/types/section';
+import type { Theme } from '../../util/theme';
+import { getVscodeThemeColor } from '../../util/vscodeTheme';
+
+/** spineItems exists at runtime, the typings don't declare it */
+function spineItems(book: Book): Section[] {
+    return (book.spine as unknown as { spineItems: Section[] }).spineItems;
+}
+
+export const STORAGE_PREFIX = 'ePubViewer:';
+
+/** The page and text colours of the reader in a light and a dark foss-office.theme. */
+export const THEME_COLORS: Record<Theme, { bg: string; fg: string }> = {
+    light: { bg: '#fff', fg: '#000' },
+    dark: { bg: '#000', fg: '#fff' },
+};
+
+export const SYSTEM_FONT = "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
+
+/**
+ * The reader's choices, the values of the foss-office.epub.font.family, .font.size (in points)
+ * and .line-height settings: keep them the same as their `enum` in package.json.
+ */
+export const FONT_OPTIONS = [
+    { label: 'System', value: SYSTEM_FONT },
+    { label: 'Arial', value: "'Arial', Arimo, Liberation Sans, sans-serif" },
+    { label: 'Lato', value: "'Lato', sans-serif" },
+    { label: 'Georgia', value: "'Georgia', Liberation Serif, serif" },
+    { label: 'Times New Roman', value: "'Times New Roman', Tinos, Liberation Serif, Times, serif" },
+    { label: 'Arbutus Slab', value: "'Arbutus Slab', serif" },
+];
+
+export const FONT_SIZE_OPTIONS = [11, 12, 13, 14, 15, 16];
+export const LINE_HEIGHT_OPTIONS = [1, 1.2, 1.4, 1.6, 1.8, 2, 2.3, 2.6, 3];
+
+/** The foss-office.epub.* display settings, as the extension sends them (`epubSettings`). */
+export interface EpubSettings {
+    fontFamily: string;
+    fontSize: number;
+    lineHeight: number;
+}
+
+/** The font stack of a foss-office.epub.font.family value, the system font for an unknown one. */
+export function fontStack(fontFamily: string): string {
+    return FONT_OPTIONS.find(option => option.label === fontFamily)?.value ?? SYSTEM_FONT;
+}
+
+const PLACEHOLDER_AUTHORS = new Set(['unknown', 'n/a', 'na', 'none', 'anonymous']);
+
+/** Normalize EPUB creator metadata; omit placeholders and missing values. */
+export function resolveEpubAuthor(creator: unknown): string {
+    const parts: string[] = [];
+    if (typeof creator === 'string') {
+        const trimmed = creator.trim();
+        if (trimmed) {
+            parts.push(trimmed);
+        }
+    } else if (Array.isArray(creator)) {
+        for (const item of creator) {
+            if (typeof item === 'string') {
+                const trimmed = item.trim();
+                if (trimmed) {
+                    parts.push(trimmed);
+                }
+            }
+        }
+    }
+    const text = parts.join(', ');
+    if (!text || PLACEHOLDER_AUTHORS.has(text.toLowerCase())) {
+        return '';
+    }
+    return text;
+}
+
+const DESCRIPTION_TAGS = new Set(['p', 'br', 'b', 'strong', 'i', 'em', 'u', 'ul', 'ol', 'li', 'blockquote', 'div', 'span']);
+
+/** Keep only basic formatting tags, without attributes, from EPUB description HTML. */
+export function sanitizeEpubDescription(html: string): string {
+    const source = new DOMParser().parseFromString(html, 'text/html');
+    const target = document.implementation.createHTMLDocument('');
+    const copy = (from: Node, to: Node) => {
+        for (const child of Array.from(from.childNodes)) {
+            if (child.nodeType === Node.TEXT_NODE) {
+                to.appendChild(target.createTextNode(child.textContent || ''));
+            } else if (child.nodeType === Node.ELEMENT_NODE) {
+                const tag = (child as Element).tagName.toLowerCase();
+                if (tag === 'script' || tag === 'style') {
+                    continue;
+                }
+                if (DESCRIPTION_TAGS.has(tag)) {
+                    const el = target.createElement(tag);
+                    to.appendChild(el);
+                    copy(child, el);
+                } else {
+                    copy(child, to);
+                }
+            }
+        }
+    };
+    const container = target.createElement('div');
+    copy(source.body, container);
+    return container.innerHTML;
+}
+
+const EPUB_THEME_STYLE_KEY = 'office-viewer-theme';
+const boundMetaKeyDocuments = new WeakSet<Document>();
+
+function isCopyShortcut(evt: KeyboardEvent): boolean {
+    if (evt.key.toLowerCase() !== 'c') {
+        return false;
+    }
+    return evt.metaKey || evt.ctrlKey;
+}
+
+function copyReaderSelection(doc: Document): boolean {
+    const text = doc.getSelection()?.toString() ?? '';
+    if (!text) {
+        return false;
+    }
+    try {
+        if (doc.execCommand('copy')) {
+            return true;
+        }
+    } catch {
+        // fall through
+    }
+    if (navigator.clipboard?.writeText) {
+        void navigator.clipboard.writeText(text);
+        return true;
+    }
+    return false;
+}
+
+/** Relay metaKey shortcuts to the webview on macOS; handle copy in the reader iframe. */
+export function bindReaderMetaKeyRelay(doc: Document) {
+    if (!doc || boundMetaKeyDocuments.has(doc)) {
+        return;
+    }
+    boundMetaKeyDocuments.add(doc);
+    doc.addEventListener('keydown', (evt: KeyboardEvent) => {
+        if (isCopyShortcut(evt)) {
+            evt.preventDefault();
+            evt.stopPropagation();
+            copyReaderSelection(doc);
+            return;
+        }
+        if (evt.metaKey && navigator.userAgent.includes('Mac OS')) {
+            const EventType = evt.constructor as new (type: string, init: KeyboardEvent) => Event;
+            const newEvent = new EventType(evt.type, evt);
+            window.parent.document.body.dispatchEvent(newEvent);
+        }
+    });
+}
+
+function themeRulesToCss(rules: ReturnType<typeof buildThemeRules>): string {
+    const parts: string[] = [];
+    for (const selector of Object.keys(rules)) {
+        const props = rules[selector as keyof typeof rules];
+        const decl = Object.entries(props).map(([name, value]) => `${name}:${value}`).join(';');
+        parts.push(`${selector}{${decl}}`);
+    }
+    return parts.join('\n');
+}
+
+/** VS Code's accent, resolved: the book's documents are iframes, which don't see VS Code's variables */
+export function epubAccent(): string {
+    return getVscodeThemeColor('--vscode-focusBorder', getVscodeThemeColor('--vscode-textLink-foreground', '#1e83d2'));
+}
+
+export function buildThemeRules(settings: EpubSettings, theme: Theme) {
+    const { bg, fg } = THEME_COLORS[theme];
+    const font = `${fontStack(settings.fontFamily)} !important`;
+    const fontSize = `${settings.fontSize}pt !important`;
+    // the book's links and selection take VS Code's accent like the sidebar (Epub.css --epub-accent)
+    const accent = epubAccent();
+    return {
+        body: {
+            background: bg,
+            color: fg,
+            'font-family': font,
+            'font-size': fontSize,
+            'line-height': `${settings.lineHeight} !important`,
+            'text-align': 'justify !important',
+        },
+        p: {
+            'font-family': font,
+            'font-size': fontSize,
+        },
+        a: {
+            color: 'inherit !important',
+            'text-decoration': 'none !important',
+            '-webkit-text-fill-color': 'inherit !important',
+        },
+        'a:link': {
+            color: `${accent} !important`,
+            'text-decoration': 'none !important',
+            '-webkit-text-fill-color': `${accent} !important`,
+        },
+        'a:link:hover': {
+            background: 'rgba(0, 0, 0, 0.1) !important',
+        },
+        img: {
+            'max-width': '100% !important',
+        },
+        // the selected text: the accent at 30% like the document's (Word.css --doc-selection)
+        '::selection': {
+            background: `color-mix(in srgb, ${accent} 30%, transparent) !important`,
+        },
+    };
+}
+
+/**
+ * Paints the pages: the book's own documents and the page area around them (`page`, with the
+ * previous/next arrows) take the colours of `theme`; the bars and the sidebar around follow
+ * foss-office.theme in Epub.css. `root` takes the book's font.
+ */
+export function applyEpubTheme(rendition: Rendition | null, settings: EpubSettings, theme: Theme, root?: HTMLElement | null, page?: HTMLElement | null) {
+    const { bg, fg } = THEME_COLORS[theme];
+    if (root) {
+        root.style.fontFamily = fontStack(settings.fontFamily);
+    }
+    if (page) {
+        page.style.background = bg;
+        page.style.color = fg;
+        page.classList.toggle('epub-page-dark', theme === 'dark');
+    }
+    if (!rendition) {
+        return;
+    }
+    const css = themeRulesToCss(buildThemeRules(settings, theme));
+    for (const content of rendition.getContents() as unknown as Contents[]) {
+        content.addStylesheetCss(css, EPUB_THEME_STYLE_KEY);
+    }
+}
+
+export function flattenNavItems(items: NavItem[]): NavItem[] {
+    const result: NavItem[] = [];
+    for (const item of items) {
+        result.push(item);
+        if (item.subitems?.length) {
+            result.push(...flattenNavItems(item.subitems));
+        }
+    }
+    return result;
+}
+
+export function getNavItem(book: Book, loc: { start: { href: string } }, ignoreHash = false) {
+    const toc = book.navigation?.toc ?? [];
+    const items = flattenNavItems(toc);
+    const target = ignoreHash
+        ? book.canonical(loc.start.href).split('#')[0]
+        : book.canonical(loc.start.href);
+    for (const item of items) {
+        const href = ignoreHash ? book.canonical(item.href).split('#')[0] : book.canonical(item.href);
+        if (href === target) {
+            return item;
+        }
+    }
+    return null;
+}
+
+function parseNavHref(book: Book, href: string) {
+    const canonical = book.canonical(href) || href;
+    const hashIdx = canonical.indexOf('#');
+    return {
+        fragment: hashIdx >= 0 ? canonical.slice(hashIdx + 1) : '',
+        path: hashIdx >= 0 ? canonical.slice(0, hashIdx) : canonical,
+    };
+}
+
+function resolveSpineSection(book: Book, href: string) {
+    const { path } = parseNavHref(book, href);
+    const candidates = new Set<string>();
+
+    const addCandidate = (value: string) => {
+        if (!value) {
+            return;
+        }
+        candidates.add(value);
+        const noHash = value.split('#')[0];
+        candidates.add(noHash);
+        try {
+            candidates.add(decodeURIComponent(noHash));
+        } catch {
+            // ignore malformed URI
+        }
+        candidates.add(encodeURI(noHash));
+        const canonical = book.canonical(value);
+        if (canonical) {
+            candidates.add(canonical);
+            candidates.add(canonical.split('#')[0]);
+        }
+    };
+
+    addCandidate(href);
+    addCandidate(path);
+
+    for (const candidate of candidates) {
+        const section = book.spine.get(candidate);
+        if (section) {
+            return section;
+        }
+    }
+
+    const pathTail = path.split('/').pop() ?? '';
+    if (!pathTail) {
+        return null;
+    }
+
+    for (const section of spineItems(book)) {
+        const sectionHref = section.href ?? '';
+        if (sectionHref === pathTail || sectionHref.endsWith(`/${pathTail}`)) {
+            return section;
+        }
+    }
+
+    return null;
+}
+
+function resolveTocCfi(
+    section: NonNullable<ReturnType<Book['spine']['get']>>,
+    doc: Document,
+    fragment: string,
+): string {
+    if (fragment) {
+        const byId = doc.getElementById(fragment);
+        if (byId) {
+            return section.cfiFromElement(byId);
+        }
+        try {
+            const bySelector = doc.querySelector(`#${CSS.escape(fragment)}`);
+            if (bySelector) {
+                return section.cfiFromElement(bySelector);
+            }
+        } catch {
+            // ignore invalid selector
+        }
+    }
+
+    const body = doc.body;
+    if (!body) {
+        return section.cfiBase;
+    }
+
+    const walker = doc.createTreeWalker(body, NodeFilter.SHOW_ELEMENT);
+    let node = walker.nextNode();
+    while (node) {
+        const el = node as Element;
+        const tag = el.tagName.toLowerCase();
+        if (tag !== 'script' && tag !== 'style' && (el.textContent?.trim() ?? '').length > 0) {
+            return section.cfiFromElement(el);
+        }
+        node = walker.nextNode();
+    }
+
+    return section.cfiFromElement(body);
+}
+
+function parseSpinePosFromCfi(cfi: string): number {
+    const match = cfi.match(/epubcfi\(\/\d+\/(\d+)/);
+    if (!match) {
+        return -1;
+    }
+    return parseInt(match[1], 10);
+}
+
+function sectionIndexFromSpinePos(spinePos: number): number {
+    return spinePos / 2 - 1;
+}
+
+function buildSpineFirstLocationMap(book: Book): Map<number, number> {
+    const map = new Map<number, number>();
+    const total = book.locations.length();
+    for (let i = 0; i < total; i++) {
+        const cfi = book.locations.cfiFromLocation(i);
+        if (typeof cfi !== 'string') {
+            continue;
+        }
+        const spinePos = parseSpinePosFromCfi(cfi);
+        if (spinePos < 0) {
+            continue;
+        }
+        const sectionIndex = sectionIndexFromSpinePos(spinePos);
+        if (!map.has(sectionIndex)) {
+            map.set(sectionIndex, i);
+        }
+    }
+    return map;
+}
+
+function locationFromHref(book: Book, cfi: string): number {
+    const location = book.locations.locationFromCfi(cfi) as unknown as number;
+    if (location >= 0) {
+        return location;
+    }
+
+    const total = book.locations.length();
+    if (total <= 0) {
+        return -1;
+    }
+
+    const pct = book.locations.percentageFromCfi(cfi);
+    if (pct == null) {
+        return -1;
+    }
+
+    return Math.round(pct * Math.max(0, total - 1));
+}
+
+/** Resolve a TOC href to the location index used by the bottom progress bar. */
+export async function buildTocPageMap(book: Book, items: NavItem[]): Promise<Record<string, number>> {
+    const map: Record<string, number> = {};
+    if (!book.locations.length()) {
+        return map;
+    }
+
+    const flat = flattenNavItems(items);
+    const spineLocationMap = buildSpineFirstLocationMap(book);
+
+    for (const item of flat) {
+        if (!item.href) {
+            continue;
+        }
+
+        const section = resolveSpineSection(book, item.href);
+        if (!section) {
+            continue;
+        }
+
+        const chapterLocation = spineLocationMap.get(section.index);
+        if (chapterLocation != null) {
+            map[item.href] = chapterLocation;
+        }
+    }
+
+    const bySection = new Map<number, {
+        section: NonNullable<ReturnType<Book['spine']['get']>>;
+        items: Array<{ href: string; fragment: string }>;
+    }>();
+
+    for (const item of flat) {
+        if (!item.href) {
+            continue;
+        }
+        const { fragment } = parseNavHref(book, item.href);
+        if (!fragment) {
+            continue;
+        }
+
+        const section = resolveSpineSection(book, item.href);
+        if (!section) {
+            continue;
+        }
+
+        let group = bySection.get(section.index);
+        if (!group) {
+            group = { section, items: [] };
+            bySection.set(section.index, group);
+        }
+        group.items.push({ href: item.href, fragment });
+    }
+
+    for (const group of bySection.values()) {
+        try {
+            await group.section.load(book.load.bind(book));
+            const doc = group.section.document;
+            if (!doc) {
+                continue;
+            }
+
+            for (const { href, fragment } of group.items) {
+                const cfi = resolveTocCfi(group.section, doc, fragment);
+                const location = locationFromHref(book, cfi);
+                if (location >= 0) {
+                    map[href] = location;
+                }
+            }
+        } finally {
+            group.section.unload();
+        }
+    }
+
+    return map;
+}
+
+export interface SearchHit {
+    cfi: string;
+    excerpt: string;
+}
+
+export async function searchEpubBook(book: Book, query: string, limit = 200): Promise<SearchHit[]> {
+    const hits: SearchHit[] = [];
+    for (const item of spineItems(book)) {
+        await item.load(book.load.bind(book));
+        const results = item.find(query) as unknown as { cfi: string; excerpt: string }[];
+        item.unload();
+        for (const result of results) {
+            hits.push({ cfi: result.cfi, excerpt: result.excerpt });
+            if (hits.length >= limit) {
+                return hits;
+            }
+        }
+    }
+    return hits;
+}
+
+export async function loadEpubBook(buffer: ArrayBuffer) {
+    const book = ePub(buffer, { encoding: 'binary' });
+    await book.ready;
+    return book;
+}
+
+/** localStorage can throw (quota, blocked storage): reading positions is a convenience only. */
+export function readStored(key: string): string | null {
+    try {
+        return localStorage.getItem(key);
+    } catch {
+        return null;
+    }
+}
+
+export function writeStored(key: string, value: string) {
+    try {
+        localStorage.setItem(key, value);
+    } catch {
+        // full or blocked: the book still opens, its position just isn't remembered
+    }
+}
+
+/**
+ * Storage key of a book: its file (documentCacheId) and content size, not only its identifier,
+ * which books without one share and a new edition keeps.
+ */
+export function bookStorageKey(book: Book, documentCacheId: string | undefined, size: number): string {
+    return `${documentCacheId || book.key()}:${size}`;
+}
+
+export async function ensureLocations(book: Book, storageKey: string, chars = 1650) {
+    const key = `${storageKey}:locations-${chars}`;
+    const stored = readStored(key);
+    if (stored) {
+        book.locations.load(stored);
+        return;
+    }
+    await book.locations.generate(chars);
+    writeStored(key, book.locations.save());
+}

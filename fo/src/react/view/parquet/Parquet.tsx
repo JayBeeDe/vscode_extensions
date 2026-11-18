@@ -1,0 +1,425 @@
+import { App, Input, type InputRef, Table } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import '@vscode/codicons/dist/codicon.css';
+import { $t } from '../../i18n/i18nConfig.ts';
+import { beginDocumentSaving, cancelDocumentSaving, handler, onSaveRequest, useDocumentLoading } from '../../util/vscode.ts';
+import { useTheme } from '../../util/theme.ts';
+import { withShortcut } from '../../util/shortcut.ts';
+import { loadOfficeBuffer } from '../../util/loadOfficeContent.ts';
+import {
+    formatCellValue,
+    getPageSize,
+    isColumnEditable,
+    openParquetFile,
+    parseCellInput,
+    readAllParquetRows,
+    writeParquetBuffer,
+    type ParquetColumnInfo,
+    type ParquetFileInfo,
+} from './parquetParser.ts';
+import './Parquet.less';
+
+const PAGE_SIZE = getPageSize();
+
+type ColumnIconKind = 'bool' | 'numeric' | 'string' | 'datetime' | 'structure' | 'field';
+
+function resolveColumnIcon(type: string): { icon: string; kind: ColumnIconKind } {
+    const upper = `${type}`.toUpperCase();
+    if (upper.includes('BOOL')) return { icon: 'codicon-symbol-boolean', kind: 'bool' };
+    if (upper.includes('INT') || upper.includes('FLOAT') || upper.includes('DOUBLE') || upper.includes('DECIMAL') || upper.includes('NUM')) {
+        return { icon: 'codicon-symbol-numeric', kind: 'numeric' };
+    }
+    if (upper.includes('STRING') || upper.includes('BYTE') || upper.includes('UTF8')) {
+        return { icon: 'codicon-symbol-string', kind: 'string' };
+    }
+    if (upper.includes('TIME') || upper.includes('DATE')) {
+        return { icon: 'codicon-symbol-event', kind: 'datetime' };
+    }
+    if (upper.includes('JSON') || upper.includes('STRUCT') || upper.includes('MAP') || upper.includes('LIST')) {
+        return { icon: 'codicon-symbol-structure', kind: 'structure' };
+    }
+    return { icon: 'codicon-symbol-field', kind: 'field' };
+}
+
+type TableRow = Record<string, unknown> & { key: string };
+
+function ParquetViewer() {
+    const { message } = App.useApp();
+    const [fileInfo, setFileInfo] = useState<ParquetFileInfo | null>(null);
+    const [allRows, setAllRows] = useState<Record<string, unknown>[]>([]);
+    const [page, setPage] = useState(0);
+    const [loading, setLoading] = useState(true);
+    useDocumentLoading(loading);
+    const [error, setError] = useState<string | null>(null);
+    const [editingRow, setEditingRow] = useState<number | null>(null);
+    const [editingColumn, setEditingColumn] = useState<string | null>(null);
+    const [editValue, setEditValue] = useState('');
+    const [dirty, setDirty] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [readOnly, setReadOnly] = useState(false);
+    // dark: the table takes VS Code's colours (dark-palette.css when VS Code is light)
+    const vscodeTheme = useTheme() === 'dark';
+    const readOnlyRef = useRef(false);
+    // false while only the first page is read: an edit or a save then would lose the other rows
+    const rowsCompleteRef = useRef(false);
+    const fileInfoRef = useRef<ParquetFileInfo | null>(null);
+    const allRowsRef = useRef<Record<string, unknown>[]>([]);
+    const dirtyRef = useRef(false);
+    const savingRef = useRef(false);
+    const editInputRef = useRef<InputRef | null>(null);
+
+    const totalPages = useMemo(() => {
+        if (!fileInfo?.rowCount) return 1;
+        return Math.max(1, Math.ceil(fileInfo.rowCount / PAGE_SIZE));
+    }, [fileInfo?.rowCount]);
+
+    const tableRows = useMemo<TableRow[]>(() => {
+        const start = page * PAGE_SIZE;
+        return allRows.slice(start, start + PAGE_SIZE).map((row, index) => ({
+            ...row,
+            key: `${page}-${index}`,
+        }));
+    }, [allRows, page]);
+
+    const cancelEdit = useCallback(() => {
+        setEditingRow(null);
+        setEditingColumn(null);
+        setEditValue('');
+    }, []);
+
+    const markDirty = useCallback(() => {
+        if (dirtyRef.current) return;
+        dirtyRef.current = true;
+        setDirty(true);
+        handler.emit('change');
+    }, []);
+
+    const handleSave = useCallback((backup = false) => {
+        const info = fileInfoRef.current;
+        if (!info || !rowsCompleteRef.current) return;
+        if (backup) {
+            handler.emit('save', [...new Uint8Array(writeParquetBuffer(info, allRowsRef.current))]);
+            return;
+        }
+        if (!dirtyRef.current || savingRef.current || readOnlyRef.current) return;
+        savingRef.current = true;
+        setSaving(true);
+        try {
+            beginDocumentSaving();
+            const buffer = writeParquetBuffer(info, allRowsRef.current);
+            handler.emit('save', [...new Uint8Array(buffer)]);
+        } catch (e) {
+            cancelDocumentSaving();
+            savingRef.current = false;
+            setSaving(false);
+            const errMessage = e instanceof Error ? e.message : $t('parquet.failedSave');
+            setError(errMessage);
+            message.error(errMessage);
+        }
+    }, [message]);
+
+    const startEdit = useCallback((rowIndex: number, column: ParquetColumnInfo, value: unknown) => {
+        if (readOnlyRef.current || !rowsCompleteRef.current || column.nested || !isColumnEditable(column.type)) return;
+        setEditingRow(rowIndex);
+        setEditingColumn(column.name);
+        setEditValue(formatCellValue(value));
+    }, []);
+
+    useEffect(() => {
+        if (editingRow == null || !editingColumn) return;
+        editInputRef.current?.focus();
+        editInputRef.current?.select();
+    }, [editingColumn, editingRow]);
+
+    const commitEdit = useCallback((rowIndex: number, column: ParquetColumnInfo) => {
+        if (editingRow !== rowIndex || editingColumn !== column.name) return;
+        const rows = [...allRowsRef.current];
+        const row = rows[rowIndex];
+        if (!row) {
+            cancelEdit();
+            return;
+        }
+        const parsed = parseCellInput(editValue, column);
+        if (!parsed.ok) {
+            // a value the column's type can't hold would fail the save
+            message.error($t('parquet.invalidValue', { value: editValue.trim(), type: column.type }));
+            return;
+        }
+        const nextValue = parsed.value;
+        if (formatCellValue(row[column.name]) === formatCellValue(nextValue)) {
+            cancelEdit();
+            return;
+        }
+        row[column.name] = nextValue;
+        allRowsRef.current = rows;
+        setAllRows(rows);
+        cancelEdit();
+        markDirty();
+    }, [cancelEdit, editValue, editingColumn, editingRow, markDirty, message]);
+
+    const loadGenerationRef = useRef(0);
+
+    const loadParquet = useCallback(async (payload: { path?: string; buffer?: number[]; readOnly?: boolean }) => {
+        // `open` can arrive again while a load is running: only the latest one is applied
+        const generation = ++loadGenerationRef.current;
+        rowsCompleteRef.current = false;
+        setLoading(true);
+        setError(null);
+        setFileInfo(null);
+        fileInfoRef.current = null;
+        setAllRows([]);
+        allRowsRef.current = [];
+        setPage(0);
+        cancelEdit();
+        dirtyRef.current = false;
+        setDirty(false);
+        savingRef.current = false;
+        setSaving(false);
+        const fileReadOnly = payload.readOnly === true;
+        readOnlyRef.current = fileReadOnly;
+        setReadOnly(fileReadOnly);
+        try {
+            const buffer = await loadOfficeBuffer(payload);
+            const info = await openParquetFile(buffer);
+            // the first page first, so a large file shows at once; then all rows
+            if (info.rowCount > PAGE_SIZE) {
+                const firstRows = await readAllParquetRows(info.file, info.metadata, PAGE_SIZE);
+                if (generation !== loadGenerationRef.current) return;
+                fileInfoRef.current = info;
+                setFileInfo(info);
+                allRowsRef.current = firstRows;
+                setAllRows(firstRows);
+                setLoading(false);
+            }
+            const rows = await readAllParquetRows(info.file, info.metadata);
+            if (generation !== loadGenerationRef.current) return;
+            rowsCompleteRef.current = true;
+            const nextInfo = { ...info, rowCount: rows.length };
+            fileInfoRef.current = nextInfo;
+            setFileInfo(nextInfo);
+            allRowsRef.current = rows;
+            setAllRows(rows);
+        } catch (e) {
+            if (generation !== loadGenerationRef.current) return;
+            setError(e instanceof Error ? e.message : $t('parquet.failedLoad'));
+        } finally {
+            if (generation === loadGenerationRef.current) {
+                setLoading(false);
+            }
+        }
+    }, [cancelEdit]);
+
+    const tableColumns = useMemo<ColumnsType<TableRow>>(() => {
+        if (!fileInfo) return [];
+        const cols: ColumnsType<TableRow> = [
+            {
+                title: '#',
+                key: '__index',
+                width: 64,
+                align: 'center',
+                fixed: 'left',
+                render: (_value, _row, index) => page * PAGE_SIZE + index + 1,
+            },
+        ];
+        for (const column of fileInfo.columns) {
+            cols.push({
+                title: column.name,
+                dataIndex: column.name,
+                key: column.name,
+                ellipsis: true,
+                minWidth: 120,
+                render: (value: unknown, _row, index) => {
+                    const rowIndex = page * PAGE_SIZE + index;
+                    const editing = editingRow === rowIndex && editingColumn === column.name;
+                    if (editing) {
+                        return (
+                            <Input
+                                ref={editInputRef}
+                                size="small"
+                                className="parquet-viewer__cell-input"
+                                value={editValue}
+                                onChange={(e) => setEditValue(e.target.value)}
+                                onBlur={() => commitEdit(rowIndex, column)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') commitEdit(rowIndex, column);
+                                    if (e.key === 'Escape') cancelEdit();
+                                }}
+                            />
+                        );
+                    }
+                    return (
+                        <span
+                            className={`parquet-viewer__cell${!readOnly && !column.nested && isColumnEditable(column.type) ? ' parquet-viewer__cell--editable' : ''}`}
+                            title={formatCellValue(value)}
+                            onDoubleClick={() => startEdit(rowIndex, column, value)}
+                        >
+                            {formatCellValue(value)}
+                        </span>
+                    );
+                },
+            });
+        }
+        return cols;
+    }, [cancelEdit, commitEdit, editValue, editingColumn, editingRow, fileInfo, page, readOnly, startEdit]);
+
+    useEffect(() => {
+        // Ctrl+S goes through VS Code, which asks for the content
+        onSaveRequest((backup) => handleSave(backup));
+    }, [handleSave]);
+
+    useEffect(() => {
+        handler
+            .on('open', (payload) => { void loadParquet(payload); })
+            .on('saveDone', () => {
+                savingRef.current = false;
+                setSaving(false);
+                dirtyRef.current = false;
+                setDirty(false);
+                message.success($t('parquet.saveSuccess'));
+            })
+            .on('saveFailed', (payload?: { message?: string }) => {
+                savingRef.current = false;
+                setSaving(false);
+                if (payload?.message) {
+                    message.error(payload.message);
+                }
+            })
+            .emit('init');
+    }, [loadParquet, message]);
+
+    const tableHeight = 'calc(100vh - 132px)';
+
+    return (
+        <div className={`parquet-viewer${vscodeTheme ? '' : ' parquet-viewer--light'}`}>
+            <div className="parquet-viewer__body">
+                <aside className="parquet-viewer__sider">
+                    <div className="parquet-viewer__sider-inner">
+                        <div className="parquet-viewer__sider-header">
+                            <span className="codicon codicon-symbol-structure parquet-icon parquet-icon--schema" />
+                            {$t('parquet.schema')}
+                        </div>
+                        {fileInfo && (
+                            <div className="parquet-viewer__meta">
+                                <div className="parquet-viewer__stat">
+                                    <span className="parquet-viewer__stat-label">
+                                        <span className="codicon codicon-list-flat parquet-icon parquet-icon--rows" />
+                                        {$t('parquet.rows')}
+                                    </span>
+                                    <span className="parquet-viewer__stat-value">{fileInfo.rowCount.toLocaleString()}</span>
+                                </div>
+                                <div className="parquet-viewer__stat">
+                                    <span className="parquet-viewer__stat-label">
+                                        <span className="codicon codicon-symbol-field parquet-icon parquet-icon--columns" />
+                                        {$t('parquet.columnsLabel')}
+                                    </span>
+                                    <span className="parquet-viewer__stat-value">{fileInfo.columns.length}</span>
+                                </div>
+                                {fileInfo.createdBy && (
+                                    <div className="parquet-viewer__stat parquet-viewer__stat--wide" title={fileInfo.createdBy}>
+                                        <span className="parquet-viewer__stat-label">
+                                            <span className="codicon codicon-account parquet-icon parquet-icon--author" />
+                                            {$t('parquet.createdBy')}
+                                        </span>
+                                        <span className="parquet-viewer__stat-value">
+                                            {fileInfo.createdBy.length > 48 ? `${fileInfo.createdBy.slice(0, 48)}…` : fileInfo.createdBy}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                        <div className="parquet-viewer__list">
+                            {fileInfo?.columns.map((column) => {
+                                const { icon, kind } = resolveColumnIcon(column.type);
+                                return (
+                                <div key={column.name} className="parquet-viewer__list-item">
+                                    <span className={`codicon parquet-viewer__list-icon parquet-viewer__list-icon--${kind} ${icon}`} />
+                                    <span className="parquet-viewer__list-name" title={column.name}>{column.name}</span>
+                                    <span className="parquet-viewer__list-type">{column.type}</span>
+                                </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </aside>
+                <main className="parquet-viewer__main">
+                    {readOnly && !loading && !error && fileInfo && (
+                        <div className="parquet-viewer__readonly-banner">
+                            {$t('parquet.readOnly')}
+                        </div>
+                    )}
+                    {error ? (
+                        <div className="parquet-viewer__empty">
+                            <div className="parquet-viewer__error">
+                                <span className="codicon codicon-error" />
+                                <span>{error}</span>
+                            </div>
+                        </div>
+                    ) : fileInfo ? (
+                        <>
+                            <div className="parquet-viewer__toolbar">
+                                <div className="parquet-viewer__toolbar-left">
+                                    {dirty && <span className="parquet-viewer__dirty-dot" title={$t('parquet.unsaved')} />}
+                                    <button
+                                        type="button"
+                                        className="parquet-viewer__save-btn"
+                                        title={withShortcut($t('parquet.save'), 'Ctrl+S')}
+                                        disabled={!dirty || saving || readOnly}
+                                        onClick={() => handleSave()}
+                                    >
+                                        <span className={`codicon ${saving ? 'codicon-loading codicon-modifier-spin' : 'codicon-save'}`} />
+                                        {$t('parquet.save')}
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="parquet-viewer__table-wrap">
+                                <Table<TableRow>
+                                    className="parquet-table"
+                                    dataSource={tableRows}
+                                    columns={tableColumns}
+                                    pagination={false}
+                                    size="small"
+                                    scroll={{ y: tableHeight, x: 'max-content' }}
+                                />
+                            </div>
+                            <div className="parquet-viewer__footer">
+                                <span className="parquet-viewer__footer-total">
+                                    {$t('parquet.totalRows', { count: fileInfo.rowCount.toLocaleString() })}
+                                </span>
+                                <div className="parquet-viewer__pager">
+                                    <button
+                                        type="button"
+                                        className="parquet-viewer__pager-btn"
+                                        disabled={page <= 0}
+                                        onClick={() => { cancelEdit(); setPage((p) => Math.max(0, p - 1)); }}
+                                        aria-label={$t('common.previousPage')}
+                                    >
+                                        <span className="codicon codicon-chevron-left" />
+                                    </button>
+                                    <span className="parquet-viewer__pager-info">{page + 1} / {totalPages}</span>
+                                    <button
+                                        type="button"
+                                        className="parquet-viewer__pager-btn"
+                                        disabled={page >= totalPages - 1}
+                                        onClick={() => { cancelEdit(); setPage((p) => Math.min(totalPages - 1, p + 1)); }}
+                                        aria-label={$t('common.nextPage')}
+                                    >
+                                        <span className="codicon codicon-chevron-right" />
+                                    </button>
+                                </div>
+                            </div>
+                        </>
+                    ) : null}
+                </main>
+            </div>
+        </div>
+    );
+}
+
+export default function Parquet() {
+    return (
+        <App className="parquet-app">
+            <ParquetViewer />
+        </App>
+    );
+}

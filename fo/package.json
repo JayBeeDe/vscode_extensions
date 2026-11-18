@@ -1,0 +1,942 @@
+{
+	"name": "foss-office",
+	"publisher": "JayBeeDe",
+	"displayName": "foss-office",
+	"description": "FOSS editor for Markdown, document, spreadsheet, Parquet, presentation, PDF, eBook and xMind",
+	"license": "GPL-3.0-or-later",
+	"icon": "icon.png",
+	"galleryBanner": {
+		"color": "#2B7EE2",
+		"theme": "dark"
+	},
+	"categories": [
+		"Visualization",
+		"Other"
+	],
+	"keywords": [
+		"calc",
+		"ebook",
+		"excel",
+		"foss",
+		"impress",
+		"LibreOffice",
+		"markdown",
+		"office",
+		"OpenOffice",
+		"pdf",
+		"powerpoint",
+		"word",
+		"writer",
+		"xMind"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/JayBeeDe/vscode_extensions.git"
+	},
+	"version": "0.0.0",
+	"engines": {
+		"vscode": "^1.64.0"
+	},
+	"dependencies": {
+		"@ant-design/icons": "^5.3.5",
+		"@codemirror/autocomplete": "^6.20.3",
+		"@codemirror/commands": "^6.10.3",
+		"@codemirror/language": "^6.12.3",
+		"@codemirror/language-data": "^6.5.2",
+		"@codemirror/state": "^6.6.0",
+		"@codemirror/view": "^6.43.1",
+		"@cweijan/exceljs": "^5.0.3",
+		"@eigenpal/docx-editor-core": "^1.9.0",
+		"@eigenpal/docx-editor-react": "^1.9.0",
+		"@lezer/highlight": "^1.2.3",
+		"@mind-elixir/import-xmind": "^1.0.8",
+		"@vscode/codicons": "^0.0.45",
+		"antd": "^5.15.4",
+		"axios": "^1.18.1",
+		"buffer": "^6.0.3",
+		"chart.js": "^4.5.1",
+		"chrome-finder": "^1.0.7",
+		"codemirror": "^6.0.2",
+		"codemirror-lang-latex": "^0.4.1",
+		"codemirror-lang-mermaid": "^0.5.0",
+		"diff-match-patch": "1.0.5",
+		"epubjs": "^0.3.93",
+		"file-type": "^19.6.0",
+		"highlight.js": "^11.10.0",
+		"hyparquet": "^1.26.1",
+		"hyparquet-writer": "^0.15.7",
+		"iconv-lite": "^0.6.3",
+		"jszip": "^3.10.1",
+		"katex": "^0.16.2",
+		"markdown-it": "^14.1.0",
+		"markdown-it-anchor": "^9.2.0",
+		"markdown-it-checkbox": "^1.1.0",
+		"markdown-it-front-matter": "^0.2.4",
+		"markdown-it-mark": "^4.0.0",
+		"markdown-it-obsidian-callouts": "^0.3.4",
+		"markdown-it-plantuml": "^1.4.1",
+		"markdown-it-toc-done-right": "^4.2.0",
+		"mermaid": "^11.15.0",
+		"mind-elixir": "^5.12.2",
+		"mustache": "^4.0.1",
+		"node-html-parser": "^7.0.1",
+		"pdf-lib": "^1.11.2",
+		"pptxviewjs": "^1.1.9",
+		"prosemirror-commands": "^1.7.1",
+		"prosemirror-dropcursor": "^1.8.2",
+		"prosemirror-history": "^1.5.0",
+		"prosemirror-keymap": "^1.2.3",
+		"prosemirror-model": "^1.25.9",
+		"prosemirror-state": "^1.4.4",
+		"prosemirror-tables": "^1.8.5",
+		"prosemirror-transform": "^1.12.0",
+		"prosemirror-view": "^1.41.9",
+		"puppeteer-core": "^25.1.0",
+		"react": "^19.2.7",
+		"react-dom": "^19.2.7",
+		"save-svg-as-png": "^1.4.17",
+		"udsv": "^0.5.3",
+		"vscode-html-to-docx": "^1.1.3",
+		"xlsx": "^0.18.5"
+	},
+	"devDependencies": {
+		"@types/diff-match-patch": "1.0.32",
+		"@types/node": "^26.1.0",
+		"@types/react": "^19.2.17",
+		"@types/react-dom": "^19.2.3",
+		"@types/vscode": "^1.64.0",
+		"@typescript-eslint/eslint-plugin": "^8.62.1",
+		"@typescript-eslint/parser": "^8.62.1",
+		"@vitejs/plugin-react": "^6.0.2",
+		"chokidar": "^5.0.0",
+		"esbuild": "^0.28.1",
+		"esbuild-plugin-copy": "2.1.1",
+		"eslint": "^9.39.4",
+		"eslint-plugin-import-x": "^4.16.2",
+		"eslint-plugin-react": "^7.37.5",
+		"eslint-plugin-react-hooks": "^7.1.1",
+		"eslint-plugin-react-refresh": "^0.5.3",
+		"eslint-plugin-unused-imports": "^4.4.1",
+		"globals": "^17.7.0",
+		"less": "^4.2.0",
+		"vite": "^8.0.16",
+		"vite-plugin-static-copy": "^4.1.1"
+	},
+	"main": "./out/extension.js",
+	"browser": "./out/extension.web.js",
+	"scripts": {
+		"desktop": "npm run build && code --wait --extensionDevelopmentPath=${PWD} --disable-extensions",
+		"web": "npm run build && npx @vscode/test-web --extensionDevelopmentPath=. --open-devtools",
+		"prepackage": "npm install",
+		"dev": "vite --mode=development",
+		"dev:web": "OFFICE_EXTENSION_TARGET=web vite --mode=development",
+		"lint": "eslint \"src/**/*.{ts,tsx}\"",
+		"lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix",
+		"i18n:check": "node scripts/i18n-check.mjs",
+		"build": "vite build --mode=production",
+		"package": "vsce package --no-dependencies",
+		"vscode:prepublish": "npm run build"
+	},
+	"activationEvents": [
+		"onStartupFinished"
+	],
+	"contributes": {
+		"languages": [
+			{
+				"id": "csv",
+				"aliases": [
+					"CSV"
+				],
+				"extensions": [
+					".csv"
+				],
+				"icon": {
+					"light": "./resource/icons/csv_light.svg",
+					"dark": "./resource/icons/csv.svg"
+				}
+			},
+			{
+				"id": "tsv",
+				"aliases": [
+					"TSV"
+				],
+				"extensions": [
+					".tsv"
+				],
+				"icon": {
+					"light": "./resource/icons/csv_light.svg",
+					"dark": "./resource/icons/csv.svg"
+				}
+			},
+			{
+				"id": "spreadsheet",
+				"aliases": [
+					"Spreadsheet"
+				],
+				"extensions": [
+					".xls",
+					".xlt",
+					".xlsx",
+					".xlsm",
+					".xltx",
+					".xltm",
+					".ods",
+					".ots"
+				],
+				"icon": {
+					"light": "./resource/icons/spreadsheet_light.svg",
+					"dark": "./resource/icons/spreadsheet.svg"
+				}
+			},
+			{
+				"id": "document",
+				"aliases": [
+					"Document"
+				],
+				"extensions": [
+					".docx",
+					".docm",
+					".dotx",
+					".dotm"
+				],
+				"icon": {
+					"light": "./resource/icons/document_light.svg",
+					"dark": "./resource/icons/document.svg"
+				}
+			},
+			{
+				"id": "presentation",
+				"aliases": [
+					"Presentation"
+				],
+				"extensions": [
+					".pptx",
+					".pptm",
+					".ppsx",
+					".potx",
+					".ppsm",
+					".potm"
+				],
+				"icon": {
+					"light": "./resource/icons/presentation_light.svg",
+					"dark": "./resource/icons/presentation.svg"
+				}
+			},
+			{
+				"id": "parquet",
+				"aliases": [
+					"Parquet"
+				],
+				"extensions": [
+					".parquet"
+				],
+				"icon": {
+					"light": "./resource/icons/parquet_light.svg",
+					"dark": "./resource/icons/parquet.svg"
+				}
+			},
+			{
+				"id": "epub",
+				"aliases": [
+					"EPUB"
+				],
+				"extensions": [
+					".epub"
+				],
+				"icon": {
+					"light": "./resource/icons/epub_light.svg",
+					"dark": "./resource/icons/epub.svg"
+				}
+			},
+			{
+				"id": "xmind",
+				"aliases": [
+					"XMind"
+				],
+				"extensions": [
+					".xmind"
+				],
+				"icon": {
+					"light": "./resource/icons/mindmap_light.svg",
+					"dark": "./resource/icons/mindmap.svg"
+				}
+			},
+			{
+				"id": "pdf",
+				"aliases": [
+					"PDF"
+				],
+				"extensions": [
+					".pdf"
+				],
+				"icon": {
+					"light": "./resource/icons/pdf_light.svg",
+					"dark": "./resource/icons/pdf.svg"
+				}
+			},
+			{
+				"id": "markdown",
+				"extensions": [
+					".md",
+					".markdown"
+				],
+				"icon": {
+					"light": "./resource/icons/markdown_light.svg",
+					"dark": "./resource/icons/markdown.svg"
+				}
+			}
+		],
+		"commands": [
+			{
+				"command": "office.markdown.switch",
+				"title": "Switch markdown editor",
+				"icon": "$(edit)"
+			},
+			{
+				"command": "office.csv.switch",
+				"title": "Switch CSV editor",
+				"icon": "$(edit)"
+			},
+			{
+				"command": "office.markdown.paste",
+				"title": "Enhance paste in markdown",
+				"enablement": "!office.extensionHost.web"
+			}
+		],
+		"keybindings": [
+			{
+				"command": "office.markdown.paste",
+				"key": "ctrl+v",
+				"mac": "cmd+v",
+				"when": "editorTextFocus && resourceLangId == markdown && !office.extensionHost.web"
+			},
+			{
+				"command": "office.markdown.switch",
+				"key": "ctrl+alt+e",
+				"mac": "ctrl+cmd+e",
+				"when": "editorTextFocus && editorLangId == markdown"
+			}
+		],
+		"customEditors": [
+			{
+				"viewType": "foss-office.spreadsheetEditor",
+				"displayName": "Spreadsheet Editor",
+				"selector": [
+					{
+						"filenamePattern": "*.xls"
+					},
+					{
+						"filenamePattern": "*.xlt"
+					},
+					{
+						"filenamePattern": "*.xlsx"
+					},
+					{
+						"filenamePattern": "*.xlsm"
+					},
+					{
+						"filenamePattern": "*.xltx"
+					},
+					{
+						"filenamePattern": "*.xltm"
+					},
+					{
+						"filenamePattern": "file:/**/*.csv"
+					},
+					{
+						"filenamePattern": "vscode-vfs:/**/*.csv"
+					},
+					{
+						"filenamePattern": "vscode-remote:/**/*.csv"
+					},
+					{
+						"filenamePattern": "*.tsv"
+					},
+					{
+						"filenamePattern": "*.ods"
+					},
+					{
+						"filenamePattern": "*.ots"
+					}
+				]
+			},
+			{
+				"viewType": "foss-office.documentEditor",
+				"displayName": "Document Editor",
+				"selector": [
+					{
+						"filenamePattern": "file:/**/*.docx"
+					},
+					{
+						"filenamePattern": "vscode-vfs:/**/*.docx"
+					},
+					{
+						"filenamePattern": "vscode-remote:/**/*.docx"
+					},
+					{
+						"filenamePattern": "*.docm"
+					},
+					{
+						"filenamePattern": "*.dotx"
+					},
+					{
+						"filenamePattern": "*.dotm"
+					}
+				]
+			},
+			{
+				"viewType": "foss-office.presentationViewer",
+				"displayName": "Presentation Viewer",
+				"selector": [
+					{
+						"filenamePattern": "*.pptx"
+					},
+					{
+						"filenamePattern": "*.pptm"
+					},
+					{
+						"filenamePattern": "*.ppsx"
+					},
+					{
+						"filenamePattern": "*.potx"
+					},
+					{
+						"filenamePattern": "*.ppsm"
+					},
+					{
+						"filenamePattern": "*.potm"
+					}
+				]
+			},
+			{
+				"viewType": "foss-office.pdfViewer",
+				"displayName": "PDF Viewer",
+				"selector": [
+					{
+						"filenamePattern": "*.pdf"
+					}
+				]
+			},
+			{
+				"viewType": "foss-office.epubViewer",
+				"displayName": "eBook Viewer",
+				"selector": [
+					{
+						"filenamePattern": "*.epub"
+					}
+				]
+			},
+			{
+				"viewType": "foss-office.xmindEditor",
+				"displayName": "xMind Editor",
+				"selector": [
+					{
+						"filenamePattern": "*.xmind"
+					}
+				]
+			},
+			{
+				"viewType": "foss-office.markdownViewer",
+				"displayName": "Markdown Editor",
+				"selector": [
+					{
+						"filenamePattern": "file:/**/*.md"
+					},
+					{
+						"filenamePattern": "file:/**/*.markdown"
+					},
+					{
+						"filenamePattern": "vscode-vfs:/**/*.md"
+					},
+					{
+						"filenamePattern": "vscode-vfs:/**/*.markdown"
+					},
+					{
+						"filenamePattern": "vscode-remote:/**/*.md"
+					},
+					{
+						"filenamePattern": "vscode-remote:/**/*.markdown"
+					}
+				]
+			},
+			{
+				"viewType": "foss-office.parquetViewer",
+				"displayName": "Parquet Editor",
+				"selector": [
+					{
+						"filenamePattern": "*.parquet"
+					}
+				]
+			}
+		],
+		"configuration": [
+			{
+				"title": "General",
+				"order": 0,
+				"properties": {
+					"foss-office.theme": {
+						"type": "string",
+						"enum": [
+							"auto",
+							"light",
+							"dark"
+						],
+						"enumDescriptions": [
+							"Light or dark, following the current VS Code theme.",
+							"Always light.",
+							"Always dark."
+						],
+						"default": "auto",
+						"markdownDescription": "Theme of every viewer and editor of the extension. The eBook pages follow `#foss-office.epub.theme#`, the Markdown pages `#foss-office.markdown.theme#`, the document pages `#foss-office.document.theme#` and the PDF pages `#foss-office.pdf.theme#`."
+					}
+				}
+			},
+			{
+				"title": "Markdown",
+				"order": 1,
+				"properties": {
+					"foss-office.markdown.theme": {
+						"type": "string",
+						"enum": [
+							"auto",
+							"light",
+							"dark"
+						],
+						"enumDescriptions": [
+							"Follows `foss-office.theme`.",
+							"Light page.",
+							"Dark page."
+						],
+						"default": "auto",
+						"markdownDescription": "Colours of the Markdown editor's page (text, background, code blocks and diagrams); the toolbar, outline and menus follow `#foss-office.theme#`."
+					},
+					"foss-office.markdown.exportHtml.theme": {
+						"type": "string",
+						"enum": [
+							"auto",
+							"light",
+							"dark"
+						],
+						"enumDescriptions": [
+							"Follows `foss-office.markdown.theme`.",
+							"Light page.",
+							"Dark page."
+						],
+						"default": "auto",
+						"markdownDescription": "Colours of the HTML export of a Markdown file. `auto` follows `#foss-office.markdown.theme#`. PDF and Word exports are always light."
+					},
+					"foss-office.markdown.codeMirrorTheme": {
+						"type": "string",
+						"enum": [
+							"auto",
+							"light",
+							"dark"
+						],
+						"default": "auto",
+						"markdownDescription": "Theme of the code blocks in the Markdown editor. `auto` follows the page, so `#foss-office.markdown.theme#`.",
+						"markdownEnumDescriptions": [
+							"Light or dark, following the page.",
+							"The One Light colours.",
+							"The One Dark colours."
+						]
+					},
+					"foss-office.markdown.mermaidTheme": {
+						"type": "string",
+						"enum": [
+							"auto",
+							"light",
+							"light-forest",
+							"light-ocean",
+							"light-sunset",
+							"dark",
+							"dark-dracula"
+						],
+						"default": "auto",
+						"markdownDescription": "Theme of the Mermaid diagrams in the Markdown editor. `auto` follows the page, so `#foss-office.markdown.theme#`."
+					},
+					"foss-office.markdown.waitForAllMermaidDiagrams": {
+						"type": "boolean",
+						"default": false,
+						"markdownDescription": "When a Markdown file opens, wait for all its Mermaid diagrams to be drawn: the file's loading screen stays until then. Off, the file shows at once and each diagram shows a spinner until it is drawn, with the number of diagrams left in the status bar."
+					},
+					"foss-office.markdown.editMode": {
+						"type": "string",
+						"enum": [
+							"wysiwyg",
+							"ir"
+						],
+						"default": "wysiwyg",
+						"markdownDescription": "Edit mode of the Markdown editor, for every Markdown file: WYSIWYG or IR (instant rendering). Switching the mode in the editor (its toolbar button or Ctrl+Alt+Shift+E) changes this setting in the user settings, and changing it switches the Markdown editors already open."
+					},
+					"foss-office.markdown.sidebar": {
+						"type": "string",
+						"enum": [
+							"auto",
+							"none"
+						],
+						"default": "auto",
+						"markdownEnumDescriptions": [
+							"Open the outline sidebar when the file opens, if it has headings. Headings added later don't open it: open it with the toolbar's Outline button.",
+							"Never open the outline sidebar when a file opens."
+						],
+						"markdownDescription": "Whether the Markdown editor's outline sidebar, on the left, opens with the file. Shown or hidden with the toolbar's Outline button meanwhile, it is not remembered."
+					},
+					"foss-office.markdown.openSearchResults": {
+						"type": "boolean",
+						"default": false,
+						"markdownDescription": "Open a Markdown file clicked in VS Code's Search view in the Markdown editor at the match, highlighted by its find bar. VS Code gives the match only to a text editor, so every Markdown file then opens as text for a moment before the Markdown editor replaces it. Turning this on adds `\"*.md\": \"default\"` and `\"*.markdown\": \"default\"` to `#workbench.editorAssociations#` in the user settings, and turning it off removes them."
+					},
+					"foss-office.markdown.useObsidianTags": {
+						"type": "boolean",
+						"default": false,
+						"markdownDescription": "Treat `#word` as an Obsidian tag in the Markdown editor: shown as a tag, and a double-click or Ctrl+click searches the workspace for it. When off, `#word` is plain text, and at the start of a line it is written as a heading `# word` (markdownlint MD018). Applies to Markdown files opened afterwards."
+					},
+					"foss-office.markdown.workspacePathAsImageBasePath": {
+						"type": "boolean",
+						"default": false,
+						"description": "Using workspace path as markdown image base path."
+					},
+					"foss-office.markdown.pasteImageToWorkspacePath": {
+						"type": "boolean",
+						"default": false,
+						"description": "Paste markdown images into the workspace path and insert image links with a leading slash."
+					},
+					"foss-office.markdown.pasterImgPath": {
+						"type": "string",
+						"default": "image/${fileName}/${now}.${ext}",
+						"description": "Markdown paste image path, variables: workspaceDir, fileName, now, date (YYYYMMDD), uuid, ext (file extension)."
+					},
+					"foss-office.markdown.uiFontSize": {
+						"type": "number",
+						"minimum": 10,
+						"maximum": 24,
+						"default": 13,
+						"markdownDescription": "Font size of the Markdown editor's toolbar, menus and panels, in pixels."
+					},
+					"foss-office.markdown.editorFontSize": {
+						"type": "number",
+						"minimum": 10,
+						"maximum": 24,
+						"default": 13,
+						"markdownDescription": "Font size of the document text in the Markdown editor, in pixels. Ctrl/Cmd+wheel in the editor changes it."
+					},
+					"foss-office.markdown.editorFontFamily": {
+						"type": "string",
+						"enum": [
+							"default",
+							"humanist",
+							"serif",
+							"old-style",
+							"garamond",
+							"charter",
+							"slab-serif",
+							"narrow",
+							"mono",
+							"jetbrains-mono",
+							"courier"
+						],
+						"default": "default",
+						"markdownDescription": "Font of the document text in the Markdown editor."
+					},
+					"foss-office.markdown.boldColor": {
+						"type": "string",
+						"enum": [
+							"default",
+							"plain",
+							"accent",
+							"red",
+							"orange",
+							"purple",
+							"teal"
+						],
+						"markdownEnumDescriptions": [
+							"Slightly tinted.",
+							"The text colour.",
+							"The link colour.",
+							"Red.",
+							"Orange.",
+							"Purple.",
+							"Teal."
+						],
+						"default": "default",
+						"markdownDescription": "Colour of bold text in the Markdown editor."
+					},
+					"foss-office.markdown.pageWidth": {
+						"type": "string",
+						"enum": [
+							"full",
+							"a4",
+							"a5",
+							"b5",
+							"letter",
+							"768px",
+							"960px"
+						],
+						"markdownEnumDescriptions": [
+							"The full width of the editor.",
+							"A4 paper, 210 mm.",
+							"A5 paper, 148 mm.",
+							"B5 paper, 176 mm.",
+							"US Letter paper, 8.5 in.",
+							"768 pixels.",
+							"960 pixels."
+						],
+						"default": "full",
+						"markdownDescription": "Maximum width of the document in the Markdown editor."
+					},
+					"foss-office.markdown.editorLineHeight": {
+						"type": "number",
+						"minimum": 1,
+						"maximum": 3,
+						"default": 1.7,
+						"markdownDescription": "Line spacing of the document text in the Markdown editor."
+					},
+					"foss-office.markdown.codeFontFamily": {
+						"type": "string",
+						"enum": [
+							"default",
+							"cascadia-code",
+							"consolas",
+							"monaco",
+							"andale-mono",
+							"courier-new",
+							"jetbrains-mono",
+							"fira-code"
+						],
+						"default": "default",
+						"markdownDescription": "Font of the code blocks in the Markdown editor. JetBrains Mono and Fira Code need to be installed."
+					},
+					"foss-office.markdown.codeBlockMaxHeight": {
+						"type": "string",
+						"enum": [
+							"none",
+							"300px",
+							"400px",
+							"600px",
+							"800px"
+						],
+						"default": "none",
+						"markdownDescription": "Maximum height of a code block in the Markdown editor before it scrolls."
+					},
+					"foss-office.markdown.imageMaxWidth": {
+						"type": "number",
+						"minimum": 10,
+						"maximum": 100,
+						"default": 100,
+						"markdownDescription": "Maximum width of images in the Markdown editor, in % of the page width."
+					},
+					"foss-office.markdown.imageMaxHeight": {
+						"type": "number",
+						"minimum": 10,
+						"maximum": 100,
+						"default": 70,
+						"markdownDescription": "Maximum height of images in the Markdown editor, in % of the window height."
+					}
+				}
+			},
+			{
+				"title": "Markdown PDF",
+				"order": 2,
+				"properties": {
+					"foss-office.markdown.export.chromiumPath": {
+						"type": "string",
+						"markdownDescription": "Path of the Chromium-based browser (Chromium, Chrome, Edge, Brave...) the PDF and DOCX exports use. When empty, the usual install locations are searched; a path that does not exist is reported, not replaced."
+					},
+					"foss-office.markdown.puppeteerArgs": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						},
+						"default": [],
+						"description": "Additional arguments to pass to Puppeteer/Chromium when exporting PDF. Example: [\"--no-sandbox\", \"--disable-setuid-sandbox\"] for Linux servers running as root."
+					},
+					"foss-office.markdown.pdfMarginTop": {
+						"type": "integer",
+						"default": 25,
+						"description": "Printed pdf default top margin."
+					}
+				}
+			},
+			{
+				"title": "eBook",
+				"order": 3,
+				"properties": {
+					"foss-office.epub.theme": {
+						"type": "string",
+						"enum": [
+							"auto",
+							"light",
+							"dark"
+						],
+						"enumDescriptions": [
+							"Follows `foss-office.theme`.",
+							"White pages, black text.",
+							"Black pages, white text."
+						],
+						"default": "auto",
+						"markdownDescription": "Colours of the eBook reader's pages; the menus follow `#foss-office.theme#`. The reader's \"Themes\" choice changes this setting in the user settings; a workspace value overrides it."
+					},
+					"foss-office.epub.font.family": {
+						"type": "string",
+						"enum": [
+							"System",
+							"Arial",
+							"Lato",
+							"Georgia",
+							"Times New Roman",
+							"Arbutus Slab"
+						],
+						"default": "System",
+						"markdownDescription": "Font of the eBook reader's text. The reader's \"Font\" choice changes this setting in the user settings; a workspace value overrides it."
+					},
+					"foss-office.epub.font.size": {
+						"type": "number",
+						"enum": [
+							11,
+							12,
+							13,
+							14,
+							15,
+							16
+						],
+						"default": 13,
+						"markdownDescription": "Size of the eBook reader's text, in points. The reader's \"Font Size\" choice changes this setting in the user settings; a workspace value overrides it."
+					},
+					"foss-office.epub.line-height": {
+						"type": "number",
+						"enum": [
+							1,
+							1.2,
+							1.4,
+							1.6,
+							1.8,
+							2,
+							2.3,
+							2.6,
+							3
+						],
+						"default": 1.6,
+						"markdownDescription": "Line spacing of the eBook reader's text, as a multiple of the font size. The reader's \"Line Spacing\" choice changes this setting in the user settings; a workspace value overrides it."
+					}
+				}
+			},
+			{
+				"title": "Document",
+				"order": 4,
+				"properties": {
+					"foss-office.document.theme": {
+						"type": "string",
+						"enum": [
+							"auto",
+							"light",
+							"dark"
+						],
+						"enumDescriptions": [
+							"Follows `foss-office.theme`.",
+							"White pages, the document's own colours.",
+							"Black pages, the document's colours shown inverted."
+						],
+						"default": "auto",
+						"markdownDescription": "Colours of the document editor's pages (Word files); the toolbar and menus follow `#foss-office.theme#`. Only the display changes: the document's colours are kept as they are, for saving and printing. The toolbar's light/dark button changes this setting in the user settings; a workspace value overrides it."
+					}
+				}
+			},
+			{
+				"title": "PDF",
+				"order": 5,
+				"properties": {
+					"foss-office.pdf.theme": {
+						"type": "string",
+						"enum": [
+							"auto",
+							"light",
+							"dark"
+						],
+						"enumDescriptions": [
+							"Follows `foss-office.theme`.",
+							"The pages' own colours.",
+							"The pages' colours shown inverted: dark pages, light text."
+						],
+						"default": "auto",
+						"markdownDescription": "Colours of the PDF viewer's pages; the toolbar and the sidebar follow `#foss-office.theme#`. The viewer's dark mode button (Ctrl/Cmd+L) changes this setting in the user settings; a workspace value overrides it."
+					},
+					"foss-office.pdf.sidebar": {
+						"type": "string",
+						"enum": [
+							"auto-outlines",
+							"always-outlines",
+							"always-thumbnails",
+							"none-outlines",
+							"none-thumbnails"
+						],
+						"enumDescriptions": [
+							"Opens with the outline when the PDF has one; opening the sidebar shows the outline.",
+							"Always opens with the outline, empty when the PDF has none; opening the sidebar shows the outline.",
+							"Always opens with the thumbnails; opening the sidebar shows the thumbnails.",
+							"Closed when a PDF opens; opening the sidebar shows the outline.",
+							"Closed when a PDF opens; opening the sidebar shows the thumbnails."
+						],
+						"default": "auto-outlines",
+						"markdownDescription": "Whether the PDF viewer's sidebar is open when a PDF opens, and the view (outline or thumbnails) it shows each time it opens. The outline view is empty for a PDF without an outline."
+					},
+					"foss-office.pdf.tool": {
+						"type": "string",
+						"enum": [
+							"hand",
+							"selection"
+						],
+						"enumDescriptions": [
+							"Hand tool: dragging the pages scrolls them.",
+							"Text selection tool: dragging over the text selects it."
+						],
+						"default": "hand",
+						"markdownDescription": "The cursor tool the PDF viewer starts with when a PDF opens. The toolbar's tool buttons switch it for the open PDF only."
+					},
+					"foss-office.pdf.scrolling": {
+						"type": "string",
+						"enum": [
+							"vertical",
+							"horizontal",
+							"wrapped"
+						],
+						"enumDescriptions": [
+							"The pages one below the other.",
+							"The pages side by side, scrolled sideways.",
+							"As many pages per row as fit, the rows one below the other."
+						],
+						"default": "vertical",
+						"markdownDescription": "How the PDF viewer lays out the pages to scroll through when a PDF opens. The viewer's scrolling choices change it for the open PDF only."
+					},
+					"foss-office.pdf.spread": {
+						"type": "string",
+						"enum": [
+							"none",
+							"odd",
+							"even"
+						],
+						"enumDescriptions": [
+							"Each page on its own.",
+							"Pages joined in pairs starting with an odd page: 1-2, 3-4…",
+							"Pages joined in pairs starting with an even page: 1 alone, then 2-3, 4-5…, like a book with its cover."
+						],
+						"default": "none",
+						"markdownDescription": "Whether the PDF viewer joins the pages in pairs (spreads) when a PDF opens. The viewer's spread choices change it for the open PDF only."
+					},
+					"foss-office.pdf.zoom": {
+						"type": "string",
+						"enum": [
+							"page-width",
+							"page-fit"
+						],
+						"enumDescriptions": [
+							"The pages as wide as the view, without a horizontal scrollbar.",
+							"A whole page visible at once."
+						],
+						"default": "page-width",
+						"markdownDescription": "The zoom the PDF viewer opens a PDF with, and the one Ctrl/Cmd+0 goes back to. The toolbar's zoom changes it for the open PDF only."
+					}
+				}
+			}
+		]
+	}
+}

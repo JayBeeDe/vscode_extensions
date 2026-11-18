@@ -1,0 +1,831 @@
+import {
+    InfoCircleOutlined,
+    MenuOutlined,
+    SearchOutlined,
+    SettingOutlined,
+    UnorderedListOutlined,
+} from '@ant-design/icons';
+import { Book, NavItem, Rendition } from 'epubjs';
+import { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import { handler, useDocumentLoading } from '../../util/vscode';
+import { type Theme, type ThemeSetting, toThemeSetting, useTheme } from '../../util/theme';
+import { getConfigs } from '../../util/vscodeConfig';
+import { loadOfficeBuffer } from '../../util/loadOfficeContent';
+import { withShortcut } from '../../util/shortcut';
+import { $t } from '../../i18n/i18nConfig.ts';
+import {
+    applyEpubTheme,
+    bookStorageKey,
+    readStored,
+    writeStored,
+    bindReaderMetaKeyRelay,
+    buildTocPageMap,
+    ensureLocations,
+    EpubSettings,
+    FONT_OPTIONS,
+    FONT_SIZE_OPTIONS,
+    getNavItem,
+    LINE_HEIGHT_OPTIONS,
+    loadEpubBook,
+    resolveEpubAuthor,
+    sanitizeEpubDescription,
+    searchEpubBook,
+    epubAccent,
+    SearchHit,
+    SYSTEM_FONT,
+    THEME_COLORS,
+} from './epubConfig';
+import './Epub.css';
+
+/** Ctrl+F (Cmd+F on macOS): find in the book */
+const isFindShortcut = (e: KeyboardEvent) =>
+    (e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.code === 'KeyF';
+
+type SidebarTab = 'toc' | 'search' | 'info' | 'settings';
+
+const THEME_CHOICES: ThemeSetting[] = ['auto', 'light', 'dark'];
+
+const WHEEL_NAV_INTERVAL_MS = 320;
+
+function NavChevron({ direction }: { direction: 'prev' | 'next' }) {
+    return (
+        <svg className="epub-nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <polyline points={direction === 'prev' ? '15 6 9 12 15 18' : '9 6 15 12 9 18'} />
+        </svg>
+    );
+}
+
+interface BookMeta {
+    title: string;
+    author: string;
+    description: string;
+    series?: string;
+    seriesIndex?: string;
+    coverUrl: string | null;
+}
+
+function TocItems({
+    items,
+    indent,
+    activeHref,
+    pageByHref,
+    onSelect,
+}: {
+    items: NavItem[];
+    indent: number;
+    activeHref: string | null;
+    pageByHref: Record<string, number>;
+    onSelect: (href: string) => void;
+}) {
+    const prefix = '\u00A0'.repeat(indent * 4);
+    return (
+        <>
+            {items.map(item => {
+                const hasPage = Object.prototype.hasOwnProperty.call(pageByHref, item.href);
+                const page = pageByHref[item.href];
+                return (
+                <div key={item.href + item.label}>
+                    <a
+                        className={`item${activeHref === item.href ? ' active' : ''}`}
+                        href="#"
+                        onClick={e => {
+                            e.preventDefault();
+                            onSelect(item.href);
+                        }}
+                    >
+                        <span className="label">{prefix}{item.label.trim()}</span>
+                        {hasPage ? <span className="page">{page}</span> : null}
+                    </a>
+                    {item.subitems?.length ? (
+                        <TocItems
+                            items={item.subitems}
+                            indent={indent + 1}
+                            activeHref={activeHref}
+                            pageByHref={pageByHref}
+                            onSelect={onSelect}
+                        />
+                    ) : null}
+                </div>
+                );
+            })}
+        </>
+    );
+}
+
+export default function Epub() {
+    const appRef = useRef<HTMLDivElement>(null);
+    const readerRef = useRef<HTMLDivElement>(null);
+    const pageRef = useRef<HTMLDivElement>(null);
+    const bookRef = useRef<Book | null>(null);
+    const loadGenerationRef = useRef(0);
+    const storageKeyRef = useRef('');
+    const renditionRef = useRef<Rendition | null>(null);
+    // foss-office.epub.font.family, .font.size and .line-height, sent by the extension
+    const settingsRef = useRef<EpubSettings>(getConfigs()?.epubSettings);
+    // the pages follow foss-office.epub.theme, `auto` following foss-office.theme like the menus
+    const uiTheme = useTheme();
+    const [themeSetting, setThemeSetting] = useState<ThemeSetting>(() => toThemeSetting(getConfigs()?.epubTheme));
+    const theme: Theme = themeSetting === 'auto' ? uiTheme : themeSetting;
+    const themeRef = useRef(theme);
+    const themeLabels: Record<ThemeSetting, string> = {
+        auto: $t('epub.themeAuto'),
+        light: $t('epub.themeLight'),
+        dark: $t('epub.themeDark'),
+    };
+    const wheelNavLockRef = useRef(0);
+
+    const [loading, setLoading] = useState(true);
+    useDocumentLoading(loading);
+    const [error, setError] = useState<string | null>(null);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [sidebarTab, setSidebarTab] = useState<SidebarTab>('toc');
+    const [settings, setSettings] = useState<EpubSettings>(() => getConfigs()?.epubSettings);
+    const [meta, setMeta] = useState<BookMeta | null>(null);
+    const [toc, setToc] = useState<NavItem[]>([]);
+    const [tocPageByHref, setTocPageByHref] = useState<Record<string, number>>({});
+    const [activeTocHref, setActiveTocHref] = useState<string | null>(null);
+    const [locationCurrent, setLocationCurrent] = useState(0);
+    const [locationTotal, setLocationTotal] = useState(0);
+    const [locationDraft, setLocationDraft] = useState('');
+    const [atStart, setAtStart] = useState(true);
+    const [atEnd, setAtEnd] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searching, setSearching] = useState(false);
+    const [searchResults, setSearchResults] = useState<SearchHit[]>([]);
+    const [searchHighlight, setSearchHighlight] = useState<string | null>(null);
+    const [searchResultProgress, setSearchResultProgress] = useState<Record<string, string>>({});
+    const [bookReady, setBookReady] = useState(false);
+
+    const destroyBook = useCallback(() => {
+        setSearchHighlight(null);
+        renditionRef.current?.destroy();
+        renditionRef.current = null;
+        bookRef.current?.destroy();
+        bookRef.current = null;
+        if (readerRef.current) {
+            readerRef.current.innerHTML = '';
+        }
+        setBookReady(false);
+        setMeta(null);
+        setToc([]);
+        setTocPageByHref({});
+        setActiveTocHref(null);
+        setLocationCurrent(0);
+        setLocationTotal(0);
+        setLocationDraft('');
+        setSearchResults([]);
+        setSearchResultProgress({});
+        setSearchQuery('');
+    }, []);
+
+    const openSidebar = useCallback(() => {
+        setSidebarTab('toc');
+        setSidebarOpen(true);
+    }, []);
+
+    // Ctrl+F: the sidebar's search tab, its field focused with its text selected
+    const searchInputRef = useRef<HTMLInputElement>(null);
+    const [searchFocusRequest, setSearchFocusRequest] = useState(0);
+    const openSearch = useCallback(() => {
+        setSidebarTab('search');
+        setSidebarOpen(true);
+        setSearchFocusRequest(request => request + 1);
+    }, []);
+    useEffect(() => {
+        if (!searchFocusRequest) return;
+        searchInputRef.current?.focus();
+        searchInputRef.current?.select();
+    }, [searchFocusRequest]);
+
+    // the chosen search result's text (searchHighlight), highlighted with the accent at 30% like the
+    // selection; again in the new accent when the theme changes
+    useEffect(() => {
+        const rendition = renditionRef.current;
+        if (!rendition || !searchHighlight) return;
+        // epub.js multiplies by default, which hides the highlight on dark pages
+        rendition.annotations.highlight(searchHighlight, {}, () => undefined, 'epub-search-hit',
+            { fill: epubAccent(), 'fill-opacity': '0.3', 'mix-blend-mode': 'normal' });
+        return () => {
+            // not on a book that is gone
+            if (renditionRef.current === rendition) rendition.annotations.remove(searchHighlight, 'highlight');
+        };
+    }, [searchHighlight, theme]);
+
+    const goToSearchHit = useCallback((cfi: string) => {
+        setSearchHighlight(cfi);
+        renditionRef.current?.display(cfi);
+    }, []);
+
+    const handleReaderWheel = useCallback((rendition: Rendition, e: WheelEvent) => {
+        e.preventDefault();
+        const now = Date.now();
+        if (now - wheelNavLockRef.current < WHEEL_NAV_INTERVAL_MS) {
+            return;
+        }
+        wheelNavLockRef.current = now;
+        if (e.deltaY > 0) {
+            rendition.next();
+        } else if (e.deltaY < 0) {
+            rendition.prev();
+        }
+    }, []);
+
+    const bindWheel = useCallback((rendition: Rendition) => {
+        rendition.hooks.content.register(contents => {
+            applyEpubTheme(rendition, settingsRef.current, themeRef.current, appRef.current, pageRef.current);
+            const doc = contents.document;
+            if (doc) {
+                bindReaderMetaKeyRelay(doc);
+                doc.onwheel = (e: WheelEvent) => handleReaderWheel(rendition, e);
+                // the book's frame keeps its keys from the window's listener
+                doc.addEventListener('keydown', (e: KeyboardEvent) => {
+                    if (isFindShortcut(e)) {
+                        e.preventDefault();
+                        openSearch();
+                    }
+                });
+            }
+        });
+    }, [handleReaderWheel, openSearch]);
+
+    const onRelocated = useCallback((location: {
+        start: { cfi: string; href: string; location?: number; percentage?: number };
+        atStart?: boolean;
+        atEnd?: boolean;
+    }) => {
+        const book = bookRef.current;
+        const rendition = renditionRef.current;
+        if (!book || !rendition) {
+            return;
+        }
+
+        const navItem = getNavItem(book, location, false) || getNavItem(book, location, true);
+        setActiveTocHref(navItem?.href ?? null);
+
+        // shown from 1 to N: epubjs locations count from 0
+        const current = (location.start.location ?? 0) + 1;
+        const total = book.locations.length();
+        setLocationCurrent(current);
+        setLocationTotal(total);
+        setLocationDraft(String(current));
+
+        setAtStart(!!location.atStart);
+        setAtEnd(!!location.atEnd);
+        writeStored(`${storageKeyRef.current || book.key()}:pos`, location.start.cfi);
+    }, []);
+
+    const applySettings = useCallback((next: EpubSettings) => {
+        settingsRef.current = next;
+        setSettings(next);
+        applyEpubTheme(renditionRef.current, next, themeRef.current, appRef.current, pageRef.current);
+    }, []);
+
+    // a choice in the settings tab shows at once and is saved in the user settings by the extension
+    const updateSetting = useCallback(<K extends keyof EpubSettings>(name: K, value: EpubSettings[K]) => {
+        applySettings({ ...settingsRef.current, [name]: value });
+        handler.emit('epubSetting', { name, value });
+    }, [applySettings]);
+
+    useEffect(() => {
+        handler.on('epubTheme', (value: unknown) => setThemeSetting(toThemeSetting(value)));
+        handler.on('epubSettings', (value: EpubSettings) => applySettings(value));
+    }, [applySettings]);
+
+    useEffect(() => {
+        themeRef.current = theme;
+        applyEpubTheme(renditionRef.current, settingsRef.current, theme, appRef.current, pageRef.current);
+    }, [theme]);
+
+    const bindRendition = useCallback((rendition: Rendition) => {
+        bindWheel(rendition);
+        rendition.on('relocated', onRelocated);
+        rendition.on('keyup', (event: KeyboardEvent) => {
+            if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+                rendition.prev();
+            } else if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+                rendition.next();
+            }
+        });
+        rendition.on('click', (event: MouseEvent) => {
+            try {
+                const target = event.target as HTMLElement;
+                if (target.tagName.toLowerCase() === 'a') {
+                    return;
+                }
+                if (target.parentElement?.tagName.toLowerCase() === 'a') {
+                    return;
+                }
+                const manager = (rendition as unknown as { manager: unknown }).manager as { container?: HTMLElement; getContents?: () => { window: Window }[] };
+                const container = manager.container;
+                if (!container) {
+                    return;
+                }
+                const x = event.pageX - container.scrollLeft;
+                if (x > container.clientWidth - 20) {
+                    event.preventDefault();
+                    openSidebar();
+                }
+            } catch {
+                // ignore click routing errors
+            }
+        });
+        rendition.on('displayError', (_err: Error) => {
+            setError($t('epub.failedRender'));
+        });
+    }, [bindWheel, onRelocated, openSidebar]);
+
+    const loadDocument = useCallback(async (payload: { path?: string; buffer?: number[]; error?: string; documentCacheId?: string }) => {
+        const host = readerRef.current;
+        if (!host) {
+            return;
+        }
+
+        // `open` can arrive again while a book loads: a replaced load stops and destroys its book,
+        // instead of rendering a second rendition into the same host
+        const generation = ++loadGenerationRef.current;
+        const isCurrent = () => generation === loadGenerationRef.current;
+        setLoading(true);
+        setError(null);
+        destroyBook();
+
+        let book: Awaited<ReturnType<typeof loadEpubBook>> | null = null;
+        const abandon = () => {
+            if (book && bookRef.current !== book) book.destroy();
+        };
+        try {
+            const buffer = await loadOfficeBuffer(payload);
+            if (!isCurrent()) return;
+            book = await loadEpubBook(buffer);
+            if (!isCurrent()) {
+                abandon();
+                return;
+            }
+            bookRef.current = book;
+            storageKeyRef.current = bookStorageKey(book, payload.documentCacheId, buffer.byteLength);
+
+            const [metadata, navigation, coverUrl] = await Promise.all([
+                book.loaded.metadata,
+                book.loaded.navigation,
+                book.coverUrl(),
+            ]);
+            if (!isCurrent()) {
+                abandon();
+                return;
+            }
+
+            const metaRecord = metadata as unknown as Record<string, string | undefined>;
+            setMeta({
+                title: metadata.title?.trim() || $t('epub.untitled'),
+                author: resolveEpubAuthor(metadata.creator),
+                description: metadata.description || '',
+                series: metaRecord.series?.trim(),
+                seriesIndex: metaRecord.seriesIndex?.trim(),
+                coverUrl,
+            });
+            setToc(navigation.toc ?? []);
+
+            const rendition = book.renderTo(host, {
+                width: '100%',
+                height: '100%',
+                spread: 'auto',
+                minSpreadWidth: 640,
+            });
+            renditionRef.current = rendition;
+            bindRendition(rendition);
+            applyEpubTheme(rendition, settingsRef.current, themeRef.current, appRef.current, pageRef.current);
+
+            const storedPos = readStored(`${storageKeyRef.current}:pos`);
+            await rendition.display(storedPos || undefined);
+            await ensureLocations(book, storageKeyRef.current);
+            if (!isCurrent()) return;
+            // relocated fired before the locations existed: show the location bar now
+            const located = (rendition as unknown as { currentLocation?: () => unknown }).currentLocation?.();
+            if (located && typeof located === 'object' && 'start' in located) {
+                onRelocated(located as Parameters<typeof onRelocated>[0]);
+            }
+            const pageMap = await buildTocPageMap(book, navigation.toc ?? []);
+            if (!isCurrent()) return;
+            setTocPageByHref(pageMap);
+            setBookReady(true);
+        } catch (e) {
+            if (!isCurrent()) return;
+            setError(e instanceof Error ? e.message : $t('epub.failedLoad'));
+        } finally {
+            if (isCurrent()) setLoading(false);
+        }
+    }, [bindRendition, destroyBook, onRelocated]);
+
+    const goPrev = useCallback(() => {
+        renditionRef.current?.prev();
+    }, []);
+
+    const goNext = useCallback(() => {
+        renditionRef.current?.next();
+    }, []);
+
+    const goToHref = useCallback((href: string) => {
+        renditionRef.current?.display(href).catch(() => undefined);
+    }, []);
+
+    const goToLocation = useCallback((value: number) => {
+        const book = bookRef.current;
+        const rendition = renditionRef.current;
+        if (!book || !rendition) {
+            return;
+        }
+        // -1 when the location doesn't exist (the typings only say string)
+        const cfi = book.locations.cfiFromLocation(value) as string | number;
+        if (cfi && cfi !== -1) {
+            rendition.display(String(cfi));
+        }
+    }, []);
+
+    const commitLocationJump = useCallback(() => {
+        const book = bookRef.current;
+        const trimmed = locationDraft.trim();
+        if (!book || !trimmed) {
+            setLocationDraft(String(locationCurrent));
+            return;
+        }
+        const parsed = parseInt(trimmed, 10);
+        if (Number.isNaN(parsed)) {
+            setLocationDraft(String(locationCurrent));
+            return;
+        }
+        const cfi = book.locations.cfiFromLocation(parsed - 1) as string | number;
+        if (cfi === -1) {
+            setLocationDraft(String(locationCurrent));
+            return;
+        }
+        goToLocation(parsed - 1);
+    }, [goToLocation, locationCurrent, locationDraft]);
+
+    const runSearch = useCallback(async () => {
+        setSearchHighlight(null);
+        const book = bookRef.current;
+        const query = searchQuery.trim();
+        if (!book || !query) {
+            setSearchResults([]);
+            setSearchResultProgress({});
+            return;
+        }
+        setSearching(true);
+        try {
+            const results = await searchEpubBook(book, query);
+            setSearchResults(results);
+            setSearchResultProgress(
+                Object.fromEntries(
+                    results.map((result) => [
+                        result.cfi,
+                        `${(book.locations.percentageFromCfi(result.cfi) * 100).toFixed(1)}%`,
+                    ]),
+                ),
+            );
+        } catch (e) {
+            setError(e instanceof Error ? e.message : $t('epub.searchFailed'));
+        } finally {
+            setSearching(false);
+        }
+    }, [searchQuery]);
+
+    const flashNav = useCallback((button: HTMLButtonElement | null) => {
+        if (!button) {
+            return;
+        }
+        button.classList.add('epub-nav-flash');
+        window.setTimeout(() => button.classList.remove('epub-nav-flash'), 150);
+    }, []);
+
+    useEffect(() => {
+        handler.on('open', (payload) => {
+            loadDocument(payload);
+        }).emit('init');
+        return () => destroyBook();
+    }, [destroyBook, loadDocument]);
+
+    useEffect(() => {
+        const book = bookRef.current;
+        if (!bookReady || !book || sidebarTab !== 'toc' || !toc.length) {
+            return;
+        }
+        if (Object.keys(tocPageByHref).length > 0) {
+            return;
+        }
+        let cancelled = false;
+        buildTocPageMap(book, toc).then(pageMap => {
+            if (!cancelled && Object.keys(pageMap).length > 0) {
+                setTocPageByHref(pageMap);
+            }
+        });
+        return () => {
+            cancelled = true;
+        };
+    }, [bookReady, sidebarTab, toc, tocPageByHref]);
+
+    useEffect(() => {
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (isFindShortcut(e)) {
+                e.preventDefault();
+                openSearch();
+                return;
+            }
+            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+                return;
+            }
+            const prevBtn = document.querySelector('.epub-viewer button.epub-nav.prev') as HTMLButtonElement | null;
+            const nextBtn = document.querySelector('.epub-viewer button.epub-nav.next') as HTMLButtonElement | null;
+            if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                goNext();
+                flashNav(nextBtn);
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                goPrev();
+                flashNav(prevBtn);
+            }
+        };
+        window.addEventListener('keydown', onKeyDown);
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, [flashNav, goNext, goPrev, openSearch]);
+
+    useEffect(() => {
+        const onResize = () => {
+            const host = readerRef.current;
+            const rendition = renditionRef.current;
+            if (host && rendition) {
+                rendition.resize(host.clientWidth, host.clientHeight);
+            }
+        };
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, []);
+
+    // the search tab's tooltip names Ctrl+F, which opens it
+    const sidebarTabs: { key: SidebarTab; icon: ReactNode; title?: string }[] = [
+        { key: 'toc', icon: <UnorderedListOutlined /> },
+        { key: 'search', icon: <SearchOutlined />, title: withShortcut($t('epub.search'), 'Ctrl+F') },
+        { key: 'info', icon: <InfoCircleOutlined /> },
+        { key: 'settings', icon: <SettingOutlined /> },
+    ];
+
+    return (
+        <div className="epub-viewer" ref={appRef}>
+            {error && (
+                <div className="error">
+                    <div className="error-title">{$t('epub.error')}</div>
+                    <div className="error-info">{error}</div>
+                </div>
+            )}
+
+            <div
+                className={`sidebar-wrapper${sidebarOpen ? '' : ' out'}`}
+                onClick={() => setSidebarOpen(false)}
+            >
+                <div className="sidebar" onClick={e => e.stopPropagation()}>
+                    <div className="tab-list">
+                        {sidebarTabs.map(tab => (
+                            <a
+                                key={tab.key}
+                                className={`item${sidebarTab === tab.key ? ' active' : ''}`}
+                                title={tab.title}
+                                onClick={() => setSidebarTab(tab.key)}
+                            >
+                                <span className="icon">{tab.icon}</span>
+                            </a>
+                        ))}
+                    </div>
+                    <div className="tab-container">
+                        {sidebarTab === 'toc' && (
+                            <div className="tab toc">
+                                <div className="toc-list">
+                                    {toc.length ? (
+                                        <TocItems
+                                            items={toc}
+                                            indent={0}
+                                            activeHref={activeTocHref}
+                                            pageByHref={tocPageByHref}
+                                            onSelect={goToHref}
+                                        />
+                                    ) : null}
+                                </div>
+                            </div>
+                        )}
+
+                        {sidebarTab === 'search' && (
+                            <div className="tab search">
+                                <div className="search-bar">
+                                    <input
+                                        ref={searchInputRef}
+                                        type="text"
+                                        className="search-box"
+                                        placeholder={$t('epub.searchBook')}
+                                        value={searchQuery}
+                                        onChange={e => setSearchQuery(e.target.value)}
+                                        onKeyDown={e => {
+                                            if (e.key === 'Enter') {
+                                                runSearch();
+                                            }
+                                        }}
+                                    />
+                                    <button type="button" className="search-button" onClick={runSearch} disabled={searching}>
+                                        <span className="icon"><SearchOutlined /></span>
+                                    </button>
+                                </div>
+                                <div className="search-results">
+                                    {searchResults.map(result => {
+                                        const width = searchResultProgress[result.cfi] ?? '0%';
+                                        return (
+                                            <a
+                                                key={result.cfi}
+                                                className="item"
+                                                href="#"
+                                                onClick={e => {
+                                                    e.preventDefault();
+                                                    goToSearchHit(result.cfi);
+                                                }}
+                                            >
+                                                <div className="text">{result.excerpt.trim()}</div>
+                                                <div className="pbar">
+                                                    <div className="pbar-inner" style={{ width }} />
+                                                </div>
+                                            </a>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
+                        {sidebarTab === 'info' && (
+                            <div className="tab info">
+                                {meta?.coverUrl ? (
+                                    <div className="cover-wrapper">
+                                        <img className="cover" src={meta.coverUrl} alt={$t('epub.cover')} />
+                                    </div>
+                                ) : null}
+                                {meta ? (
+                                    <>
+                                        <div className="title">{meta.title}</div>
+                                        {meta.series ? (
+                                            <div className="series-info">
+                                                <span className="series-name">{meta.series}</span>
+                                                {meta.seriesIndex ? (
+                                                    <>
+                                                        <span className="divider"> - </span>
+                                                        <span className="series-index">{meta.seriesIndex}</span>
+                                                    </>
+                                                ) : null}
+                                            </div>
+                                        ) : null}
+                                        {meta.author ? <div className="author">{meta.author}</div> : null}
+                                        {meta.description ? (
+                                            <div className="description" dangerouslySetInnerHTML={{ __html: sanitizeEpubDescription(meta.description) }} />
+                                        ) : null}
+                                    </>
+                                ) : null}
+                            </div>
+                        )}
+
+                        {sidebarTab === 'settings' && (
+                            <div className="tab settings">
+                                <div className="setting">
+                                    <div className="setting-label">{$t('epub.themes')}</div>
+                                    <div className="setting-content theme chips" data-chips="theme">
+                                        {THEME_CHOICES.map(choice => (
+                                            <div
+                                                key={choice}
+                                                className={`theme chip${themeSetting === choice ? ' active' : ''}`}
+                                                style={choice === 'auto' ? undefined : { background: THEME_COLORS[choice].bg, color: THEME_COLORS[choice].fg }}
+                                                onClick={() => handler.emit('epubTheme', choice)}
+                                            >
+                                                {themeLabels[choice]}
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="setting-note">{$t('epub.themeScope')}</div>
+                                </div>
+                                <div className="setting">
+                                    <div className="setting-label">{$t('epub.font')}</div>
+                                    <div className="setting-content font chips" data-chips="font">
+                                        {FONT_OPTIONS.map(option => (
+                                            <div
+                                                key={option.label}
+                                                className={`font chip${settings.fontFamily === option.label ? ' active' : ''}`}
+                                                style={{ fontFamily: option.value }}
+                                                onClick={() => updateSetting('fontFamily', option.label)}
+                                            >
+                                                {option.value === SYSTEM_FONT ? $t('epub.systemFont') : option.label}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="setting">
+                                    <div className="setting-label">{$t('epub.fontSize')}</div>
+                                    <div className="setting-content font-size chips" data-chips="font-size">
+                                        {FONT_SIZE_OPTIONS.map(size => (
+                                            <div
+                                                key={size}
+                                                className={`size chip${settings.fontSize === size ? ' active' : ''}`}
+                                                style={{ fontSize: `${size}pt` }}
+                                                onClick={() => updateSetting('fontSize', size)}
+                                            >
+                                                {size}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="setting">
+                                    <div className="setting-label">{$t('epub.lineSpacing')}</div>
+                                    <div className="setting-content line-spacing chips" data-chips="line-spacing">
+                                        {LINE_HEIGHT_OPTIONS.map(value => (
+                                            <div
+                                                key={value}
+                                                className={`size chip${settings.lineHeight === value ? ' active' : ''}`}
+                                                onClick={() => updateSetting('lineHeight', value)}
+                                            >
+                                                {value}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            <div className="epub-bar">
+                <div className="left">
+                    <button
+                        type="button"
+                        className={`sidebar-button${bookReady ? '' : ' hidden'}`}
+                        onClick={openSidebar}
+                    >
+                        <span className="icon"><MenuOutlined /></span>
+                    </button>
+                </div>
+                <div className="title">
+                    {meta ? (
+                        <>
+                            <span className="book-title">{meta.title}</span>
+                            {meta.author ? (
+                                <>
+                                    <span className="divider"> - </span>
+                                    <span className="book-author">{meta.author}</span>
+                                </>
+                            ) : null}
+                        </>
+                    ) : null}
+                </div>
+                <div className="right" />
+            </div>
+
+            <div className="epub-reader" ref={pageRef}>
+                <button
+                    type="button"
+                    className={`epub-nav prev${bookReady ? '' : ' hidden'}`}
+                    disabled={atStart}
+                    onClick={goPrev}
+                    aria-label={$t('common.previousPage')}
+                    title={withShortcut($t('common.previousPage'), 'Left')}
+                >
+                    <NavChevron direction="prev" />
+                </button>
+                <div className="epub-reader-host" ref={readerRef} />
+                <button
+                    type="button"
+                    className={`epub-nav next${bookReady ? '' : ' hidden'}`}
+                    disabled={atEnd}
+                    onClick={goNext}
+                    aria-label={$t('common.nextPage')}
+                    title={withShortcut($t('common.nextPage'), 'Right')}
+                >
+                    <NavChevron direction="next" />
+                </button>
+            </div>
+
+            <div className="epub-bar epub-bar-bottom">
+                <div className="loc">
+                    {bookReady && locationTotal > 0 ? (
+                        <span className="loc-jump">
+                            <input
+                                type="text"
+                                inputMode="numeric"
+                                className="loc-input"
+                                aria-label={$t('epub.currentLocation')}
+                                value={locationDraft}
+                                onChange={e => setLocationDraft(e.target.value)}
+                                onKeyDown={e => {
+                                    if (e.key === 'Enter') {
+                                        e.currentTarget.blur();
+                                    }
+                                }}
+                                onBlur={commitLocationJump}
+                            />
+                            <span className="loc-total">/{locationTotal}</span>
+                        </span>
+                    ) : null}
+                </div>
+            </div>
+        </div>
+    );
+}

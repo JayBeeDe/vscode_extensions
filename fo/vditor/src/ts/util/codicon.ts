@@ -1,0 +1,62 @@
+export const codicon = (name: string, className = "") =>
+    `<span class="codicon codicon-${name}${className ? ` ${className}` : ""}" aria-hidden="true"></span>`;
+
+/** codicon has no undo icon, use redo mirrored horizontally */
+export const codiconUndo = (className = "") =>
+    `<span class="codicon codicon-redo vditor-codicon-undo${className ? ` ${className}` : ""}" aria-hidden="true"></span>`;
+
+/** codicon has no outdent icon, use indent mirrored horizontally */
+export const codiconOutdent = (className = "") =>
+    `<span class="codicon codicon-indent vditor-codicon-outdent${className ? ` ${className}` : ""}" aria-hidden="true"></span>`;
+
+const TOOLBAR_CODICONS: Record<string, string> = {
+    headings: "text-size",
+    bold: "bold",
+    italic: "italic",
+    strike: "strikethrough",
+    link: "link",
+    list: "list-unordered",
+    "ordered-list": "list-ordered",
+    check: "tasklist",
+    outdent: "__outdent__",
+    indent: "indent",
+    quote: "quote",
+    line: "horizontal-rule",
+    code: "code",
+    "inline-code": "code",
+    "insert-before": "arrow-up",
+    "insert-after": "arrow-down",
+    upload: "file-media",
+    table: "table",
+    undo: "__undo__",
+    redo: "redo",
+    more: "ellipsis",
+    "edit-mode": "markdown",
+    outline: "list-tree",
+    "code-theme": "file-code",
+    find: "search",
+};
+
+export const TABLE_CODICONS = {
+    add: "add",
+    alignLeft: "layout-panel-left",
+    alignCenter: "layout-panel-center",
+    alignRight: "layout-panel-right",
+    insertRowBelow: "run-below",
+    insertRowAbove: "run-above",
+    insertColumnRight: "arrow-right",
+    insertColumnLeft: "arrow-left",
+    deleteRow: "trash",
+    deleteColumn: "trash",
+} as const;
+
+export const getToolbarCodicon = (name: string): string => {
+    const icon = TOOLBAR_CODICONS[name];
+    if (icon === "__undo__") {
+        return codiconUndo();
+    }
+    if (icon === "__outdent__") {
+        return codiconOutdent();
+    }
+    return icon ? codicon(icon) : "";
+};

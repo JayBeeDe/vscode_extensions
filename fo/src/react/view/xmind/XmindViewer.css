@@ -1,0 +1,386 @@
+@import '../../../../node_modules/mind-elixir/dist/MindElixir.css';
+
+html,
+body,
+#root {
+    height: 100%;
+    min-height: 100%;
+    overflow: hidden;
+}
+
+body {
+    background-color: #ececec !important;
+}
+
+.xmind-viewer {
+    --viewer-bg: #ececec;
+    --viewer-fg: #333333;
+    --viewer-muted: #666666;
+    --viewer-border: #d9d9d9;
+    --viewer-hover: rgba(0, 0, 0, 0.04);
+    /* VS Code's accent, like the other viewers': the map's lines and the active sheet's name */
+    --viewer-accent: var(--vscode-focusBorder, var(--vscode-textLink-foreground, #1677ff));
+    --viewer-toolbar-bg: #fafafa;
+    --viewer-toolbar-border: var(--viewer-border);
+    --viewer-toolbar-fg: var(--viewer-fg);
+    --viewer-toolbar-hover: var(--viewer-hover);
+    --viewer-input-bg: #ffffff;
+    --viewer-input-fg: var(--viewer-fg);
+    --viewer-input-border: #d9d9d9;
+    --viewer-scrollbar-track: #ececec;
+    --viewer-scrollbar-thumb: #c9d1d9;
+
+    height: 100vh;
+    min-height: 100vh;
+    background: var(--viewer-bg);
+    overflow: hidden;
+    color: var(--viewer-fg);
+    font-family: var(--vscode-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+    font-size: var(--vscode-font-size, 13px);
+    scrollbar-color: var(--viewer-scrollbar-thumb) var(--viewer-scrollbar-track);
+}
+
+.xmind-viewer.xmind-dark {
+    --viewer-bg: var(--vscode-editor-background, #1e1e1e);
+    --viewer-fg: var(--vscode-editor-foreground, #cccccc);
+    --viewer-muted: var(--vscode-descriptionForeground, rgba(204, 204, 204, 0.7));
+    --viewer-border: var(--vscode-editorWidget-border, var(--vscode-panel-border, #3c3c3c));
+    --viewer-hover: var(--vscode-list-hoverBackground, rgba(255, 255, 255, 0.06));
+    /* the PDF viewer's dark toolbar: VS Code's title bar, its border, hover and fields */
+    --viewer-toolbar-bg: var(--vscode-titleBar-activeBackground, var(--vscode-editorWidget-background, #2d2d2d));
+    --viewer-toolbar-border: var(--vscode-panel-border, var(--vscode-widget-border, #3c3c3c));
+    --viewer-toolbar-fg: var(--vscode-foreground, #cccccc);
+    --viewer-toolbar-hover: var(--vscode-toolbar-hoverBackground, rgba(90, 93, 94, 0.31));
+    --viewer-input-bg: var(--vscode-input-background, #3c3c3c);
+    --viewer-input-fg: var(--vscode-input-foreground, #cccccc);
+    --viewer-input-border: var(--vscode-input-border, var(--vscode-widget-border, #3c3c3c));
+    --viewer-scrollbar-track: var(--vscode-editor-background, #1e1e1e);
+    --viewer-scrollbar-thumb: var(--vscode-scrollbarSlider-background, #797979);
+}
+
+/* selected text (a topic being edited, the zoom field, a sheet's name): the accent, like the epub's */
+.xmind-viewer ::selection {
+    background: color-mix(in srgb, var(--viewer-accent) 30%, transparent);
+}
+
+.xmind-viewer ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.xmind-viewer ::-webkit-scrollbar-track {
+    background: var(--viewer-scrollbar-track);
+}
+
+.xmind-viewer ::-webkit-scrollbar-thumb {
+    background-color: var(--viewer-scrollbar-thumb);
+    border-radius: 5px;
+    border: 2px solid var(--viewer-scrollbar-track);
+}
+
+body:has(.xmind-viewer.xmind-dark) {
+    background-color: var(--vscode-editor-background, #1e1e1e) !important;
+}
+
+.xmind-viewer > .xmind-body.ant-layout {
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+}
+
+.xmind-body {
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+}
+
+.xmind-sheet-tabs {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+    height: 38px;
+    padding: 0 6px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    border-top: 1px solid var(--viewer-toolbar-border);
+    background: var(--viewer-toolbar-bg);
+}
+
+.xmind-sheet-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+/* the spreadsheet's tabs: the chosen one's name in the accent */
+.xmind-sheet-tab {
+    flex-shrink: 0;
+    max-width: 240px;
+    height: 26px;
+    padding: 0 14px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--viewer-toolbar-fg);
+    opacity: 0.72;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: background 0.12s ease, opacity 0.12s ease;
+}
+
+.xmind-sheet-tab:hover {
+    background: var(--viewer-toolbar-hover);
+    opacity: 1;
+}
+
+.xmind-sheet-tab:focus-visible {
+    outline: 1px solid var(--viewer-accent);
+    outline-offset: -1px;
+}
+
+.xmind-sheet-tab.is-active {
+    color: var(--viewer-accent);
+    opacity: 1;
+}
+
+.xmind-main {
+    min-height: 0;
+    height: 100%;
+    background: var(--viewer-bg);
+    overflow: hidden;
+}
+
+.xmind-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 24px;
+    color: var(--viewer-muted);
+}
+
+.xmind-map-wrap {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+.xmind-map-toolbar {
+    display: flex;
+    align-items: center;
+    /* a toolbar too narrow for its buttons wraps them onto more lines rather than drawing the left
+       group over the right one (its buttons do not shrink) */
+    flex-wrap: wrap;
+    gap: 4px 2px;
+    min-height: 36px;
+    padding: 4px 8px;
+    color: var(--viewer-toolbar-fg);
+    border-bottom: 1px solid var(--viewer-toolbar-border);
+    background: var(--viewer-toolbar-bg);
+    flex-shrink: 0;
+}
+
+/* The left group's buttons wrap one by one in the toolbar's row, the right group as a block on the
+   right: a left group one button too wide sends that button down beside the right group (2 lines; each
+   group wrapping on its own made 3). A right group wider than the toolbar wraps within itself */
+.xmind-toolbar-group:first-child {
+    display: contents;
+}
+
+.xmind-toolbar-group:last-child {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 4px 2px;
+    min-width: 0;
+    margin-left: auto;
+}
+
+.xmind-toolbar-separator {
+    width: 1px;
+    height: 16px;
+    margin: 0 6px;
+    background: var(--viewer-toolbar-border);
+}
+
+.xmind-viewer .xmind-tool-btn.ant-btn {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    padding: 0;
+    /* the PDF viewer's buttons */
+    border-radius: 6px;
+    color: var(--viewer-toolbar-fg);
+}
+
+.xmind-viewer .xmind-tool-btn.ant-btn:not(:disabled):hover {
+    color: var(--viewer-accent);
+    background: var(--viewer-toolbar-hover);
+}
+
+.xmind-viewer .xmind-tool-btn.ant-btn:disabled {
+    color: var(--viewer-muted);
+    opacity: 0.5;
+}
+
+/* a disabled button's tooltip: the span gets the mouse. Centred: the zoom field's "%" would otherwise sit
+   at the top of the input's height, like an exponent */
+.xmind-tool-btn-wrap {
+    display: inline-flex;
+    align-items: center;
+}
+
+/* the chosen layout: the accent on its icon only */
+.xmind-viewer .xmind-tool-btn.ant-btn.is-active {
+    color: var(--viewer-accent);
+}
+
+/* -, the percentage and +, like the PDF viewer's zoom field */
+.xmind-zoom-field {
+    display: flex;
+    align-items: center;
+}
+
+.xmind-zoom-input {
+    -moz-appearance: textfield;
+    appearance: textfield;
+    /* 3 digits: 400 at most */
+    box-sizing: content-box;
+    width: 3ch;
+    padding: 3px 5px;
+    margin: 0 2px;
+    font: inherit;
+    font-size: 12px;
+    text-align: right;
+    color: var(--viewer-input-fg);
+    background: var(--viewer-input-bg);
+    border: 1px solid var(--viewer-input-border);
+    border-radius: 6px;
+    outline: none;
+}
+
+.xmind-zoom-input:focus {
+    border-color: var(--viewer-accent);
+}
+
+.xmind-zoom-input::-webkit-inner-spin-button,
+.xmind-zoom-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.xmind-zoom-unit {
+    margin-right: 2px;
+    font-size: 12px;
+    color: var(--viewer-toolbar-fg);
+    user-select: none;
+}
+
+/* the room the buttons leave, cut with an ellipsis; it moves to the next line below 6em */
+.xmind-map-title {
+    flex: 1 1 6em;
+    min-width: 6em;
+    margin: 0 10px 0 4px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--viewer-toolbar-fg);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.xmind-map {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    position: relative;
+}
+
+.xmind-map .map-container {
+    height: 100% !important;
+}
+
+/*
+ * The accent draws what mind-elixir colours itself, outside the theme: the relationships, the
+ * summaries' brackets, the arrow handles, the drop preview and the selection rectangle.
+ */
+.xmind-map .map-container .topiclinks path,
+.xmind-map .map-container .summary path,
+.xmind-map .map-container .linkcontroller line {
+    stroke: var(--viewer-accent);
+}
+
+.xmind-map .map-container .circle {
+    background: var(--viewer-accent);
+}
+
+.xmind-map .map-container me-parent me-tpc .show {
+    background: var(--viewer-accent);
+}
+
+/* appended to the body, outside .xmind-viewer */
+body:has(.xmind-viewer) .selection-area {
+    background: color-mix(in srgb, var(--vscode-focusBorder, var(--vscode-textLink-foreground, #1677ff)) 18%, transparent) !important;
+    border-color: var(--vscode-focusBorder, var(--vscode-textLink-foreground, #1677ff)) !important;
+}
+
+/* the text keeps its colours: --selected is the accent only for the outline */
+.xmind-map .map-container :is(h1, h2, h3, h4, h5, h6, em, strong.asterisk-emphasis, a, a:hover) {
+    color: inherit;
+}
+
+/* the toolbar's tooltips (in the body): a title with its keys, what it does, why it's greyed out */
+.xmind-tooltip {
+    max-width: 280px;
+}
+
+/* selected text in a tooltip: the accent, like in the viewer (the tooltip is in the body, outside .xmind-viewer) */
+.xmind-tooltip ::selection {
+    background: color-mix(in srgb, var(--vscode-focusBorder, var(--vscode-textLink-foreground, #1677ff)) 45%, transparent);
+}
+
+.xmind-tip-title {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    font-weight: 600;
+}
+
+.xmind-tip-keys {
+    display: inline-flex;
+    gap: 3px;
+    flex-shrink: 0;
+}
+
+.xmind-tip-keys kbd {
+    padding: 0 5px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.xmind-tip-text {
+    margin-top: 2px;
+    font-size: 12px;
+    opacity: 0.85;
+}
+
+.xmind-tip-unavailable {
+    margin-top: 4px;
+    font-size: 12px;
+    font-style: italic;
+    opacity: 0.7;
+}

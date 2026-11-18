@@ -1,0 +1,122 @@
+// VS Code integration: bridge theme tokens and layout overrides via CSS variables. The page panes
+// (foss-office.markdown.theme) and the menus inside them (foss-office.theme) set their own theme.
+
+#vditor[data-editor-theme],
+#vditor .vditor-page[data-editor-theme],
+#vditor .vditor-ui[data-editor-theme] {
+  // tables follow VS Code's accent: lines, header row and the row/column handles
+  --table-accent: var(--list-hover-color, var(--link-color));
+  --table-border: color-mix(in srgb, var(--table-accent) 40%, var(--border-color));
+  --table-row-border: var(--table-border);
+  --table-header-bg: color-mix(in srgb, var(--table-accent) 14%, var(--bg-color));
+  --table-axis-color: color-mix(in srgb, var(--table-accent) 55%, transparent);
+  --panel-background-color: var(--textarea-background-color, var(--bg-color));
+  --toolbar-icon-color: var(--front-color);
+  --toolbar-icon-hover-color: var(--list-hover-color);
+  --textarea-text-color: var(--front-color);
+  --pre-code-bg-image: none;
+  --vditor-input-border: 1px solid var(--border-color);
+}
+
+#vditor[data-editor-theme] {
+  --vditor-chrome-border: none;
+  --vditor-toolbar-border-bottom: 1px solid var(--border-color);
+  --vditor-outline-border: none;
+  --vditor-outline-title-display: none;
+  --vditor-root-background: var(--textarea-background-color, var(--bg-color));
+  // the outline drawer of a narrow editor, opened by the toolbar's outline button; its top is
+  // set below the toolbar when it opens (ui/mobileOutlineMenu.ts)
+  --mobile-outline-top: calc(max(8px, env(safe-area-inset-top, 0px)) + 44px);
+  --mobile-outline-left: max(10px, env(safe-area-inset-left, 0px));
+}
+
+#vditor[data-editor-theme] .vditor-outline__backdrop {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  #vditor[data-editor-theme] {
+    .vditor-outline:not(.vditor-outline--mobile-open) {
+      display: none !important;
+    }
+
+    .vditor-outline__backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 199;
+      background: color-mix(in srgb, #000 32%, transparent);
+      backdrop-filter: blur(1px);
+
+      &--visible {
+        display: block;
+      }
+    }
+
+    .vditor-outline {
+      position: fixed;
+      top: var(--mobile-outline-top);
+      left: var(--mobile-outline-left);
+      bottom: max(8px, env(safe-area-inset-bottom, 0px));
+      width: min(68vw, 228px) !important;
+      max-width: none;
+      z-index: 200;
+      display: block !important;
+      border-radius: 10px;
+      border: 1px solid color-mix(in srgb, var(--border-color) 80%, transparent);
+      box-shadow: 0 8px 28px color-mix(in srgb, #000 14%, transparent);
+      overflow: hidden;
+      transform: translateY(-6px) scale(0.98);
+      opacity: 0;
+      transition: transform 0.18s ease, opacity 0.18s ease;
+      pointer-events: none;
+
+      &--right {
+        left: var(--mobile-outline-left);
+        right: auto;
+      }
+
+      &--mobile-open {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      &__resize,
+      &__title {
+        display: none !important;
+      }
+
+      &__content {
+        height: 100%;
+        padding: 8px 5px;
+
+        > ul > li > span > span {
+          font-size: 13.5px;
+        }
+      }
+
+      li + li {
+        margin-top: 0;
+      }
+
+      li > span {
+        margin: 0 1px;
+        padding: 5px 6px;
+        border-radius: 5px;
+      }
+
+      ul ul {
+        margin: 1px 0 2px;
+        padding-left: 0.75em;
+      }
+    }
+
+    &.vditor--mobile-outline-open {
+      .vditor-content,
+      .vditor-toolbar {
+        touch-action: none;
+      }
+    }
+  }
+}
