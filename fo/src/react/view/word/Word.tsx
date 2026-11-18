@@ -1,0 +1,192 @@
+import { Alert } from "antd";
+import { DocxEditor, type DocxEditorRef } from "@eigenpal/docx-editor-react";
+import "@eigenpal/docx-editor-react/styles.css";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { beginDocumentSaving, cancelDocumentSaving, handler, onSaveRequest, useDocumentLoading } from "../../util/vscode";
+import { type ThemeSetting, toThemeSetting, useTheme } from "../../util/theme";
+import { getConfigs } from "../../util/vscodeConfig";
+import { loadOfficeBuffer } from "../../util/loadOfficeContent";
+import { $t, getLanguage, getSection } from "../../i18n/i18nConfig.ts";
+import { LANGUAGES } from "../../../i18n/index.ts";
+import DocumentMenuButtons from "./DocumentMenuButtons";
+import { isAlternativeRedo, useBlockedShortcuts } from "../../util/blockedShortcuts";
+import "./Word.css";
+
+// the editor's toolbar, menus and dialogs: the `document` section of i18n/<language>.json.
+// _lang picks the plural rules: English ones while the language has no strings of its own,
+// or Japanese rules would give "1 replies"
+const EDITOR_STRINGS = {
+    ...getSection("document"),
+    _lang: "document" in LANGUAGES[getLanguage()] ? getLanguage() : "en",
+};
+
+// no preset texts in the Watermark dialog: its dropdown only filled the text field
+const WATERMARK_PRESETS: readonly string[] = [];
+
+interface WordOpenPayload {
+    path?: string;
+    buffer?: number[];
+    error?: string;
+    readOnly?: boolean;
+    fileName?: string;
+    documentCacheId?: string;
+    nonce?: number;
+}
+
+// shortcuts the editor hard-codes and the viewer turns off: Ctrl+= / Ctrl+Shift+= (subscript /
+// superscript, still in the toolbar) and Ctrl+Shift+Z (redo is Ctrl+Y)
+const isBlockedShortcut = (e: KeyboardEvent) =>
+    isAlternativeRedo(e) || ((e.ctrlKey || e.metaKey) && !e.altKey && (e.key === "=" || e.key === "+"));
+
+export default function Word() {
+    const editorRef = useRef<DocxEditorRef>(null);
+    const readOnlyRef = useRef(false);
+    const theme = useTheme();
+    useBlockedShortcuts(isBlockedShortcut);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    // the file is read, but the editor has not painted its pages yet
+    const [rendering, setRendering] = useState(false);
+    useDocumentLoading(loading || rendering);
+    useEffect(() => {
+        if (!rendering) return;
+        // never keep the document hidden if the editor does not report its paint
+        const timer = setTimeout(() => setRendering(false), 10000);
+        return () => clearTimeout(timer);
+    }, [rendering]);
+    const [readOnly, setReadOnly] = useState(false);
+    const [documentBuffer, setDocumentBuffer] = useState<ArrayBuffer | undefined>(undefined);
+    const [documentKey, setDocumentKey] = useState("");
+    const [fileName, setFileName] = useState("");
+    const [commentsSidebarOpen, setCommentsSidebarOpen] = useState(false);
+    const skipCommentsAutoOpenRef = useRef(true);
+
+    // dark: the toolbars and panels take VS Code's colours (dark-palette.css when VS Code is light)
+    const adaptiveColorMode = theme === "dark";
+    // the pages follow foss-office.document.theme, `auto` following foss-office.theme like the toolbars
+    const [pageThemeSetting, setPageThemeSetting] = useState<ThemeSetting>(() => toThemeSetting(getConfigs()?.documentTheme));
+    const darkPages = (pageThemeSetting === "auto" ? theme : pageThemeSetting) === "dark";
+
+    const emitSave = useCallback((buffer: ArrayBuffer) => {
+        const bytes = new Uint8Array(buffer);
+        const content: number[] = new Array(bytes.length);
+        for (let i = 0; i < bytes.length; i++) {
+            content[i] = bytes[i];
+        }
+        handler.emit("save", content);
+    }, []);
+
+    // the editor's save() already hands the buffer to onSave (emitSave): emitting it here as well
+    // wrote the file twice
+    const handleSave = useCallback(async () => {
+        beginDocumentSaving();
+        try {
+            // nothing written without a buffer: no write ends the saving state
+            if (!await editorRef.current?.save()) cancelDocumentSaving();
+        } catch (error) {
+            cancelDocumentSaving();
+            throw error;
+        }
+    }, []);
+
+    const loadGenerationRef = useRef(0);
+
+    const loadDocument = useCallback(async (payload: WordOpenPayload) => {
+        // `open` can arrive again while a load is running: only the latest one is applied
+        const generation = ++loadGenerationRef.current;
+        setLoading(true);
+        setRendering(false);
+        setError(null);
+        setDocumentBuffer(undefined);
+
+        try {
+            const fileReadOnly = payload.readOnly === true;
+            readOnlyRef.current = fileReadOnly;
+            setReadOnly(fileReadOnly);
+            setFileName(payload.fileName ?? "");
+            setDocumentKey(`${payload.documentCacheId ?? ""}-${payload.nonce ?? Date.now()}`);
+            skipCommentsAutoOpenRef.current = true;
+            setCommentsSidebarOpen(false);
+            const buffer = await loadOfficeBuffer(payload);
+            if (generation !== loadGenerationRef.current) return;
+            setRendering(true);
+            setDocumentBuffer(buffer);
+        } catch (e) {
+            if (generation !== loadGenerationRef.current) return;
+            setError(e instanceof Error ? e.message : $t("document.failedLoad"));
+        } finally {
+            if (generation === loadGenerationRef.current) {
+                setLoading(false);
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        handler
+            .on("open", (payload: WordOpenPayload) => {
+                void loadDocument(payload);
+            })
+            .emit("init");
+    }, [loadDocument]);
+
+    useEffect(() => {
+        handler.on("documentTheme", (value: unknown) => setPageThemeSetting(toThemeSetting(value)));
+    }, []);
+
+    useEffect(() => {
+        // Ctrl+S goes through VS Code, which asks for the content
+        onSaveRequest(() => handleSave());
+    }, [handleSave]);
+
+    return (
+        <div className={`word-viewer${adaptiveColorMode ? " word-viewer--vscode-theme" : ""}${darkPages ? " word-viewer--dark-pages" : ""}`}>
+            {error && <Alert type="error" message={error} showIcon style={{ margin: 16 }} />}
+            {readOnly && !loading && !error && documentBuffer && (
+                <div className="word-readonly-banner">{$t("common.readOnlyBadge")}</div>
+            )}
+            {documentBuffer && !loading && !error && (
+                <>
+                    <DocxEditor
+                        key={documentKey}
+                        i18n={EDITOR_STRINGS}
+                        ref={editorRef}
+                        className="word-editor"
+                        documentBuffer={documentBuffer}
+                        documentName={fileName}
+                        documentNameEditable={false}
+                        readOnly={readOnly}
+                        {...(readOnly ? { mode: "viewing" as const } : {})}
+                        commentsSidebarOpen={commentsSidebarOpen}
+                        onCommentsSidebarOpenChange={(open) => {
+                            if (open && skipCommentsAutoOpenRef.current) {
+                                skipCommentsAutoOpenRef.current = false;
+                                return;
+                            }
+                            setCommentsSidebarOpen(open);
+                        }}
+                        colorMode="light"
+                        showFileOpen={false}
+                        showHelpMenu={false}
+                        watermarkPresets={WATERMARK_PRESETS}
+                        toolbarExtra={readOnly ? undefined : (
+                            <DocumentMenuButtons
+                                editorRef={editorRef}
+                                onSave={handleSave}
+                                darkPages={darkPages}
+                                onToggleDarkPages={() => handler.emit("documentTheme", darkPages ? "light" : "dark")}
+                            />
+                        )}
+                        onChange={() => {
+                            if (!readOnlyRef.current) {
+                                handler.emit("change");
+                            }
+                        }}
+                        onSave={emitSave}
+                        onRenderedDomContextReady={() => setRendering(false)}
+                        onError={() => setRendering(false)}
+                    />
+                </>
+            )}
+        </div>
+    );
+}

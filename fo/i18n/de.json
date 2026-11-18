@@ -1,0 +1,1719 @@
+{
+  "host": {
+    "common": {
+      "yes": "JA",
+      "no": "NEIN",
+      "openLink": "Öffnen",
+      "confirmOpenLink": "\"{url}\" öffnen? Dieser Link verweist nicht ins Web und kann eine Datei öffnen oder ein Programm ausführen."
+    },
+    "markdown": {
+      "exporting": "Markdown wird nach {type} exportiert...",
+      "exportSuccess": "Markdown nach {type} exportiert: {path}",
+      "exportFailed": "Export von Markdown nach {type} fehlgeschlagen: {error}",
+      "noChromium": "Chromium nicht gefunden: Der Export von Markdown nach {type} benötigt es. Legen Sie den Pfad in foss-office.markdown.export.chromiumPath fest.",
+      "noChromiumDocx": "Chromium nicht gefunden: Der DOCX-Export behält Formeln und Diagramme als Text bei. Legen Sie den Pfad in foss-office.markdown.export.chromiumPath fest.",
+      "noChromiumAt": "Chromium unter {path} nicht gefunden: Der Export von Markdown nach {type} benötigt es. Korrigieren Sie foss-office.markdown.export.chromiumPath.",
+      "noChromiumDocxAt": "Chromium unter {path} nicht gefunden: Der DOCX-Export behält Formeln und Diagramme als Text bei. Korrigieren Sie foss-office.markdown.export.chromiumPath.",
+      "openSettings": "Einstellungen öffnen",
+      "openFile": "Datei öffnen",
+      "noClipboardImage": "Kein Bild in der Zwischenablage.",
+      "noPasteDirectory": "Einfügen von Verzeichnissen wird nicht unterstützt.",
+      "installXclip": "Sie müssen zuerst den Befehl xclip installieren.",
+      "wikilinkNotFound": "Wikilink-Ziel nicht gefunden: {target}",
+      "statusBar": "Zeile {lines} Zeichen {chars}",
+      "tempHtmlNotFound": "Temporäre HTML-Datei nicht gefunden: {path}"
+    },
+    "loading": {
+      "document": "{kind} {name} wird geladen...",
+      "mermaid": {
+        "one": "{count} verbleibendes Mermaid-Diagramm von {kind} {name} wird geladen...",
+        "other": "{count} verbleibende Mermaid-Diagramme von {kind} {name} werden geladen..."
+      },
+      "kind": {
+        "spreadsheet": "Tabelle",
+        "document": "Dokument",
+        "presentation": "Präsentation",
+        "pdf": "PDF",
+        "epub": "Buch",
+        "xmind": "Mindmap",
+        "parquet": "Parquet-Datei",
+        "markdown": "Markdown",
+        "file": "Datei"
+      }
+    },
+    "saving": {
+      "document": "{kind} {name} wird gespeichert..."
+    },
+    "saveAs": {
+      "filter": {
+        "xlsx": "Excel-Arbeitsmappe",
+        "xlsm": "Excel-Arbeitsmappe mit Makros",
+        "xltx": "Tabellenvorlage",
+        "xltm": "Tabellenvorlage mit Makros",
+        "xls": "Excel 97-2003-Arbeitsmappe",
+        "xlt": "Tabellenvorlage 97-2003",
+        "ods": "OpenDocument-Tabelle",
+        "ots": "OpenDocument-Tabellenvorlage",
+        "csv": "CSV (Trennzeichen-getrennt)",
+        "docx": "Word-Dokument",
+        "docm": "Dokument mit Makros",
+        "dotm": "Dokumentvorlage mit Makros",
+        "dotx": "Word-Vorlage",
+        "other": "{ext}-Datei"
+      }
+    },
+    "office": {
+      "readFailed": "Datei konnte nicht gelesen werden",
+      "gitExited": "git wurde mit Code {code} beendet"
+    }
+  },
+  "viewer": {
+    "common": {
+      "failedOpenFile": "Datei konnte nicht geöffnet werden",
+      "officeViewer": "foss-office",
+      "editInVscode": "In VS Code bearbeiten",
+      "previousPage": "Vorherige Seite",
+      "nextPage": "Nächste Seite",
+      "save": "Speichern",
+      "saved": "Erfolgreich gespeichert",
+      "zoomIn": "Vergrößern",
+      "zoomOut": "Verkleinern",
+      "readOnlyBadge": "Schreibgeschützt",
+      "emptyFile": "Leerer Dateiinhalt",
+      "noFilePath": "Kein Dateipfad",
+      "fetchFailed": "Abruf fehlgeschlagen ({status})"
+    },
+    "document": {
+      "heading": "Überschrift {level} (Ctrl+Alt+{level})",
+      "failedLoad": "Dokument konnte nicht geladen werden",
+      "pageTheme": "Seitenfarben",
+      "darkPages": "Dunkle Seiten",
+      "lightPages": "Helle Seiten"
+    },
+    "presentation": {
+      "failedLoad": "Präsentation konnte nicht geladen werden",
+      "slides": "Folien",
+      "slide": "Folie {number}",
+      "status": "Folie {number} / {count}",
+      "loadingThumbnails": "wird geladen…"
+    },
+    "epub": {
+      "search": "Suchen",
+      "searchBook": "Buch suchen...",
+      "failedLoad": "EPUB konnte nicht geladen werden",
+      "failedRender": "EPUB-Seite konnte nicht gerendert werden",
+      "searchFailed": "Suche fehlgeschlagen",
+      "untitled": "Unbenannt",
+      "error": "Fehler",
+      "cover": "Cover",
+      "themes": "Designs",
+      "themeAuto": "Automatisch",
+      "themeLight": "Hell",
+      "themeDark": "Dunkel",
+      "themeScope": "Die Seiten aller EPUB-Bücher. Automatisch folgt dem Design der Erweiterung (foss-office.theme).",
+      "font": "Schriftart",
+      "systemFont": "System",
+      "fontSize": "Schriftgröße",
+      "lineSpacing": "Zeilenabstand",
+      "currentLocation": "Aktuelle Position"
+    },
+    "xmind": {
+      "sheets": "Blätter",
+      "failedLoad": "XMind-Datei konnte nicht geladen werden",
+      "failedSave": "XMind-Datei konnte nicht gespeichert werden",
+      "noSheets": "Keine Blätter in der XMind-Datei gefunden",
+      "noContent": "Kein Inhalt verfügbar",
+      "clickTarget": "Klicken Sie auf das Zielthema",
+      "tips": {
+        "save": {
+          "title": "Speichern",
+          "text": "Ihre Änderungen in die XMind-Datei schreiben"
+        },
+        "addChild": {
+          "title": "Neues Unterthema",
+          "text": "Ein Thema unter dem ausgewählten hinzufügen"
+        },
+        "addSibling": {
+          "title": "Neues Thema auf gleicher Ebene",
+          "text": "Ein Thema direkt nach dem ausgewählten hinzufügen"
+        },
+        "addParent": {
+          "title": "Neues übergeordnetes Thema",
+          "text": "Ein Thema über dem ausgewählten einfügen, das dessen Unterthema wird"
+        },
+        "remove": {
+          "title": "Löschen",
+          "text": "Die ausgewählten Themen und alles darunter löschen"
+        },
+        "moveUp": {
+          "title": "Nach oben",
+          "text": "Das ausgewählte Thema mit dem darüber tauschen"
+        },
+        "moveDown": {
+          "title": "Nach unten",
+          "text": "Das ausgewählte Thema mit dem darunter tauschen"
+        },
+        "focus": {
+          "title": "Auf dieses Thema fokussieren",
+          "text": "Nur das ausgewählte Thema und seine Unterthemen anzeigen"
+        },
+        "cancelFocus": {
+          "title": "Ganze Map anzeigen",
+          "text": "Den Fokus verlassen und wieder alle Themen anzeigen"
+        },
+        "link": {
+          "title": "Mit einem anderen Thema verbinden",
+          "text": "Einen Pfeil vom ausgewählten Thema zum nächsten angeklickten Thema ziehen"
+        },
+        "linkBidirectional": {
+          "title": "In beide Richtungen verbinden",
+          "text": "Einen Doppelpfeil zwischen dem ausgewählten Thema und dem nächsten angeklickten Thema ziehen"
+        },
+        "summary": {
+          "title": "Zusammenfassen",
+          "text": "Die ausgewählten Themen mit einer Klammer und einem Zusammenfassungsthema gruppieren"
+        },
+        "layoutLeft": {
+          "title": "Zweige links",
+          "text": "Alle Zweige links vom Hauptthema anordnen"
+        },
+        "layoutSide": {
+          "title": "Zweige auf beiden Seiten",
+          "text": "Die Zweige auf beide Seiten des Hauptthemas verteilen"
+        },
+        "layoutRight": {
+          "title": "Zweige rechts",
+          "text": "Alle Zweige rechts vom Hauptthema anordnen"
+        },
+        "center": {
+          "title": "Map zentrieren",
+          "text": "Das Hauptthema wieder in die Mitte der Ansicht bringen"
+        },
+        "zoomOut": {
+          "title": "Verkleinern",
+          "text": "Die Map in 10-%-Schritten verkleinern"
+        },
+        "zoom": {
+          "title": "Zoomstufe",
+          "text": "Einen Prozentwert von 20 bis 400 eingeben und die Eingabetaste drücken"
+        },
+        "zoomIn": {
+          "title": "Vergrößern",
+          "text": "Die Map in 10-%-Schritten vergrößern"
+        },
+        "autoZoom": {
+          "title": "An Ansicht anpassen",
+          "text": "Die ganze Map sichtbar halten, auch wenn die Größe des Bereichs geändert wird"
+        }
+      },
+      "unavailable": {
+        "selectOne": "Wählen Sie zuerst ein Thema aus",
+        "selectOneChild": "Wählen Sie ein Thema außer dem Hauptthema aus",
+        "selectChildren": "Wählen Sie Themen außer dem Hauptthema aus",
+        "notFocused": "Nur bei Fokus auf ein Thema",
+        "readOnly": "Diese Datei ist schreibgeschützt",
+        "noChanges": "Keine ungespeicherten Änderungen",
+        "zoomMin": "Bereits kleinste Zoomstufe",
+        "zoomMax": "Bereits größte Zoomstufe"
+      },
+      "newTopic": "Neues Thema",
+      "untitled": "Ohne Titel",
+      "defaultSheet": "Blatt {number}"
+    },
+    "parquet": {
+      "readOnly": "Schreibgeschützt — Änderungen werden nicht auf der Festplatte gespeichert",
+      "failedLoad": "Parquet-Datei konnte nicht geladen werden",
+      "failedSave": "Parquet-Datei konnte nicht gespeichert werden",
+      "rows": "Zeilen",
+      "columnsLabel": "Spalten",
+      "createdBy": "Erstellt von",
+      "totalRows": "{count} Zeilen",
+      "save": "Speichern",
+      "saveSuccess": "Parquet-Datei gespeichert",
+      "unsaved": "Ungespeicherte Änderungen",
+      "invalidValue": "„{value}“ ist kein gültiger Wert vom Typ {type}"
+    }
+  },
+  "document": {
+    "common": {
+      "cancel": "Abbrechen",
+      "insert": "Einfügen",
+      "apply": "Übernehmen",
+      "close": "Schließen",
+      "delete": "Löschen",
+      "update": "Aktualisieren",
+      "save": "Speichern",
+      "retry": "Erneut versuchen",
+      "send": "Senden",
+      "edit": "Bearbeiten",
+      "comment": "Kommentar",
+      "reply": "Antworten",
+      "accept": "Annehmen",
+      "reject": "Ablehnen",
+      "dismiss": "Verwerfen",
+      "change": "Ändern",
+      "px": "px",
+      "closeDialog": "Dialogfeld schließen",
+      "clear": "Löschen"
+    },
+    "toolbar": {
+      "ariaLabel": "Formatierungssymbolleiste",
+      "file": "Datei",
+      "format": "Format",
+      "insert": "Einfügen",
+      "print": "Drucken",
+      "printShortcut": "Strg+P",
+      "pageSetup": "Seite einrichten",
+      "leftToRight": "Text von links nach rechts",
+      "rightToLeft": "Text von rechts nach links",
+      "image": "Grafik",
+      "table": "Tabelle",
+      "pageBreak": "Seitenumbruch",
+      "tableOfContents": "Inhaltsverzeichnis",
+      "symbol": "Symbol",
+      "help": "Hilfe",
+      "reportIssue": "Problem melden",
+      "open": "Öffnen",
+      "openShortcut": "Strg+O",
+      "save": "Speichern",
+      "saveShortcut": "Strg+S",
+      "watermark": "Wasserzeichen",
+      "break": "Umbruch",
+      "sectionBreakNextPage": "Abschnittsumbruch (nächste Seite)",
+      "sectionBreakContinuous": "Abschnittsumbruch (fortlaufend)"
+    },
+    "formattingBar": {
+      "groups": {
+        "history": "Verlauf",
+        "zoom": "Zoom",
+        "styles": "Formatvorlagen",
+        "font": "Schriftart",
+        "textFormatting": "Textformatierung",
+        "script": "Hoch-/Tiefgestellt",
+        "alignment": "Ausrichtung",
+        "listFormatting": "Listenformatierung",
+        "image": "Grafik",
+        "table": "Tabelle"
+      },
+      "undo": "Rückgängig",
+      "undoShortcut": "Rückgängig (Strg+Z)",
+      "redo": "Wiederholen",
+      "redoShortcut": "Wiederholen (Strg+Y)",
+      "bold": "Fett",
+      "boldShortcut": "Fett (Strg+B)",
+      "italic": "Kursiv",
+      "italicShortcut": "Kursiv (Strg+I)",
+      "underline": "Unterstrichen",
+      "underlineShortcut": "Unterstrichen (Strg+U)",
+      "strikethrough": "Durchgestrichen",
+      "fontColor": "Schriftfarbe",
+      "highlightColor": "Texthervorhebungsfarbe",
+      "insertLink": "Link",
+      "insertLinkShortcut": "Link (Strg+K)",
+      "superscript": "Hochgestellt",
+      "superscriptShortcut": "Hochgestellt",
+      "subscript": "Tiefgestellt",
+      "subscriptShortcut": "Tiefgestellt",
+      "imageProperties": "Bildeigenschaften",
+      "imagePropertiesShortcut": "Bildeigenschaften (Alternativtext, Rahmen)...",
+      "clearFormatting": "Formatierung löschen",
+      "commentsAndChanges": "Kommentare und Änderungen",
+      "moreItems": "{count, plural, one {# weiteres Element} other {# weitere Elemente}}"
+    },
+    "alignment": {
+      "alignLeft": "Linksbündig",
+      "alignLeftShortcut": "Strg+L",
+      "center": "Zentriert",
+      "centerShortcut": "Strg+E",
+      "alignRight": "Rechtsbündig",
+      "alignRightShortcut": "Strg+R",
+      "justify": "Blocksatz",
+      "justifyShortcut": "Strg+J"
+    },
+    "lists": {
+      "ariaLabel": "Listenformatierung",
+      "typeAriaLabel": "Listentyp",
+      "indentationAriaLabel": "Listeneinzug",
+      "bulletList": "Aufzählungszeichen",
+      "numberedList": "Nummerierung",
+      "decreaseIndent": "Einzug verkleinern",
+      "increaseIndent": "Einzug vergrößern"
+    },
+    "lineSpacing": {
+      "single": "Einfach",
+      "double": "Doppelt",
+      "lineSpacingTitle": "Zeilenabstand: {label}",
+      "paragraphSpacing": "Absatzabstand",
+      "label": "Zeilenabstand"
+    },
+    "styles": {
+      "selectAriaLabel": "Absatzformatvorlage auswählen",
+      "normalText": "Standard",
+      "title": "Titel",
+      "subtitle": "Untertitel",
+      "heading1": "Überschrift 1",
+      "heading2": "Überschrift 2",
+      "heading3": "Überschrift 3"
+    },
+    "font": {
+      "selectAriaLabel": "Schriftart auswählen",
+      "serif": "Serifen",
+      "monospace": "Nichtproportional",
+      "other": "Andere",
+      "sansSerif": "Serifenlos",
+      "documentFonts": "Dokumentschriftarten"
+    },
+    "fontSize": {
+      "decrease": "Schriftgrad verkleinern",
+      "increase": "Schriftgrad vergrößern",
+      "label": "Schriftgrad",
+      "listLabel": "Schriftgrade"
+    },
+    "zoom": {
+      "ariaLabel": "Zoom: {label}",
+      "zoomIn": "Vergrößern",
+      "zoomLevel": "Zoomstufe",
+      "zoomOut": "Verkleinern"
+    },
+    "colorPicker": {
+      "ariaLabel": "Farbauswahl — {type}",
+      "highlightColors": "Hervorhebungsfarben",
+      "customColor": "Benutzerdefinierte Farbe",
+      "noColor": "Keine Farbe",
+      "automatic": "Automatisch",
+      "themeColors": "Designfarben",
+      "standardColors": "Standardfarben",
+      "colors": {
+        "black": "Schwarz",
+        "darkRed": "Dunkelrot",
+        "red": "Rot",
+        "orange": "Orange",
+        "yellow": "Gelb",
+        "darkYellow": "Dunkelgelb",
+        "green": "Grün",
+        "darkGreen": "Dunkelgrün",
+        "teal": "Blaugrün",
+        "darkTeal": "Dunkelblaugrün",
+        "blue": "Blau",
+        "darkBlue": "Dunkelblau",
+        "purple": "Lila",
+        "darkPurple": "Dunkellila",
+        "brown": "Braun",
+        "grey50": "Grau 50%",
+        "grey25": "Grau 25%",
+        "grey10": "Grau 10%",
+        "white": "Weiß",
+        "lightRed": "Hellrot",
+        "lightOrange": "Hellorange",
+        "lightYellow": "Hellgelb",
+        "lightGreen": "Hellgrün",
+        "lightBlue": "Hellblau",
+        "lightPurple": "Helllila",
+        "pink": "Rosa",
+        "rose": "Rosé",
+        "gold": "Gold",
+        "aqua": "Aquamarin",
+        "lavender": "Lavendel",
+        "silver": "Silber",
+        "darkOrange": "Dunkelorange",
+        "darkGray": "Dunkelgrau",
+        "gray": "Grau",
+        "cyan": "Cyan",
+        "magenta": "Magenta",
+        "paleGreen": "Blassgrün",
+        "lightCyan": "Hellcyan",
+        "skyBlue": "Himmelblau",
+        "lightBlue2": "Hellblau 2",
+        "lightMagenta": "Hell-Magenta",
+        "brightGreen": "Hellgrün",
+        "violet": "Violett"
+      }
+    },
+    "dialogs": {
+      "findReplace": {
+        "titleFind": "Suchen",
+        "titleFindReplace": "Suchen und Ersetzen",
+        "findLabel": "Suchen nach:",
+        "findPlaceholder": "Text zum Suchen eingeben...",
+        "findAriaLabel": "Text suchen",
+        "findPrevious": "Vorheriges suchen",
+        "findPreviousTitle": "Vorheriges suchen (Umschalt+Eingabe)",
+        "findNext": "Nächstes suchen",
+        "findNextTitle": "Nächstes suchen (Eingabe)",
+        "matchCount": "{current} von {total} Treffern",
+        "noResults": "Keine Ergebnisse gefunden",
+        "replaceLabel": "Ersetzen durch:",
+        "replacePlaceholder": "Ersetzungstext eingeben...",
+        "replaceAriaLabel": "Ersetzungstext",
+        "replaceButton": "Ersetzen",
+        "replaceCurrentTitle": "Aktuellen Treffer ersetzen",
+        "replaceAllButton": "Alle ersetzen",
+        "replaceAllTitle": "Alle Treffer ersetzen",
+        "matchCase": "Groß-/Kleinschreibung beachten",
+        "wholeWords": "Nur ganzes Wort suchen",
+        "toggleReplace": "+ Ersetzen",
+        "matchesFound": "{total} Treffer"
+      },
+      "hyperlink": {
+        "titleEdit": "Hyperlink bearbeiten",
+        "titleInsert": "Hyperlink einfügen",
+        "tabWebAddress": "Webadresse",
+        "tabBookmark": "Textmarke",
+        "urlLabel": "URL",
+        "urlHint": "Webadresse, E-Mail (mailto:) oder Telefon (tel:) eingeben",
+        "bookmarkLabel": "Textmarke",
+        "bookmarkPlaceholder": "Textmarke auswählen...",
+        "displayTextLabel": "Anzuzeigender Text",
+        "displayTextPlaceholder": "Anzuzeigender Text (optional)",
+        "displayTextHint": "Leer lassen, um den markierten Text zu verwenden",
+        "tooltipLabel": "QuickInfo (optional)",
+        "tooltipPlaceholder": "Text, der beim Zeigen angezeigt wird",
+        "removeLink": "Link entfernen",
+        "invalidUrl": "Bitte eine gültige URL eingeben",
+        "urlRequired": "URL ist erforderlich"
+      },
+      "insertTable": {
+        "title": "Tabelle einfügen",
+        "hoverToSelect": "Zeigen, um Größe auszuwählen",
+        "tableSize": "Tabelle {cols} x {rows}",
+        "orSpecifySize": "oder Größe angeben",
+        "rowsLabel": "Zeilen:",
+        "columnsLabel": "Spalten:",
+        "insertButton": "Tabelle einfügen",
+        "sizeSelector": "Tabellengröße auswählen",
+        "autofit": "An Inhalt anpassen",
+        "columnWidthLabel": "Spaltenbreite",
+        "fixedWidth": "Fest",
+        "tableStyleLabel": "Tabellenformat",
+        "validationHint": "Zeilen: {minRows}-{maxRows}, Spalten: {minCols}-{maxCols}"
+      },
+      "splitCell": {
+        "title": "Zelle teilen",
+        "description": "Legen Sie fest, in wie viele Zeilen und Spalten die ausgewählte Zelle geteilt werden soll.",
+        "rowsLabel": "Zeilen:",
+        "columnsLabel": "Spalten:",
+        "currentMinimum": "Minimum aus der aktuellen Spanne: {rows} Zeile(n) x {cols} Spalte(n)",
+        "minValue": "Verwenden Sie mindestens {rows} Zeile(n) und {cols} Spalte(n).",
+        "notOneByOne": "Wählen Sie mindestens zwei resultierende Zellen."
+      },
+      "insertImage": {
+        "title": "Grafik einfügen",
+        "uploadAriaLabel": "Klicken oder ziehen, um ein Bild hochzuladen",
+        "uploadText": "Klicken Sie, um ein Bild auszuwählen, oder ziehen Sie es hierher",
+        "uploadSubtext": "PNG, JPG, GIF bis zu 10 MB",
+        "dimensions": "Abmessungen",
+        "widthLabel": "Breite:",
+        "heightLabel": "Höhe:",
+        "aspectRatioLocked": "Seitenverhältnis gesperrt",
+        "aspectRatioUnlocked": "Seitenverhältnis entsperrt",
+        "altTextLabel": "Alternativtext (optional)",
+        "altTextPlaceholder": "Beschreiben Sie das Bild für Barrierefreiheit",
+        "insertButton": "Grafik einfügen",
+        "invalidFile": "Bitte eine gültige Bilddatei auswählen",
+        "fileTooLarge": "Bilddatei ist zu groß (max. 10 MB)",
+        "readFailed": "Bilddatei konnte nicht gelesen werden",
+        "loadFailed": "Bild konnte nicht geladen werden",
+        "preview": "Vorschau"
+      },
+      "insertSymbol": {
+        "title": "Symbol einfügen",
+        "searchPlaceholder": "Symbole suchen (Zeichen oder Unicode)...",
+        "noResults": "Keine Symbole für \"{query}\" gefunden",
+        "decimal": "Dezimal: {value}",
+        "categories": {
+          "common": "Häufig verwendet",
+          "arrows": "Pfeile",
+          "math": "Mathematisch",
+          "greek": "Griechisch",
+          "shapes": "Formen",
+          "punctuation": "Satzzeichen",
+          "currency": "Währungen",
+          "music": "Musik",
+          "emoji": "Emoji"
+        },
+        "noResultsEmpty": "Keine Symbole gefunden",
+        "recent": "Zuletzt verwendet:"
+      },
+      "imageProperties": {
+        "title": "Bildeigenschaften",
+        "altText": "Alternativtext",
+        "altTextPlaceholder": "Beschreiben Sie dieses Bild für Barrierefreiheit...",
+        "border": "Rahmen",
+        "width": "Breite",
+        "style": "Stil",
+        "color": "Farbe",
+        "preview": "Vorschau",
+        "borderStyles": {
+          "solid": "Durchgezogen",
+          "dashed": "Gestrichelt",
+          "dotted": "Gepunktet",
+          "double": "Doppelt",
+          "groove": "Rille",
+          "ridge": "Steg",
+          "inset": "Eingelassen",
+          "outset": "Erhaben"
+        },
+        "dimensions": "Abmessungen",
+        "heightLabel": "Höhe:",
+        "lockAspectRatio": "Seitenverhältnis sperren",
+        "textWrapping": "Textumbruch",
+        "widthLabel": "Breite:",
+        "wrapOptions": {
+          "behind": "Hinter den Text",
+          "inFront": "Vor den Text",
+          "inline": "Mit Text in Zeile",
+          "topAndBottom": "Oben und unten",
+          "wrapLeft": "Textumbruch, rechts ausgerichtet",
+          "wrapRight": "Textumbruch, links ausgerichtet"
+        }
+      },
+      "imagePosition": {
+        "title": "Bildposition",
+        "horizontal": "Horizontal",
+        "vertical": "Vertikal",
+        "position": "Position",
+        "alignment": "Ausrichtung",
+        "offset": "Versatz",
+        "offsetPx": "Versatz (px)",
+        "align": "Ausrichten",
+        "relativeTo": "Relativ zu",
+        "alignOptions": {
+          "left": "Links",
+          "center": "Zentriert",
+          "right": "Rechts",
+          "top": "Oben",
+          "bottom": "Unten"
+        },
+        "relativeOptions": {
+          "page": "Seite",
+          "column": "Spalte",
+          "margin": "Seitenrand",
+          "character": "Zeichen",
+          "paragraph": "Absatz",
+          "line": "Zeile"
+        }
+      },
+      "pageSetup": {
+        "title": "Seite einrichten",
+        "pageSize": "PAPIERFORMAT",
+        "sizeLabel": "Format",
+        "custom": "Benutzerdefiniert",
+        "orientation": "Ausrichtung",
+        "portrait": "Hochformat",
+        "landscape": "Querformat",
+        "margins": "SEITENRÄNDER",
+        "top": "Oben",
+        "bottom": "Unten",
+        "left": "Links",
+        "right": "Rechts",
+        "pageSizes": {
+          "letter": "Letter (8,5\" × 11\")",
+          "a4": "A4 (8,27\" × 11,69\")",
+          "legal": "Legal (8,5\" × 14\")",
+          "a3": "A3 (11,69\" × 16,54\")",
+          "a5": "A5 (5,83\" × 8,27\")",
+          "b5": "B5 (6,93\" × 9,84\")",
+          "executive": "Executive (7,25\" × 10,5\")"
+        }
+      },
+      "tableProperties": {
+        "title": "Tabelleneigenschaften",
+        "widthType": "Breitentyp",
+        "widthLabel": "Breite",
+        "alignmentLabel": "Ausrichtung",
+        "widthTypes": {
+          "auto": "Automatisch",
+          "fixed": "Fest (Twips)",
+          "percentage": "Prozent"
+        },
+        "units": {
+          "fiftiethsPercent": "(Fünfzigstel %)",
+          "twips": "tw"
+        },
+        "alignOptions": {
+          "left": "Links",
+          "center": "Zentriert",
+          "right": "Rechts"
+        }
+      },
+      "pasteSpecial": {
+        "title": "Inhalte einfügen",
+        "keepFormatting": "Ursprüngliche Formatierung beibehalten",
+        "keepFormattingDescription": "Mit Originalformatierung einfügen",
+        "keepFormattingShortcut": "Strg+V",
+        "plainText": "Als unformatierten Text einfügen",
+        "plainTextDescription": "Ohne Formatierung einfügen",
+        "plainTextShortcut": "Strg+Umschalt+V",
+        "readingClipboard": "Zwischenablage wird gelesen...",
+        "preview": "Vorschau:",
+        "noContent": "Kein Inhalt zum Einfügen verfügbar",
+        "clipboardError": "Zwischenablage konnte nicht gelesen werden. Verwenden Sie Strg+V zum Einfügen."
+      },
+      "footnoteProperties": {
+        "title": "Fuß- und Endnoteneinstellungen",
+        "footnotes": "Fußnoten",
+        "endnotes": "Endnoten",
+        "position": "Position",
+        "numberFormat": "Zahlenformat",
+        "startAt": "Beginnen bei",
+        "numbering": "Nummerierung",
+        "footnotePositions": {
+          "bottomOfPage": "Seitenende",
+          "belowText": "Unter dem Text"
+        },
+        "endnotePositions": {
+          "endOfDocument": "Dokumentende",
+          "endOfSection": "Abschnittsende"
+        },
+        "numberingOptions": {
+          "continuous": "Fortlaufend",
+          "restartSection": "In jedem Abschnitt neu beginnen",
+          "restartPage": "Auf jeder Seite neu beginnen"
+        },
+        "formats": {
+          "decimal": "1, 2, 3, ...",
+          "lowerRoman": "i, ii, iii, ...",
+          "upperRoman": "I, II, III, ...",
+          "lowerAlpha": "a, b, c, ...",
+          "upperAlpha": "A, B, C, ...",
+          "symbols": "*, †, ‡, ..."
+        }
+      },
+      "keyboardShortcuts": {
+        "ariaLabel": "Tastenkombinationen",
+        "searchPlaceholder": "Tastenkombinationen suchen...",
+        "categories": {
+          "editing": "Bearbeitung",
+          "formatting": "Formatierung",
+          "navigation": "Navigation",
+          "clipboard": "Zwischenablage",
+          "selection": "Markierung",
+          "view": "Ansicht",
+          "file": "Datei",
+          "other": "Sonstiges"
+        },
+        "shortcuts": {
+          "save": "Speichern",
+          "saveDescription": "Dokument speichern",
+          "print": "Drucken",
+          "printDescription": "Dokument drucken",
+          "undo": "Rückgängig",
+          "undoDescription": "Letzte Aktion rückgängig machen",
+          "redo": "Wiederholen",
+          "redoDescription": "Letzte Aktion wiederholen",
+          "delete": "Löschen",
+          "deleteDescription": "Markierten Text löschen",
+          "find": "Suchen",
+          "findDescription": "Text im Dokument suchen",
+          "findReplace": "Suchen und Ersetzen",
+          "findReplaceDescription": "Text suchen und ersetzen",
+          "cut": "Ausschneiden",
+          "cutDescription": "Markierten Text ausschneiden",
+          "copy": "Kopieren",
+          "copyDescription": "Markierten Text kopieren",
+          "paste": "Einfügen",
+          "pasteDescription": "Aus Zwischenablage einfügen",
+          "pastePlainText": "Als unformatierten Text einfügen",
+          "pastePlainTextDescription": "Ohne Formatierung einfügen",
+          "bold": "Fett",
+          "boldDescription": "Fettformatierung umschalten",
+          "italic": "Kursiv",
+          "italicDescription": "Kursivformatierung umschalten",
+          "underline": "Unterstrichen",
+          "underlineDescription": "Unterstreichung umschalten",
+          "strikethrough": "Durchgestrichen",
+          "strikethroughDescription": "Durchstreichung umschalten",
+          "subscript": "Tiefgestellt",
+          "subscriptDescription": "Tiefstellung umschalten",
+          "superscript": "Hochgestellt",
+          "superscriptDescription": "Hochstellung umschalten",
+          "alignLeft": "Linksbündig",
+          "alignLeftDescription": "Absatz links ausrichten",
+          "alignCenter": "Zentriert",
+          "alignCenterDescription": "Absatz zentrieren",
+          "alignRight": "Rechtsbündig",
+          "alignRightDescription": "Absatz rechts ausrichten",
+          "justify": "Blocksatz",
+          "justifyDescription": "Absatz als Blocksatz ausrichten",
+          "increaseIndent": "Einzug vergrößern",
+          "increaseIndentDescription": "Absatzeinzug vergrößern",
+          "decreaseIndent": "Einzug verkleinern",
+          "decreaseIndentDescription": "Absatzeinzug verkleinern",
+          "selectAll": "Alles markieren",
+          "selectAllDescription": "Gesamten Inhalt markieren",
+          "selectWord": "Wort markieren",
+          "selectWordDescription": "Aktuelles Wort markieren",
+          "selectParagraph": "Absatz markieren",
+          "selectParagraphDescription": "Aktuellen Absatz markieren",
+          "extendSelectionByWord": "Markierung wortweise erweitern",
+          "extendSelectionByWordDescription": "Markierung zum nächsten/vorherigen Wort erweitern",
+          "extendSelectionToLineEdge": "Markierung bis Zeilenende erweitern",
+          "extendSelectionToLineEdgeDescription": "Markierung bis Zeilenanfang/-ende erweitern",
+          "moveByWord": "Wortweise bewegen",
+          "moveByWordDescription": "Cursor zum nächsten/vorherigen Wort bewegen",
+          "moveToLineStart": "Zum Zeilenanfang",
+          "moveToLineStartDescription": "Cursor zum Zeilenanfang bewegen",
+          "moveToLineEnd": "Zum Zeilenende",
+          "moveToLineEndDescription": "Cursor zum Zeilenende bewegen",
+          "moveToDocumentStart": "Zum Dokumentanfang",
+          "moveToDocumentStartDescription": "Cursor zum Dokumentanfang bewegen",
+          "moveToDocumentEnd": "Zum Dokumentende",
+          "moveToDocumentEndDescription": "Cursor zum Dokumentende bewegen",
+          "pageUp": "Seite nach oben",
+          "pageUpDescription": "Eine Seite nach oben scrollen",
+          "pageDown": "Seite nach unten",
+          "pageDownDescription": "Eine Seite nach unten scrollen",
+          "zoomIn": "Vergrößern",
+          "zoomInDescription": "Zoomstufe erhöhen",
+          "zoomOut": "Verkleinern",
+          "zoomOutDescription": "Zoomstufe verringern",
+          "resetZoom": "Zoom zurücksetzen",
+          "resetZoomDescription": "Zoom auf 100 % zurücksetzen",
+          "keyboardShortcuts": "Tastenkombinationen",
+          "keyboardShortcutsDescription": "Dieses Hilfedialogfeld anzeigen",
+          "insertLink": "Link einfügen",
+          "insertLinkDescription": "Hyperlink einfügen oder bearbeiten"
+        },
+        "noResults": "Keine Tastenkombinationen für \"{query}\" gefunden",
+        "pressEscToClose": "{key} drücken, um zu schließen",
+        "or": "oder"
+      },
+      "watermark": {
+        "applyButton": "Übernehmen",
+        "cancelButton": "Abbrechen",
+        "colorLabel": "Farbe",
+        "diagonal": "Diagonal",
+        "fontLabel": "Schriftart",
+        "horizontal": "Horizontal",
+        "layoutLabel": "Layout",
+        "noWatermark": "Kein Wasserzeichen",
+        "picture": "Bildwasserzeichen",
+        "presetLabel": "Vorlage",
+        "scale": "Skalierung",
+        "selectPicture": "Bild auswählen …",
+        "semitransparent": "Halbtransparent",
+        "sizeAuto": "Automatisch",
+        "sizeLabel": "Größe",
+        "text": "Textwasserzeichen",
+        "textLabel": "Text",
+        "title": "Wasserzeichen",
+        "washout": "Auswaschen"
+      }
+    },
+    "comments": {
+      "resolved": "Aufgelöst",
+      "resolve": "Auflösen",
+      "reopen": "Erneut öffnen",
+      "moreOptions": "Weitere Optionen",
+      "unknown": "Unbekannt",
+      "addComment": "Kommentar hinzufügen...",
+      "replyPlaceholder": "Antworten oder andere mit @ erwähnen",
+      "replyCount": "{count, plural, one {# Antwort} other {# Antworten}}"
+    },
+    "trackedChanges": {
+      "unknown": "Unbekannt",
+      "replaced": "Ersetzt",
+      "with": "durch",
+      "added": "Hinzugefügt",
+      "deleted": "Gelöscht"
+    },
+    "contextMenu": {
+      "ariaLabel": "KI-Aktionsmenü",
+      "textMenuAriaLabel": "Textbearbeitungsmenü",
+      "customPromptPlaceholder": "Eigene Eingabeaufforderung eingeben...",
+      "cut": "Ausschneiden",
+      "cutShortcut": "Strg+X",
+      "copy": "Kopieren",
+      "copyShortcut": "Strg+C",
+      "paste": "Einfügen",
+      "pasteShortcut": "Strg+V",
+      "pastePlainText": "Als unformatierten Text einfügen",
+      "pastePlainTextShortcut": "Strg+Umschalt+V",
+      "delete": "Löschen",
+      "deleteShortcut": "Entf",
+      "selectAll": "Alles markieren",
+      "selectAllShortcut": "Strg+A",
+      "selected": "Markiert:",
+      "aiActions": {
+        "askAi": "KI fragen",
+        "rewrite": "Umschreiben",
+        "expand": "Erweitern",
+        "summarize": "Zusammenfassen",
+        "translate": "Übersetzen",
+        "explain": "Erklären",
+        "fixGrammar": "Grammatik korrigieren",
+        "makeFormal": "Formeller formulieren",
+        "makeCasual": "Lockerer formulieren",
+        "custom": "Benutzerdefiniert"
+      }
+    },
+    "documentOutline": {
+      "ariaLabel": "Dokumentgliederung",
+      "closeAriaLabel": "Gliederung schließen",
+      "closeTitle": "Gliederung schließen",
+      "title": "Gliederung",
+      "noHeadings": "Keine Überschriften gefunden. Fügen Sie Ihrem Dokument Überschriften hinzu, um sie hier anzuzeigen."
+    },
+    "sidebar": {
+      "ariaLabel": "Anmerkungsleiste"
+    },
+    "titleBar": {
+      "untitled": "Unbenannt",
+      "documentNameAriaLabel": "Dokumentname",
+      "menuBarAriaLabel": "Menüleiste"
+    },
+    "errors": {
+      "loadingDocument": "Dokument wird geladen...",
+      "noDocumentLoaded": "Kein Dokument geladen",
+      "failedToLoad": "Dokument konnte nicht geladen werden",
+      "unableToParse": "Dokument konnte nicht verarbeitet werden",
+      "somethingWentWrong": "Ein Fehler ist aufgetreten",
+      "errorDescription": "Beim Rendern dieser Komponente ist ein Fehler aufgetreten. Versuchen Sie es erneut oder wenden Sie sich an den Support, wenn das Problem weiterhin besteht.",
+      "errorLabel": "Fehler:",
+      "componentStack": "Komponentenstapel:",
+      "tryAgain": "Erneut versuchen",
+      "showDetails": "Details anzeigen",
+      "hideDetails": "Details ausblenden",
+      "unsavedChanges": "Sie haben nicht gespeicherte Änderungen. Möchten Sie die Seite wirklich verlassen?"
+    },
+    "table": {
+      "insertRowAbove": "Zeile oberhalb einfügen",
+      "insertRowBelow": "Zeile unterhalb einfügen",
+      "insertColumnLeft": "Spalte links einfügen",
+      "insertColumnRight": "Spalte rechts einfügen",
+      "deleteRow": "Zeile löschen",
+      "deleteColumn": "Spalte löschen",
+      "deleteTable": "Tabelle löschen",
+      "mergeCells": "Zellen zusammenführen",
+      "splitCell": "Zelle teilen",
+      "editingTools": "Tabellenbearbeitungswerkzeuge",
+      "label": "Tabelle:",
+      "cellFillColor": "Zellenfüllfarbe",
+      "borderColor": "Rahmenfarbe",
+      "borderWidth": "Rahmenbreite",
+      "unknownAction": "Unbekannte Aktion",
+      "borders": {
+        "all": "Alle Rahmenlinien",
+        "outside": "Äußere Rahmenlinien",
+        "inside": "Innere Rahmenlinien",
+        "none": "Kein Rahmen",
+        "remove": "Rahmen entfernen",
+        "top": "Oberer Rahmen",
+        "bottom": "Unterer Rahmen",
+        "left": "Linker Rahmen",
+        "right": "Rechter Rahmen",
+        "styleAriaLabel": "Rahmenart",
+        "tooltip": "Rahmen"
+      },
+      "moreOptions": "Weitere Tabellenoptionen",
+      "styles": {
+        "title": "Tabellenformatvorlagen",
+        "label": "Formatvorlagen",
+        "normalTable": "Normale Tabelle",
+        "tableGrid": "Tabellenraster",
+        "gridTableLight": "Rastertabelle hell",
+        "plainTable1": "Einfache Tabelle 1",
+        "plainTable2": "Einfache Tabelle 2",
+        "plainTable3": "Einfache Tabelle 3",
+        "plainTable4": "Einfache Tabelle 4",
+        "gridTable1Light": "Rastertabelle 1 hell",
+        "gridTable4Accent1": "Rastertabelle 4 Akzent 1",
+        "gridTable5Dark": "Rastertabelle 5 dunkel",
+        "listTable3Accent2": "Listentabelle 3 Akzent 2",
+        "listTable4Accent3": "Listentabelle 4 Akzent 3",
+        "gridTable4Accent5": "Rastertabelle 4 Akzent 5",
+        "gridTable4Accent6": "Rastertabelle 4 Akzent 6"
+      },
+      "selectTable": "Gesamte Tabelle auswählen"
+    },
+    "tableAdvanced": {
+      "verticalAlignment": "Vertikale Ausrichtung",
+      "top": "Oben",
+      "middle": "Mitte",
+      "bottom": "Unten",
+      "cellMargins": "Zellenränder",
+      "textDirection": "Textrichtung",
+      "textDirections": {
+        "horizontal": "Horizontal (LR)",
+        "verticalRL": "Vertikal (oben nach unten, RL)",
+        "verticalLR": "Vertikal (unten nach oben, LR)"
+      },
+      "toggleNoWrap": "Textumbruch umschalten",
+      "rowHeight": "Zeilenhöhe",
+      "heightRules": {
+        "auto": "Automatisch",
+        "atLeast": "Mindestens",
+        "exact": "Genau"
+      },
+      "rule": "Regel",
+      "height": "Höhe",
+      "toggleHeaderRow": "Überschriftenzeile umschalten",
+      "distributeColumns": "Spalten gleichmäßig verteilen",
+      "autoFit": "An Inhalt anpassen",
+      "tableProperties": "Tabelleneigenschaften...",
+      "tableAlignment": "Tabellenausrichtung",
+      "alignTableLeft": "Tabelle links ausrichten",
+      "alignTableCenter": "Tabelle zentrieren",
+      "alignTableRight": "Tabelle rechts ausrichten",
+      "tableOptionsMenu": "Tabellenoptionsmenü",
+      "tableOptions": "Tabellenoptionen"
+    },
+    "imageTransform": {
+      "tooltip": "Transformieren",
+      "rotateClockwise": "Im Uhrzeigersinn drehen",
+      "rotateCounterClockwise": "Gegen den Uhrzeigersinn drehen",
+      "flipHorizontal": "Horizontal spiegeln",
+      "flipVertical": "Vertikal spiegeln"
+    },
+    "imageWrap": {
+      "inline": "Mit Text in Zeile",
+      "floatLeft": "Links umfließen (Text rechts)",
+      "floatRight": "Rechts umfließen (Text links)",
+      "topAndBottom": "Oben und unten",
+      "behindText": "Hinter den Text",
+      "inFrontOfText": "Vor den Text",
+      "tooltipPrefix": "Textumbruch: {label}",
+      "menu": {
+        "ariaLabel": "Bildlayoutoptionen",
+        "behindText": "Hinter den Text",
+        "inFrontOfText": "Vor den Text",
+        "inLineWithText": "Mit Text in Zeile",
+        "squareLeft": "Quadrat links",
+        "squareRight": "Quadrat rechts",
+        "imageProperties": "Bildeigenschaften…"
+      },
+      "menuDesc": {
+        "behindText": "Bild liegt hinter dem Text",
+        "inFrontOfText": "Bild liegt über dem Text",
+        "inLineWithText": "Bild fließt als Glyphe in der Zeile",
+        "squareLeft": "Bild links, Text fließt rechts",
+        "squareRight": "Bild rechts, Text fließt links"
+      }
+    },
+    "responsePreview": {
+      "loading": "{action}...",
+      "result": "Ergebnis — {action}",
+      "closeEsc": "Schließen (Esc)",
+      "editPrompt": "Ergebnis vor dem Übernehmen bearbeiten:",
+      "changes": "Änderungen:",
+      "original": "Original:",
+      "new": "Neu:",
+      "cancelEdit": "Bearbeitung abbrechen"
+    },
+    "commentMarkers": {
+      "resolvedComment": "Aufgelöster Kommentar",
+      "comment": "Kommentar"
+    },
+    "editor": {
+      "toggleCommentsSidebar": "Kommentarleiste umschalten",
+      "showDocumentOutline": "Dokumentgliederung anzeigen",
+      "editing": "Bearbeiten",
+      "editingDescription": "Dokument direkt bearbeiten",
+      "suggesting": "Vorschlagen",
+      "suggestingDescription": "Änderungen werden zu Vorschlägen",
+      "viewing": "Anzeigen",
+      "viewingDescription": "Schreibgeschützt, keine Bearbeitung",
+      "failedToParse": "Dokument konnte nicht verarbeitet werden",
+      "linkRemoved": "Link entfernt",
+      "linkCopied": "Link in Zwischenablage kopiert",
+      "failedToSave": "Dokument konnte nicht gespeichert werden"
+    },
+    "hyperlinkPopup": {
+      "displayTextPlaceholder": "Anzuzeigender Text",
+      "copyLink": "Link kopieren",
+      "editLink": "Link bearbeiten",
+      "removeLink": "Link entfernen"
+    },
+    "headerFooter": {
+      "header": "Kopfzeile",
+      "footer": "Fußzeile",
+      "options": "Optionen",
+      "insertPageNumber": "Aktuelle Seitenzahl einfügen",
+      "insertTotalPages": "Gesamtseitenzahl einfügen",
+      "remove": "{label} entfernen",
+      "closeEditing": "{label}-Bearbeitung schließen"
+    },
+    "image": {
+      "placeholder": "Bildplatzhalter",
+      "placeholderText": "[Grafik]",
+      "editableAriaLabel": "Bearbeitbares Bild"
+    },
+    "ruler": {
+      "horizontal": "Horizontales Lineal",
+      "vertical": "Vertikales Lineal",
+      "firstLineIndent": "Erstzeileneinzug",
+      "leftIndent": "Linker Einzug",
+      "rightIndent": "Rechter Einzug",
+      "topMargin": "Oberer Seitenrand",
+      "bottomMargin": "Unterer Seitenrand"
+    },
+    "print": {
+      "label": "Drucken",
+      "allPages": "Alle ({totalPages} Seiten)",
+      "singlePage": "Seite {start}",
+      "pageRange": "Seiten {start}–{end}"
+    },
+    "unsaved": {
+      "unsaved": "Nicht gespeichert",
+      "saved": "Gespeichert",
+      "unsavedTitle": "Dokument hat nicht gespeicherte Änderungen",
+      "savedTitle": "Alle Änderungen gespeichert",
+      "unsavedAriaLabel": "Nicht gespeicherte Änderungen",
+      "savedAriaLabel": "Alle Änderungen gespeichert"
+    },
+    "loading": {
+      "label": "Wird geladen"
+    },
+    "agentPanel": {
+      "close": "Bereich schließen",
+      "composerPlaceholder": "Den Assistenten fragen…",
+      "defaultTitle": "Assistent",
+      "resizeHandle": "Assistentenbereich skalieren",
+      "send": "Senden",
+      "thinking": "Assistent denkt nach",
+      "timeline": {
+        "earlier": "+ {count, plural, one {# vorheriger Schritt} other {# vorherige Schritte}}",
+        "summary": "{count, plural, one {# Schritt} other {# Schritte}}",
+        "working": "Arbeite… {count, plural, one {# Schritt} other {# Schritte}}"
+      },
+      "toggle": "Assistent öffnen"
+    },
+    "viewer": {
+      "pageIndicator": "{current} von {total}"
+    },
+    "imageOverlay": {
+      "deleteImage": "Bild löschen",
+      "imageProperties": "Bildeigenschaften",
+      "rotate": "Drehen",
+      "replaceImage": "Bild ersetzen…"
+    },
+    "revisions": {
+      "paragraphMarkInserted": "Absatzumbruch eingefügt",
+      "paragraphMarkDeleted": "Absatzumbruch gelöscht",
+      "paragraphPropertiesChanged": "Absatzeigenschaften geändert",
+      "rowInserted": "Zeile eingefügt",
+      "rowDeleted": "Zeile gelöscht",
+      "rowPropertiesChanged": "Zeileneigenschaften geändert",
+      "cellInserted": "Zelle eingefügt",
+      "cellDeleted": "Zelle gelöscht",
+      "cellMerged": "Zellen verbunden",
+      "cellPropertiesChanged": "Zelleneigenschaften geändert",
+      "tablePropertiesChanged": "Tabelleneigenschaften geändert",
+      "tableInserted": "Tabelle eingefügt",
+      "tableDeleted": "Tabelle gelöscht"
+    }
+  },
+  "spreadsheet": {
+    "toolbar": {
+      "undo": "Rückgängig machen",
+      "redo": "Wiederherstellen",
+      "paintformat": "Format kopieren/einfügen",
+      "clearformat": "Format löschen",
+      "format": "Format",
+      "fontName": "Schriftart",
+      "fontSize": "Schriftgrad",
+      "fontBold": "Fett",
+      "fontItalic": "Kursiv",
+      "underline": "Betonen",
+      "strike": "Streichen",
+      "color": "Text Farbe",
+      "bgcolor": "Füllung Farbe",
+      "border": "Umrandung",
+      "merge": "Zellen verbinden",
+      "align": "Waagrechte Ausrichtung",
+      "valign": "Vertikale uitlijning",
+      "textwrap": "Textumbruch",
+      "freeze": "Zelle sperren",
+      "find": "Suchen",
+      "editInVscode": "In VS Code bearbeiten",
+      "save": "Speichern",
+      "saveAs": "Speichern unter",
+      "formula": "Funktionen",
+      "more": "Mehr",
+      "print": "Drucken"
+    },
+    "bottombar": {
+      "firstSheet": "Zum ersten Blatt scrollen",
+      "prevSheet": "Nach links scrollen",
+      "nextSheet": "Nach rechts scrollen",
+      "lastSheet": "Zum letzten Blatt scrollen",
+      "moreSheets": "Alle Blätter",
+      "addSheet": "Blatt hinzufügen",
+      "defaultSheetName": "Tabelle{number}",
+      "defaultSheetBase": "Tabelle"
+    },
+    "align": {
+      "left": "Links ausrichten",
+      "center": "Zentrieren",
+      "right": "Rechts ausrichten"
+    },
+    "valign": {
+      "top": "Oben ausrichten",
+      "middle": "Vertikal zentrieren",
+      "bottom": "Unten ausrichten"
+    },
+    "contextmenu": {
+      "copy": "Kopieren",
+      "cut": "Ausschneiden",
+      "paste": "Einfügen",
+      "pasteValue": "Nur Werte einfügen",
+      "pasteFormat": "Nur Format einfügen",
+      "insertRow": "Zeile einfügen",
+      "insertColumn": "Spalte einfügen",
+      "deleteRow": "Zeile löschen",
+      "deleteColumn": "Spalte löschen",
+      "deleteCell": "Zelle löschen",
+      "deleteCellText": "Inhalt löschen",
+      "deleteSheet": "Löschen",
+      "renameSheet": "Umbenennen",
+      "duplicateSheet": "Duplizieren",
+      "hide": "Ausblenden",
+      "validation": "Datenüberprüfung",
+      "celleditable": "Bearbeiten erlauben",
+      "cellnoneditable": "Bearbeiten sperren"
+    },
+    "format": {
+      "normal": "Regulär",
+      "text": "Text",
+      "number": "Nummer",
+      "numberPlain": "Nummer (einfach)",
+      "percent": "Prozent",
+      "rmb": "RMB",
+      "usd": "USD",
+      "date": "Datum",
+      "time": "Termin",
+      "datetime": "Datum Termin",
+      "duration": "Dauer"
+    },
+    "formula": {
+      "sum": "Summe",
+      "average": "Durchschnittliche",
+      "max": "Max",
+      "min": "Min",
+      "concat": "Verketten",
+      "divide": "Dividieren",
+      "product": "Produkt",
+      "subtract": "Subtrahieren",
+      "_if": "Wenn",
+      "and": "Und",
+      "or": "Oder"
+    },
+    "viewer": {
+      "protectedCell": "Geschützte Zellen unterstützen diese Funktion nicht",
+      "readonlyBanner": "Schreibgeschützt — durchsuchen und suchen; zum Speichern „Speichern unter“ verwenden",
+      "formatCannotPreserveTitle": "Formatierung kann nicht beibehalten werden",
+      "formatCannotPreserveContent": "{format} kann Stile, Zusammenführungen, Formeln usw. nicht beibehalten. Als xlsx speichern?",
+      "onlyFirstSheetContent": "{format} speichert nur das erste Blatt: die anderen Blätter gehen verloren. Als xlsx speichern?",
+      "saveAsXlsx": "Als xlsx speichern",
+      "saveAsOriginal": "Im Originalformat speichern",
+      "chooseExportFormat": "Exportformat wählen",
+      "exportXlsxLabel": "Excel-Arbeitsmappe (.xlsx)",
+      "exportXlsxDesc": "Unterstützt Stile, Formeln, zusammengeführte Zellen",
+      "exportCsvLabel": "CSV (.csv)",
+      "exportCsvDesc": "Nur Klartext, erstes Arbeitsblatt",
+      "exportXlsLabel": "Excel 97-2003 (.xls)",
+      "exportXlsDesc": "Legacy-Excel-Format",
+      "exportOdsLabel": "OpenDocument (.ods)",
+      "exportOdsDesc": "Kompatibel mit LibreOffice / WPS",
+      "autoFitColumns": "Spaltenbreite automatisch anpassen",
+      "autoFitDone": "Spaltenbreiten angepasst"
+    },
+    "findReplace": {
+      "title": "Suchen",
+      "titleReplace": "Suchen und Ersetzen",
+      "placeholder": "Suchen…",
+      "replacePlaceholder": "Ersetzen durch…",
+      "replace": "Ersetzen",
+      "replaceAll": "Alle",
+      "notFound": "Nicht gefunden",
+      "replacedCount": "{count} ersetzt",
+      "matchLocation": "Blatt {sheet} · {column}{row}",
+      "previous": "Vorherige (Umschalt+Eingabe)",
+      "next": "Nächste (Eingabe)",
+      "wholeCell": "Ganze Zelle",
+      "allSheets": "Alle Blätter",
+      "close": "Schließen"
+    },
+    "formulaBar": {
+      "goToCell": "Gehe zu Zelle",
+      "cellAddress": "Zelladresse",
+      "cellContent": "Zellinhalt"
+    },
+    "message": {
+      "tip": "Hinweis"
+    },
+    "print": {
+      "settings": "Druckeinstellungen",
+      "size": "Papierformat",
+      "orientation": "Seitenausrichtung",
+      "orientations": [
+        "Querformat",
+        "Hochformat"
+      ]
+    },
+    "validation": {
+      "required": "der Wert ist erforderlich",
+      "notMatch": "der Wert entspricht nicht der Überprüfungsregel",
+      "between": "der Wert liegt zwischen {min} und {max}",
+      "notBetween": "der Wert liegt nicht zwischen {min} und {max}",
+      "notIn": "der Wert ist nicht in der Liste",
+      "equal": "der Wert ist gleich {value}",
+      "notEqual": "der Wert ist ungleich {value}",
+      "lessThan": "der Wert ist kleiner als {value}",
+      "lessThanEqual": "der Wert ist kleiner oder gleich {value}",
+      "greaterThan": "der Wert ist größer als {value}",
+      "greaterThanEqual": "der Wert ist größer oder gleich {value}"
+    },
+    "error": {
+      "pasteForMergedCell": "Für verbundene Zellen nicht möglich"
+    },
+    "calendar": {
+      "weeks": [
+        "So",
+        "Mo",
+        "Di",
+        "Mi",
+        "Do",
+        "Fr",
+        "Sa"
+      ],
+      "months": [
+        "Januar",
+        "Februar",
+        "März",
+        "April",
+        "Mai",
+        "Juni",
+        "Juli",
+        "August",
+        "September",
+        "Oktober",
+        "November",
+        "Dezember"
+      ]
+    },
+    "button": {
+      "next": "Weiter",
+      "cancel": "Abbrechen",
+      "remove": "Entfernen",
+      "save": "Speichern",
+      "saveAs": "Speichern unter"
+    },
+    "sort": {
+      "desc": "Sortieren Z -> A",
+      "asc": "Sortieren A -> Z"
+    },
+    "filter": {
+      "empty": "leer",
+      "all": "Alle"
+    },
+    "hyperlink": {
+      "address": "Adresse",
+      "tooltip": "QuickInfo"
+    },
+    "dataValidation": {
+      "mode": "Modus",
+      "range": "Zellbereich",
+      "criteria": "Kriterien",
+      "modeType": {
+        "cell": "Zelle",
+        "column": "Spalte",
+        "row": "Zeile"
+      },
+      "type": {
+        "list": "Liste",
+        "number": "Zahl",
+        "date": "Datum",
+        "phone": "Telefon",
+        "email": "E-Mail"
+      },
+      "operator": {
+        "be": "Zwischen",
+        "nbe": "Nicht zwischen",
+        "lt": "Kleiner als",
+        "lte": "Kleiner oder gleich",
+        "gt": "Größer als",
+        "gte": "Größer oder gleich",
+        "eq": "Gleich",
+        "neq": "Ungleich"
+      }
+    }
+  },
+  "markdown": {
+    "editInVscode": "In VS Code bearbeiten <{shortcut}>",
+    "save": "Speichern",
+    "paste": "Einfügen",
+    "exportPdf": "Als PDF exportieren",
+    "exportDocx": "Als Docx exportieren",
+    "exportHtml": "Als HTML exportieren",
+    "plaintext": "Nur-Text",
+    "empty": "Leer",
+    "current": "aktuell",
+    "languageSearch": "Sprache suchen",
+    "copyAsImage": "Als Bild kopieren",
+    "openInPlantuml": "In PlantUML öffnen",
+    "toggleLineWrap": "Zeilenumbruch umschalten",
+    "mermaidRenderError": "Mermaid-Renderfehler",
+    "plantumlRenderError": "PlantUML-Renderfehler",
+    "expandCode": "Aufklappen",
+    "collapseCode": "Zuklappen",
+    "alignCenter": "Zentriert",
+    "alignLeft": "Links",
+    "alignRight": "Rechts",
+    "alternateText": "Alternativtext",
+    "bold": "Fett",
+    "check": "Aufgabenliste",
+    "close": "Schließen",
+    "imageOpen": "Öffnen",
+    "imagePreview": "Bildvorschau",
+    "code": "Codeblock",
+    "code-theme": "CodeMirror-Design",
+    "comment": "Kommentar",
+    "copyFailed": "Dieses Diagramm kann nicht kopiert werden",
+    "copied": "Kopiert",
+    "copy": "Kopieren",
+    "delete-column": "Spalte löschen",
+    "delete-row": "Zeile löschen",
+    "down": "Nach unten",
+    "edit": "Bearbeiten",
+    "find": "Suchen",
+    "find-placeholder": "Im Dokument suchen…",
+    "find-no-result": "Keine Ergebnisse",
+    "find-match-case": "Groß-/Kleinschreibung beachten",
+    "find-whole-word": "Ganzes Wort",
+    "find-regex": "Regulären Ausdruck verwenden",
+    "find-toggle-replace": "Ersetzen ein-/ausblenden",
+    "find-previous": "Vorheriges <Umschalt+Eingabe>",
+    "find-next": "Nächstes <Eingabe>",
+    "find-replace": "Ersetzen",
+    "find-replace-all": "Alle ersetzen",
+    "find-invalid-regex": "Ungültiger regulärer Ausdruck",
+    "replace-placeholder": "Ersetzen…",
+    "edit-mode": "Bearbeitungsmodus wechseln",
+    "edit-mode-wysiwyg-desc": "Formatierten Inhalt direkt bearbeiten",
+    "edit-mode-ir-desc": "Markdown mit Live-Vorschau",
+    "fileTypeError": "Dateityp nicht zulässig",
+    "footnoteRef": "Fußnotenverweis",
+    "headings": "Überschriften",
+    "heading1": "Überschrift 1",
+    "heading2": "Überschrift 2",
+    "heading3": "Überschrift 3",
+    "heading4": "Überschrift 4",
+    "heading5": "Überschrift 5",
+    "heading6": "Überschrift 6",
+    "imageURL": "Bild-URL",
+    "indent": "Einzug vergrößern",
+    "inline-code": "Inline-Code",
+    "insert-after": "Zeile danach einfügen",
+    "insert-before": "Zeile davor einfügen",
+    "insertColumnLeft": "1 links einfügen",
+    "insertColumnRight": "1 rechts einfügen",
+    "insertRowAbove": "1 oberhalb einfügen",
+    "insertRowBelow": "1 unterhalb einfügen",
+    "instantRendering": "Sofortiges Rendern",
+    "italic": "Kursiv",
+    "language": "Sprache",
+    "line": "Linie",
+    "linkCopied": "Link kopiert",
+    "linkRefCopied": "Text kopiert",
+    "linkRef": "Linkverweis",
+    "list": "Liste",
+    "more": "Mehr",
+    "nameEmpty": "Name ist leer",
+    "ordered-list": "Nummerierte Liste",
+    "outdent": "Einzug verkleinern",
+    "outline": "Gliederung",
+    "over": "über",
+    "quote": "Zitat",
+    "redo": "Wiederholen",
+    "remove": "Entfernen",
+    "row": "Zeile",
+    "spin": "Drehen",
+    "strike": "Durchgestrichen",
+    "table": "Tabelle",
+    "textIsNotEmpty": "Text (nicht leer)",
+    "title": "Titel",
+    "undo": "Rückgängig",
+    "up": "Nach oben",
+    "update": "Aktualisieren",
+    "upload": "Bild",
+    "uploadError": "Fehler beim Hochladen",
+    "uploading": "wird hochgeladen...",
+    "aiSave": "Speichern",
+    "aiCancel": "Abbrechen",
+    "aiDelete": "Löschen"
+  },
+  "pdf": {
+    "switchToLight": "PDF in hellen Modus schalten",
+    "switchToDark": "PDF in dunklen Modus schalten",
+    "document": {
+      "properties": {
+        "date_string": "{date}, {time}",
+        "@title": "Dokumenteigenschaften",
+        "label": "Dokumenteigenschaften…",
+        "file": {
+          "name": "Dateiname:",
+          "size": "Dateigröße:"
+        },
+        "kb": "{size_kb} KB ({size_b} Bytes)",
+        "mb": "{size_mb} MB ({size_b} Bytes)",
+        "title": "Titel:",
+        "author": "Autor:",
+        "subject": "Thema:",
+        "keywords": "Stichwörter:",
+        "creation_date": "Erstelldatum:",
+        "modification_date": "Bearbeitungsdatum:",
+        "creator": "Anwendung:",
+        "producer": "PDF erstellt mit:",
+        "version": "PDF-Version:",
+        "page": {
+          "count": "Seitenzahl:",
+          "size": {
+            "@text": "Seitengröße:",
+            "unit": {
+              "inches": "Zoll"
+            },
+            "orientation": {
+              "portrait": "Hochformat",
+              "landscape": "Querformat"
+            },
+            "name": {
+              "letter": "Letter",
+              "legal": "Legal"
+            }
+          }
+        },
+        "linearized": {
+          "@text": "Schnelle Webanzeige:",
+          "yes": "Ja",
+          "no": "Nein"
+        },
+        "close": "Schließen"
+      },
+      "outline": {
+        "@title": "Dokumentstruktur anzeigen (Doppelklicken, um alle Einträge aus- bzw. einzuklappen)",
+        "label": "Dokumentstruktur"
+      }
+    },
+    "layers": {
+      "@title": "Ebenen anzeigen (Doppelklick setzt alle Ebenen auf den Standardzustand zurück)",
+      "label": "Ebenen"
+    },
+    "previous": {
+      "@title": "Vorherige Seite",
+      "label": "Zurück"
+    },
+    "next": {
+      "@title": "Nächste Seite",
+      "label": "Vor"
+    },
+    "page": {
+      "@title": "Seite",
+      "of_pages": "({pageNumber} von {pagesCount})",
+      "rotate": {
+        "cw": {
+          "@title": "Im Uhrzeigersinn drehen",
+          "@label": "Im Uhrzeigersinn drehen",
+          "label": "Im Uhrzeigersinn drehen"
+        },
+        "ccw": {
+          "@title": "Gegen Uhrzeigersinn drehen",
+          "@label": "Gegen Uhrzeigersinn drehen",
+          "label": "Gegen Uhrzeigersinn drehen"
+        }
+      },
+      "canvas": "Seite {page}",
+      "scale": {
+        "width": "Seitenbreite",
+        "fit": "Seitengröße"
+      }
+    },
+    "of_pages": "von {pagesCount}",
+    "zoom": {
+      "out": {
+        "@title": "Verkleinern",
+        "label": "Verkleinern"
+      },
+      "in": {
+        "@title": "Vergrößern",
+        "label": "Vergrößern"
+      },
+      "page_fit": {
+        "@title": "Seitengröße",
+        "label": "Seitengröße"
+      },
+      "page_width": {
+        "@title": "Seitenbreite",
+        "label": "Seitenbreite"
+      }
+    },
+    "presentation_mode": {
+      "@title": "In Präsentationsmodus wechseln",
+      "label": "Präsentationsmodus"
+    },
+    "open_file": {
+      "@title": "Datei öffnen",
+      "label": "Öffnen"
+    },
+    "print": {
+      "@title": "Drucken",
+      "label": "Drucken",
+      "progress": {
+        "message": "Dokument wird für Drucken vorbereitet…",
+        "close": "Abbrechen"
+      }
+    },
+    "download": {
+      "@title": "Herunterladen",
+      "label": "Herunterladen"
+    },
+    "bookmark": {
+      "@title": "Aktuelle Ansicht (zum Kopieren oder Öffnen in einem neuen Fenster)",
+      "label": "Aktuelle Ansicht"
+    },
+    "tools": {
+      "@title": "Werkzeuge",
+      "label": "Werkzeuge"
+    },
+    "first_page": {
+      "@title": "Erste Seite anzeigen",
+      "@label": "Erste Seite anzeigen",
+      "label": "Erste Seite anzeigen"
+    },
+    "last_page": {
+      "@title": "Letzte Seite anzeigen",
+      "@label": "Letzte Seite anzeigen",
+      "label": "Letzte Seite anzeigen"
+    },
+    "cursor": {
+      "text_select_tool": {
+        "@title": "Textauswahl-Werkzeug aktivieren",
+        "label": "Textauswahl-Werkzeug"
+      },
+      "hand_tool": {
+        "@title": "Hand-Werkzeug aktivieren",
+        "label": "Hand-Werkzeug"
+      }
+    },
+    "scroll": {
+      "vertical": {
+        "@title": "Seiten übereinander anordnen",
+        "label": "Vertikale Bildlaufleiste"
+      },
+      "horizontal": {
+        "@title": "Seiten nebeneinander anordnen",
+        "label": "Horizontale Bildlaufleiste"
+      },
+      "wrapped": {
+        "@title": "Seiten neben- und übereinander anordnen, abhängig vom Platz",
+        "label": "Kombinierte Bildlaufleiste"
+      }
+    },
+    "spread": {
+      "none": {
+        "@title": "Seiten nicht nebeneinander anzeigen",
+        "label": "Einzelne Seiten"
+      },
+      "odd": {
+        "@title": "Jeweils eine ungerade und eine gerade Seite nebeneinander anzeigen",
+        "label": "Ungerade + gerade Seite"
+      },
+      "even": {
+        "@title": "Jeweils eine gerade und eine ungerade Seite nebeneinander anzeigen",
+        "label": "Gerade + ungerade Seite"
+      }
+    },
+    "toggle_sidebar": {
+      "@title": "Sidebar umschalten",
+      "label": "Sidebar umschalten",
+      "notification": {
+        "@title": "Sidebar umschalten (Dokument enthält Dokumentstruktur/Anhänge/Ebenen)"
+      }
+    },
+    "attachments": {
+      "@title": "Anhänge anzeigen",
+      "label": "Anhänge"
+    },
+    "thumbs": {
+      "@title": "Miniaturansichten anzeigen",
+      "label": "Miniaturansichten"
+    },
+    "findbar": {
+      "@title": "Dokument durchsuchen",
+      "label": "Suchen"
+    },
+    "thumb_page": {
+      "title": "Seite {page}",
+      "canvas": "Miniaturansicht von Seite {page}"
+    },
+    "find": {
+      "input": {
+        "@title": "Suchen",
+        "@placeholder": "Im Dokument suchen…"
+      },
+      "previous": {
+        "@title": "Vorheriges Vorkommen des Suchbegriffs finden",
+        "label": "Zurück"
+      },
+      "next": {
+        "@title": "Nächstes Vorkommen des Suchbegriffs finden",
+        "label": "Weiter"
+      },
+      "highlight": "Alle hervorheben",
+      "match": {
+        "case_label": "Groß-/Kleinschreibung beachten",
+        "none": "0 Übereinstimmungen",
+        "count": {
+          "[one]": "{current} von {total} Übereinstimmung",
+          "[two]": "{current} von {total} Übereinstimmungen",
+          "[few]": "{current} von {total} Übereinstimmungen",
+          "[many]": "{current} von {total} Übereinstimmungen",
+          "[other]": "{current} von {total} Übereinstimmungen",
+          "limit": {
+            "[zero]": "Mehr als {limit} Übereinstimmungen",
+            "[one]": "Mehr als {limit} Übereinstimmung",
+            "[two]": "Mehr als {limit} Übereinstimmungen",
+            "[few]": "Mehr als {limit} Übereinstimmungen",
+            "[many]": "Mehr als {limit} Übereinstimmungen",
+            "[other]": "Mehr als {limit} Übereinstimmungen"
+          }
+        }
+      },
+      "entire_word_label": "Ganze Wörter",
+      "reached": {
+        "top": "Anfang des Dokuments erreicht, fahre am Ende fort",
+        "bottom": "Ende des Dokuments erreicht, fahre am Anfang fort"
+      },
+      "not_found": "Suchbegriff nicht gefunden"
+    },
+    "error": {
+      "more_info": "Mehr Informationen",
+      "less_info": "Weniger Informationen",
+      "close": "Schließen",
+      "message": "Nachricht: {message}",
+      "stack": "Aufrufliste: {stack}",
+      "file": "Datei: {file}",
+      "line": "Zeile: {line}"
+    },
+    "rendering_error": "Beim Darstellen der Seite trat ein Fehler auf.",
+    "loading_error": "Beim Laden der PDF-Datei trat ein Fehler auf.",
+    "invalid_file_error": "Ungültige oder beschädigte PDF-Datei",
+    "missing_file_error": "Fehlende PDF-Datei",
+    "unexpected_response_error": "Unerwartete Antwort des Servers",
+    "annotation_date_string": "{date}, {time}",
+    "text_annotation_type": {
+      "@alt": "[Anlage: {type}]"
+    },
+    "password": {
+      "label": "Geben Sie zum Öffnen der PDF-Datei deren Passwort ein.",
+      "invalid": "Falsches Passwort. Bitte versuchen Sie es erneut.",
+      "ok": "OK",
+      "cancel": "Abbrechen"
+    },
+    "printing_not": {
+      "supported": "Warnung: Die Drucken-Funktion wird durch diesen Browser nicht vollständig unterstützt.",
+      "ready": "Warnung: Die PDF-Datei ist nicht vollständig geladen, dies ist für das Drucken aber empfohlen."
+    },
+    "web_fonts_disabled": "Web-Schriftarten sind deaktiviert: Eingebettete PDF-Schriftarten konnten nicht geladen werden."
+  }
+}

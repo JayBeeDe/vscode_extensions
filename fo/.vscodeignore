@@ -1,0 +1,17 @@
+src/**
+test/**
+vditor/**
+vite/**
+scripts/**
+template/**
+node_modules/**
+index.html
+build.ts
+vite.config.ts
+eslint.config.mjs
+**/tsconfig.json
+**/*.map
+**/*.ts
+package-lock.json
+i18n/**
+images/**

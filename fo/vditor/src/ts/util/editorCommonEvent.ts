@@ -1,0 +1,363 @@
+import { Constants } from "../constants";
+import { isInsideCodeBlockChrome, isInsideCodeMirror, isPlantumlRenderImage } from "../codeBlock/codeMirrorManager";
+import { processHeading } from "../ir/process";
+import { processKeydown as irProcessKeydown } from "../ir/processKeydown";
+import { getMarkdown } from "../markdown/getMarkdown";
+import { previewImage } from "../preview/image";
+import { setEditMode } from "../toolbar/EditMode";
+import { hidePanel } from "../toolbar/setToolbar";
+import { afterRenderEvent, handlerHistoryEvent } from "../wysiwyg/afterRenderEvent";
+import { exitLinkPopoverToElement, hideLinkPopover } from "../wysiwyg/highlightToolbarWYSIWYG";
+import { processKeydown } from "../wysiwyg/processKeydown";
+import { removeHeading, setHeading } from "../wysiwyg/setHeading";
+import { getEventName, isCtrl } from "./compatibility";
+import { shouldBlockMacOptionSymbol } from "./macOptionSymbol";
+import { copyTextCutBlock, removeTextCutBlock, resolveTextCutBlock } from "./cutEmptySelection";
+import { execAfterRender, paste } from "./fixBrowserBehavior";
+import { insertPastedCode } from "./processCode";
+import { getSelectText } from "./getSelectText";
+import { hasClosestByAttribute, hasClosestByMatchTag } from "./hasClosest";
+import { matchHotKey } from "./hotKey";
+import { getEditorRange } from "./selection";
+import { saveCacheFocus } from "./cacheFocus";
+import { clearActiveHeadingMarker } from "./updateActiveHeadingMarker";
+import { handleAutoSymbolPair } from "./autoSymbol";
+import { handleVscodeShortcut } from "./vscodeShortcut";
+import { applyEditorSettings, getEditorFontSize, stepEditorFontSize } from "./editorSettings";
+import {hasTopHeadingBeforeCaret} from "./singleTitle";
+
+const markImageLoading = (img: HTMLImageElement) => {
+    if (img.complete && img.naturalWidth > 0) {
+        return;
+    }
+    img.setAttribute("data-loading", "");
+    const clear = () => img.removeAttribute("data-loading");
+    img.addEventListener("load", clear, { once: true });
+    img.addEventListener("error", clear, { once: true });
+};
+
+const WHEEL_FONT_SIZE_THROTTLE_MS = 250;
+
+/**
+ * Ctrl/Cmd + wheel changes the editor's font size. Its listener can cancel the wheel (not passive),
+ * so it is there only while Ctrl or Cmd is held: otherwise every scroll would wait for the page's
+ * scripts, and a long one (a large Mermaid diagram being drawn) would block scrolling until it ends,
+ * where a page without it scrolls on the browser's own thread.
+ */
+export const wheelZoomFontSizeEvent = (vditor: IVditor, editorElement: HTMLElement) => {
+    let lastAppliedAt = 0;
+
+    const onWheel = (event: WheelEvent) => {
+        if (!event.ctrlKey && !event.metaKey) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const now = Date.now();
+        if (now - lastAppliedAt < WHEEL_FONT_SIZE_THROTTLE_MS) {
+            return;
+        }
+
+        const direction = event.deltaY > 0 ? -1 : 1;
+        if (direction === 0) {
+            return;
+        }
+
+        const current = getEditorFontSize(vditor);
+        const next = stepEditorFontSize(vditor, direction);
+        if (next === current) {
+            return;
+        }
+
+        // shown at once; the extension saves it in foss-office.markdown.editorFontSize
+        vditor.options.editorSettings = { ...vditor.options.editorSettings, editorFontSize: next };
+        applyEditorSettings(vditor);
+        vditor.options.changeEditorFontSize?.(next);
+        lastAppliedAt = now;
+    };
+
+    let listening = false;
+    const listen = (on: boolean) => {
+        if (on === listening) {
+            return;
+        }
+        listening = on;
+        if (on) {
+            editorElement.addEventListener("wheel", onWheel, { passive: false });
+        } else {
+            editorElement.removeEventListener("wheel", onWheel);
+        }
+    };
+    // Ctrl/Cmd pressed or released (the page focused), or the pointer moving over the editor with it
+    const follow = (event: KeyboardEvent | PointerEvent) => listen(event.ctrlKey || event.metaKey);
+    window.addEventListener("keydown", follow, true);
+    window.addEventListener("keyup", follow, true);
+    editorElement.addEventListener("pointermove", follow, { passive: true });
+    editorElement.addEventListener("pointerover", follow, { passive: true });
+    window.addEventListener("blur", () => listen(false));
+};
+
+export const bindImageLoadingState = (editorElement: HTMLElement) => {
+    editorElement.querySelectorAll<HTMLImageElement>("img").forEach(markImageLoading);
+
+    const observer = new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+            mutation.addedNodes.forEach((node) => {
+                if (node.nodeType !== Node.ELEMENT_NODE) {
+                    return;
+                }
+                const el = node as HTMLElement;
+                if (el.tagName === "IMG") {
+                    markImageLoading(el as HTMLImageElement);
+                } else {
+                    el.querySelectorAll<HTMLImageElement>("img").forEach(markImageLoading);
+                }
+            });
+        }
+    });
+    observer.observe(editorElement, { childList: true, subtree: true });
+};
+
+export const focusEvent = (vditor: IVditor, editorElement: HTMLElement) => {
+    editorElement.addEventListener("focus", () => {
+        if (vditor.options.focus) {
+            vditor.options.focus(getMarkdown(vditor));
+        }
+        hidePanel(vditor, ["subToolbar", "hint"]);
+    });
+};
+
+export const dblclickEvent = (vditor: IVditor, editorElement: HTMLElement) => {
+    editorElement.addEventListener("dblclick", (event: MouseEvent & { target: HTMLElement }) => {
+        if (event.target.tagName === "IMG" && !isPlantumlRenderImage(event.target)) {
+            previewImage(event.target as HTMLImageElement, {
+                vditor,
+                lang: vditor.options.lang,
+                theme: vditor.options.theme,
+            });
+        }
+    });
+};
+
+export const blurEvent = (vditor: IVditor, editorElement: HTMLElement) => {
+    editorElement.addEventListener("blur", (event: FocusEvent) => {
+        if (vditor.currentMode === "ir") {
+            const expandElement = vditor.ir.element.querySelector(".vditor-ir__node--expand");
+            if (expandElement) {
+                expandElement.classList.remove("vditor-ir__node--expand");
+            }
+        }
+        if (vditor.currentMode === "wysiwyg" || vditor.currentMode === "ir") {
+            clearTimeout(vditor[vditor.currentMode].hlToolbarTimeoutId);
+        }
+        clearActiveHeadingMarker(vditor);
+        const relatedTarget = event.relatedTarget as HTMLElement | null;
+        if (!relatedTarget || (!isInsideCodeMirror(relatedTarget) && !isInsideCodeBlockChrome(relatedTarget))) {
+            vditor[vditor.currentMode].range = getEditorRange(vditor);
+            saveCacheFocus(vditor);
+        }
+        if (vditor.options.blur) {
+            vditor.options.blur(getMarkdown(vditor));
+        }
+    });
+};
+
+export const dropEvent = (vditor: IVditor, editorElement: HTMLElement) => {
+    editorElement.addEventListener("dragstart", (event) => {
+        // dragging selected text in the editor
+        event.dataTransfer.setData(Constants.DROP_EDITOR, Constants.DROP_EDITOR);
+    });
+    editorElement.addEventListener("drop",
+        (event: ClipboardEvent & { dataTransfer?: DataTransfer, target: HTMLElement }) => {
+            if (event.dataTransfer.getData(Constants.DROP_EDITOR)) {
+                // dragging text selected inside the editor
+                execAfterRender(vditor);
+            } else if (event.dataTransfer.types.includes("Files") || event.dataTransfer.types.includes("text/html")) {
+                // external file dropped into the editor, or text selected inside the editor dragged
+                paste(vditor, event, {
+                    pasteCode: (code: string) => {
+                        insertPastedCode(vditor, code);
+                    },
+                });
+            }
+        });
+};
+
+export const copyEvent =
+    (vditor: IVditor, editorElement: HTMLElement, copy: (event: ClipboardEvent, vditor: IVditor) => void) => {
+        editorElement.addEventListener("copy", (event: ClipboardEvent) => copy(event, vditor));
+    };
+
+export const cutEvent =
+    (vditor: IVditor, editorElement: HTMLElement, copy: (event: ClipboardEvent, vditor: IVditor) => void) => {
+        editorElement.addEventListener("cut", (event: ClipboardEvent) => {
+            const cutBlock = resolveTextCutBlock(event);
+            if (cutBlock && copyTextCutBlock(event, vditor, cutBlock)) {
+                removeTextCutBlock(vditor, cutBlock);
+                return;
+            }
+            copy(event, vditor);
+            document.execCommand("delete");
+        });
+    };
+
+export const macOptionSymbolEvent = (vditor: IVditor) => {
+    vditor.element.addEventListener("keydown", (event: KeyboardEvent) => {
+        if (!shouldBlockMacOptionSymbol(event)) {
+            return;
+        }
+        event.preventDefault();
+    }, true);
+};
+
+export const hotkeyEvent = (vditor: IVditor, editorElement: HTMLElement) => {
+    editorElement.addEventListener("keydown", (event: KeyboardEvent & { target: HTMLElement }) => {
+        if (isInsideCodeBlockChrome(event.target)) {
+            return;
+        }
+        if (vditor.currentMode === "wysiwyg" || vditor.currentMode === "ir") {
+            handleAutoSymbolPair(event);
+        }
+        // hint: up/down selection
+        if (vditor.options.hint.extend.length > 0 &&
+            vditor.hint.select(event, vditor)) {
+            return;
+        }
+
+        if (handleVscodeShortcut(vditor, event)) {
+            return;
+        }
+
+        if (vditor.currentMode === "wysiwyg") {
+            if (processKeydown(vditor, event)) {
+                event.stopPropagation()
+                return;
+            }
+        } else if (vditor.currentMode === "ir") {
+            if (irProcessKeydown(vditor, event)) {
+                return;
+            }
+        }
+
+        if (handlerHistoryEvent(event, vditor))
+            return;
+
+        if (vditor.options.ctrlEnter && matchHotKey("⌘Enter", event)) {
+            vditor.options.ctrlEnter(getMarkdown(vditor));
+            event.preventDefault();
+            return;
+        }
+
+        // undo
+        if (matchHotKey("⌘Z", event) && !vditor.toolbar.elements.undo) {
+            vditor.undo.undo(vditor);
+            event.preventDefault();
+            return;
+        }
+
+        // redo
+        if (matchHotKey("⌘Y", event) && !vditor.toolbar.elements.redo) {
+            vditor.undo.redo(vditor);
+            event.preventDefault();
+            return;
+        }
+
+        // esc
+        if (event.key === "Escape") {
+            if (vditor.hint.element.style.display === "block") {
+                vditor.hint.element.style.display = "none";
+            } else if (vditor.currentMode === "wysiwyg"
+                && vditor.wysiwyg.popover.style.display === "block"
+                && (vditor.wysiwyg.popover.classList.contains("vditor-panel--link")
+                    || vditor.wysiwyg.popover.classList.contains("vditor-panel--link-ref")
+                    || vditor.wysiwyg.popover.classList.contains("vditor-panel--image"))) {
+                const sourceElement = (vditor.wysiwyg.popover as { _sourceElement?: HTMLElement })._sourceElement;
+                if (sourceElement) {
+                    exitLinkPopoverToElement(vditor, sourceElement);
+                } else {
+                    hideLinkPopover(vditor);
+                }
+            } else if (vditor.options.esc && !event.isComposing) {
+                vditor.options.esc(getMarkdown(vditor));
+            }
+            event.preventDefault();
+            return;
+        }
+
+        // h1 - h6 hotkey
+        if (isCtrl(event) && event.altKey && !event.shiftKey && /^Digit[1-6]$/.test(event.code)) {
+            // MD025: one top-level heading per file
+            if (event.code === "Digit1" && hasTopHeadingBeforeCaret(vditor)) {
+                event.preventDefault();
+                return true;
+            }
+            if (vditor.currentMode === "wysiwyg") {
+                const tagName = event.code.replace("Digit", "H");
+                if (hasClosestByMatchTag(getSelection().getRangeAt(0).startContainer, tagName)) {
+                    removeHeading(vditor);
+                } else {
+                    setHeading(vditor, tagName);
+                }
+                afterRenderEvent(vditor);
+            } else if (vditor.currentMode === "ir") {
+                processHeading(vditor, "#".repeat(parseInt(event.code.replace("Digit", ""), 10)) + " ");
+            }
+            event.preventDefault();
+            return true;
+        }
+
+        // toggle edit mode: WYSIWYG <-> instant rendering, like the toolbar's edit mode button
+        if (isCtrl(event) && event.altKey && event.shiftKey && event.code === "KeyE") {
+            setEditMode(vditor, vditor.currentMode === "ir" ? "wysiwyg" : "ir", event);
+            event.preventDefault();
+            event.stopPropagation();
+            return true;
+        }
+
+        // toolbar action
+        vditor.options.toolbar.find((menuItem: IMenuItem) => {
+            if (!menuItem.hotkey || menuItem.toolbar) {
+                if (menuItem.toolbar) {
+                    const sub = menuItem.toolbar.find((subMenuItem: IMenuItem) => {
+                        if (!subMenuItem.hotkey) {
+                            return false;
+                        }
+                        if (matchHotKey(subMenuItem.hotkey, event)) {
+                            vditor.toolbar.elements[subMenuItem.name].children[0]
+                                .dispatchEvent(new CustomEvent(getEventName()));
+                            event.preventDefault();
+                            return true;
+                        }
+                    });
+                    return sub ? true : false;
+                }
+                return false;
+            }
+            if (matchHotKey(menuItem.hotkey, event)) {
+                vditor.toolbar.elements[menuItem.name].children[0].dispatchEvent(new CustomEvent(getEventName()));
+                event.preventDefault();
+                event.stopPropagation();
+                return true;
+            }
+        });
+    });
+};
+
+export const selectEvent = (vditor: IVditor, editorElement: HTMLElement) => {
+    editorElement.addEventListener("selectstart", (event: Event & { target: HTMLElement }) => {
+        if (isInsideCodeMirror(event.target) || isInsideCodeBlockChrome(event.target)) {
+            return;
+        }
+        editorElement.onmouseup = () => {
+            setTimeout(() => { // the range is not updated immediately after the mouse is released
+                const selectText = getSelectText(vditor[vditor.currentMode].element);
+                if (selectText.trim()) {
+                    if (vditor.options.select) {
+                        vditor.options.select(selectText);
+                    }
+                }
+            });
+        };
+    });
+};

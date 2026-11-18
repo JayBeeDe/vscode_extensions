@@ -1,0 +1,348 @@
+const fs = require("fs")
+const os = require("os")
+const path = require("path")
+const { pathToFileURL } = require("url")
+const { i18n } = require("@/common/global")
+const isDev = process.argv.indexOf('--type=extensionHost') >= 0;
+
+export async function exportHtml(exportFilePath, data) {
+    console.log("[pretty-md-pdf] Exported to file: " + exportFilePath)
+    fs.writeFileSync(exportFilePath, data, "utf-8")
+}
+
+export async function exportDocx(exportFilePath, data, config) {
+    console.log("[pretty-md-pdf] Exported to file: " + exportFilePath)
+    const html = await replaceDynamicContentWithImages(data, config, exportFilePath)
+    const htmlToDocx = require("vscode-html-to-docx");
+    const exportTask = await htmlToDocx(html, '', {}, '');
+    const buffer = Buffer.from(await exportTask.arrayBuffer());
+    fs.writeFileSync(exportFilePath, buffer)
+}
+
+/*
+ * export a html to a pdf file
+ * @returns the path of the exported file
+ */
+export async function exportByType(filePath, data, type, config) {
+
+    console.log("[pretty-md-pdf] Exporting (" + type + ") ...")
+    const originPath = path.parse(filePath)
+    let targetFilePath = originPath.dir + "/" + originPath.name + "." + type
+
+    // export html
+    if (type == "html") {
+        exportHtml(targetFilePath, data)
+        return targetFilePath
+    } else if (type == "docx") {
+        await exportDocx(targetFilePath, data, config)
+        return targetFilePath
+    }
+
+    // Linux: keep temp html beside the markdown file (snap/isolated browsers often cannot read /tmp)
+    const tmpDir = process.platform === 'linux' ? originPath.dir : (isDev ? originPath.dir : os.tmpdir())
+    // a name no existing file has: a user file called <name>_tmp.html must not be overwritten
+    let tmpfilename
+    do {
+        tmpfilename = path.resolve(tmpDir, `${originPath.name}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}_tmp.html`)
+    } while (fs.existsSync(tmpfilename))
+    exportHtml(tmpfilename, data)
+    if (!isExistsPath(tmpfilename)) {
+        throw new Error(i18n('markdown.tempHtmlNotFound', { path: tmpfilename }))
+    }
+
+    const fileUrl = pathToFileURL(tmpfilename).href
+    let launchOptions = {
+        headless: true,
+        executablePath: config["executablePath"] || undefined,
+        args: ["--allow-file-access-from-files", ...(config["puppeteerArgs"] || [])]
+    }
+
+    const puppeteer = require("puppeteer-core")
+    let browser
+    try {
+        browser = await puppeteer.launch(launchOptions).catch(error => {
+            showErrorMessage("puppeteer.launch()", error)
+            throw error
+        })
+        const page = await browser.newPage().catch(error => {
+            showErrorMessage("browser.newPage()", error)
+            throw error
+        });
+        await page.goto(fileUrl, { waitUntil: "load", timeout: 60000 }).catch(async error => {
+            showErrorMessage("page.goto()", error)
+            await page.setContent(data, { waitUntil: "load", timeout: 60000 })
+        });
+
+        // generate pdf
+        if (type == "pdf") {
+            // https://pptr.dev/api/puppeteer.pdfoptions
+            const margin = config["margin"] || {};
+            const pdfOptions = {
+                // bookmarks from the headings, without a table of contents in the pages
+                outline: true,
+                tagged: true,
+                format: config["format"] || "A4",
+                printBackground: config["printBackground"] || true,
+                margin: {
+                    top: margin.top != null ? `${margin.top}px` : undefined,
+                    right: margin.right != null ? `${margin.right}px` : undefined,
+                    bottom: margin.bottom != null ? `${margin.bottom}px` : undefined,
+                    left: margin.left != null ? `${margin.left}px` : undefined
+                }
+            }
+            const pdf = await page.pdf(pdfOptions).catch(error => {
+                showErrorMessage("page.pdf", error)
+                throw error
+            })
+
+            fs.writeFileSync(targetFilePath, Buffer.from(pdf))
+        }
+    } finally {
+        // also when the export fails: no Chromium left running, no temporary file left behind
+        if (browser) {
+            await browser.close().catch(() => { })
+        }
+        if (!(config["debug"] || false) && isExistsPath(tmpfilename)) {
+            fs.unlink(tmpfilename, () => { })
+        }
+    }
+
+    console.log("[pretty-md-pdf] Exported to file: " + targetFilePath)
+    return targetFilePath
+}
+
+async function replaceDynamicContentWithImages(data, config = {}, exportFilePath = "") {
+    const containsKatex = data.indexOf('class="katex') >= 0 || data.indexOf("class='katex") >= 0
+    const containsMermaid = data.indexOf('class="mermaid') >= 0 || data.indexOf("class='mermaid") >= 0
+    // without math or diagrams, Chromium is only needed for the theme colours, when it is there
+    if (!containsKatex && !containsMermaid && !config["executablePath"]) {
+        return data
+    }
+
+    const puppeteer = require("puppeteer-core")
+    let browser
+    let tmpfilename = ""
+    try {
+        const tmpDir = exportFilePath ? path.dirname(exportFilePath) : os.tmpdir()
+        const tmpBaseName = exportFilePath ? path.parse(exportFilePath).name : `markdown_${Date.now()}`
+        tmpfilename = path.resolve(tmpDir, `${tmpBaseName}_math_tmp.html`)
+        exportHtml(tmpfilename, data)
+
+        browser = await puppeteer.launch({
+            headless: true,
+            executablePath: config["executablePath"] || undefined,
+            args: ["--allow-file-access-from-files", ...(config["puppeteerArgs"] || [])]
+        })
+        const page = await browser.newPage()
+        await page.setViewport({ width: 1200, height: 800, deviceScaleFactor: 2 })
+        await page.goto(pathToFileURL(tmpfilename).href, { waitUntil: "load", timeout: 60000 })
+        await page.evaluate(async () => {
+            if (document.fonts && document.fonts.ready) {
+                await document.fonts.ready
+            }
+        })
+
+        await waitForMermaid(page)
+        await inlineThemeColors(page)
+
+        await page.addStyleTag({
+            content: `
+                body { background: transparent !important; }
+                .foss-office-docx-image-shot {
+                    display: inline-block !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    text-align: left !important;
+                    background: transparent !important;
+                }
+            `
+        })
+
+        await replaceMermaidWithImages(page)
+        await replaceKatexWithImages(page)
+
+        return await page.content()
+    } catch (error) {
+        showErrorMessage("replaceDynamicContentWithImages()", error)
+        return data
+    } finally {
+        if (browser) {
+            await browser.close()
+        }
+        if (!config["debug"] && tmpfilename && isExistsPath(tmpfilename)) {
+            fs.unlink(tmpfilename, () => { })
+        }
+    }
+}
+
+/**
+ * DOCX keeps inline colours only: copy the colours the theme gives (links, code blocks, quotes,
+ * tables...) onto the elements themselves.
+ */
+async function inlineThemeColors(page) {
+    try {
+        await page.evaluate(() => {
+            const transparent = "rgba(0, 0, 0, 0)"
+            const elements = document.querySelectorAll(
+                "a, h1, h2, h3, h4, h5, h6, blockquote, pre, code, pre span, th, td, mark, .callout, .callout *")
+            for (const element of elements) {
+                const style = getComputedStyle(element)
+                element.style.color = style.color
+                if (style.backgroundColor !== transparent) {
+                    element.style.backgroundColor = style.backgroundColor
+                }
+            }
+        })
+    } catch (error) {
+        showErrorMessage("inlineThemeColors()", error)
+    }
+}
+
+async function waitForMermaid(page) {
+    try {
+        const hasMermaid = await page.evaluate(() => document.querySelectorAll('.mermaid').length > 0)
+        if (!hasMermaid) {
+            return
+        }
+        await page.waitForFunction(() => {
+            const elements = Array.from(document.querySelectorAll('.mermaid'))
+            return elements.length === 0 || elements.every(element => element.querySelector('svg') || element.getAttribute('data-processed') === 'true')
+        }, { timeout: 10000 })
+    } catch (error) {
+        showErrorMessage("waitForMermaid()", error)
+    }
+}
+
+async function replaceMermaidWithImages(page) {
+    try {
+        const handles = await page.evaluateHandle(() => {
+            const diagrams = Array.from(document.querySelectorAll('.mermaid'))
+                .filter(element => element.querySelector('svg'))
+            diagrams.forEach((element, index) => {
+                element.setAttribute('data-foss-office-mermaid-id', String(index))
+                element.classList.add('foss-office-docx-image-shot')
+            })
+            return diagrams
+        })
+        const diagrams = await handles.getProperties()
+
+        for (const handle of diagrams.values()) {
+            await replaceElementWithImage(handle, {
+                display: true,
+                style: 'display:block;margin:1em auto',
+                label: 'mermaid'
+            })
+        }
+    } catch (error) {
+        showErrorMessage("replaceMermaidWithImages()", error)
+    }
+}
+
+async function replaceKatexWithImages(page) {
+    try {
+        const handles = await page.evaluateHandle(() => {
+            const formulas = Array.from(document.querySelectorAll('.katex-display, .katex'))
+                .filter(element => element.classList.contains('katex-display') || !element.closest('.katex-display'))
+            formulas.forEach((element, index) => {
+                element.setAttribute('data-foss-office-math-id', String(index))
+                element.setAttribute('data-foss-office-math-display', String(element.classList.contains('katex-display')))
+                element.classList.add('foss-office-docx-image-shot')
+            })
+            return formulas
+        })
+        const formulas = await handles.getProperties()
+
+        for (const handle of formulas.values()) {
+            await replaceKatexFormulaWithImage(handle)
+        }
+    } catch (error) {
+        showErrorMessage("replaceKatexWithImages()", error)
+    }
+}
+
+async function replaceKatexFormulaWithImage(handle) {
+    try {
+        const formula = handle.asElement()
+        if (!formula) {
+            return
+        }
+        const box = await formula.boundingBox()
+        if (!box || box.width <= 0 || box.height <= 0) {
+            return
+        }
+        const image = await formula.screenshot({ type: 'png', omitBackground: true })
+        const imageBuffer = Buffer.from(image)
+        const src = `data:image/png;base64,${imageBuffer.toString('base64')}`
+        await formula.evaluate((element, imageSrc, width, height) => {
+            const isDisplay = element.getAttribute('data-foss-office-math-display') === 'true'
+            const imageElement = document.createElement('img')
+            imageElement.setAttribute('src', imageSrc)
+            imageElement.setAttribute('width', String(Math.ceil(width)))
+            imageElement.setAttribute('height', String(Math.ceil(height)))
+            imageElement.setAttribute('style', [
+                `width:${Math.ceil(width)}px`,
+                `height:${Math.ceil(height)}px`,
+                isDisplay ? 'display:block' : 'display:inline-block',
+                isDisplay ? 'margin:1em auto' : 'vertical-align:middle'
+            ].join(';'))
+            imageElement.setAttribute('alt', element.textContent || 'math')
+            element.replaceWith(imageElement)
+        }, src, box.width, box.height)
+    } catch (error) {
+        showErrorMessage("replaceKatexFormulaWithImage()", error)
+    }
+}
+
+async function replaceElementWithImage(handle, options = {}) {
+    try {
+        const element = handle.asElement()
+        if (!element) {
+            return
+        }
+        const box = await element.boundingBox()
+        if (!box || box.width <= 0 || box.height <= 0) {
+            return
+        }
+        const image = await element.screenshot({ type: 'png', omitBackground: true })
+        const imageBuffer = Buffer.from(image)
+        const src = `data:image/png;base64,${imageBuffer.toString('base64')}`
+        await element.evaluate((target, imageSrc, width, height, imageOptions) => {
+            const imageElement = document.createElement('img')
+            imageElement.setAttribute('src', imageSrc)
+            imageElement.setAttribute('width', String(Math.ceil(width)))
+            imageElement.setAttribute('height', String(Math.ceil(height)))
+            imageElement.setAttribute('style', [
+                `width:${Math.ceil(width)}px`,
+                `height:${Math.ceil(height)}px`,
+                imageOptions.style || (imageOptions.display ? 'display:block;margin:1em auto' : 'display:inline-block;vertical-align:middle')
+            ].join(';'))
+            imageElement.setAttribute('alt', imageOptions.label || target.textContent || 'image')
+            target.replaceWith(imageElement)
+        }, src, box.width, box.height, options)
+    } catch (error) {
+        showErrorMessage("replaceElementWithImage()", error)
+    }
+}
+
+function showErrorMessage(msg, error) {
+    if (!error) return;
+    console.error("ERROR: " + msg)
+    console.log("ERROR: " + msg)
+    if (error) {
+        console.error(error.toString())
+        console.log(error)
+    }
+}
+
+function isExistsPath(path) {
+    if (path.length === 0) {
+        return false
+    }
+    try {
+        fs.accessSync(path)
+        return true
+    } catch (error) {
+        console.warn(error.message)
+        return false
+    }
+}

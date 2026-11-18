@@ -1,0 +1,262 @@
+import { Constants } from "../constants";
+import { getToolbarCodicon } from "./codicon";
+import { merge } from "./merge";
+
+export class Options {
+    public options: IOptions;
+    private defaultOptions: IOptions = {
+        rtl: false,
+        after: undefined,
+        cache: {
+            focusHost: "browser",
+        },
+        cdn: Constants.CDN,
+        counter: {
+            enable: false,
+            type: "markdown",
+        },
+        debugger: false,
+        wysiwygInputPerf: false,
+        height: "auto",
+        hint: {
+            delay: 200,
+            extend: [],
+            parse: true,
+        },
+        lang: "zh_CN",
+        mode: "ir",
+        outline: {
+            enable: true,
+            position: "left",
+        },
+        placeholder: "",
+        preview: {
+            markdown: Constants.MARKDOWN_OPTIONS,
+            math: Constants.MATH_OPTIONS,
+        },
+        theme: "classic",
+        toolbar: [
+            "headings",
+            "bold",
+            "italic",
+            "strike",
+            "link",
+            "|",
+            "list",
+            "ordered-list",
+            "check",
+            "outdent",
+            "indent",
+            "|",
+            "quote",
+            "line",
+            "code",
+            "inline-code",
+            "insert-before",
+            "insert-after",
+            "|",
+            "upload",
+            "table",
+            "|",
+            "undo",
+            "redo",
+            "|",
+            "outline",
+        ],
+        toolbarConfig: {
+            hide: false,
+            pin: false,
+        },
+        undoDelay: 600,
+        upload: {
+            extraData: {},
+            fieldName: "file[]",
+            filename: (name: string) => name.replace(/\W/g, ""),
+            linkToImgUrl: "",
+            max: 10 * 1024 * 1024,
+            multiple: true,
+            url: "",
+            withCredentials: false,
+        },
+        value: "",
+        width: "auto",
+        colorTheme: "auto",
+        pageTheme: "auto",
+        mermaidTheme: "auto",
+    };
+
+    constructor(options: IOptions) {
+        this.options = options;
+    }
+
+    public merge(): IOptions {
+        if (this.options) {
+            if (this.options.toolbar) {
+                this.options.toolbar = this.mergeToolbar(this.options.toolbar);
+            } else {
+                this.options.toolbar = this.mergeToolbar(this.defaultOptions.toolbar);
+            }
+            // support is incomplete, commented out for now, to be re-enabled later
+            // if (this.options.rtl) {
+            //     this.defaultOptions.rtl = this.options.rtl;
+            // }
+        }
+
+        const mergedOptions = merge(this.defaultOptions, this.options);
+
+        // backward compatibility: map the legacy sv (split view) option to ir
+        if ((mergedOptions.mode as string) === "sv") {
+            mergedOptions.mode = "ir";
+        }
+
+        return mergedOptions;
+    }
+
+    private mergeToolbar(toolbar: Array<string | IMenuItem>) {
+        const toolbarItem = [{
+            hotkey: "⌘H",
+            icon: getToolbarCodicon("headings"),
+            name: "headings",
+        }, {
+            hotkey: "⌘B",
+            icon: getToolbarCodicon("bold"),
+            name: "bold",
+            prefix: "**",
+            suffix: "**",
+        }, {
+            hotkey: "⌘I",
+            icon: getToolbarCodicon("italic"),
+            name: "italic",
+            prefix: "*",
+            suffix: "*",
+        }, {
+            icon: getToolbarCodicon("strike"),
+            name: "strike",
+            prefix: "~~",
+            suffix: "~~",
+        }, {
+            hotkey: "⌘K",
+            icon: getToolbarCodicon("link"),
+            name: "link",
+            prefix: "[",
+            suffix: "](https://)",
+        }, {
+            name: "|",
+        }, {
+            icon: getToolbarCodicon("list"),
+            name: "list",
+            prefix: "* ",
+        }, {
+            icon: getToolbarCodicon("ordered-list"),
+            name: "ordered-list",
+            prefix: "1. ",
+        }, {
+            icon: getToolbarCodicon("check"),
+            name: "check",
+            prefix: "* [ ] ",
+        }, {
+            hotkey: "⇧⌘I",
+            icon: getToolbarCodicon("outdent"),
+            name: "outdent",
+        }, {
+            hotkey: "⇧⌘O",
+            icon: getToolbarCodicon("indent"),
+            name: "indent",
+        }, {
+            name: "|",
+        }, {
+            hotkey: "⌘;",
+            icon: getToolbarCodicon("quote"),
+            name: "quote",
+            prefix: "> ",
+        }, {
+            hotkey: "⇧⌘H",
+            icon: getToolbarCodicon("line"),
+            name: "line",
+            prefix: "---",
+        }, {
+            icon: getToolbarCodicon("code"),
+            name: "code",
+            prefix: "```",
+            suffix: "\n```",
+        }, {
+            icon: getToolbarCodicon("inline-code"),
+            name: "inline-code",
+            prefix: "`",
+            suffix: "`",
+        }, {
+            hotkey: "⇧⌘B",
+            icon: getToolbarCodicon("insert-before"),
+            name: "insert-before",
+        }, {
+            hotkey: "⇧⌘E",
+            icon: getToolbarCodicon("insert-after"),
+            name: "insert-after",
+        }, {
+            name: "|",
+        }, {
+            icon: getToolbarCodicon("upload"),
+            name: "upload",
+        }, {
+            hotkey: "⌘M",
+            icon: getToolbarCodicon("table"),
+            name: "table",
+            prefix: "| col1",
+            suffix: " | col2 | col3 |\n| --- | --- | --- |\n|  |  |  |\n|  |  |  |",
+        }, {
+            name: "|",
+        }, {
+            hotkey: "⌘Z",
+            icon: getToolbarCodicon("undo"),
+            name: "undo",
+        }, {
+            hotkey: "⌘Y",
+            icon: getToolbarCodicon("redo"),
+            name: "redo",
+        }, {
+            name: "|",
+        }, {
+            icon: getToolbarCodicon("more"),
+            name: "more",
+        }, {
+            icon: getToolbarCodicon("find"),
+            name: "find",
+        }, {
+            icon: getToolbarCodicon("edit-mode"),
+            name: "edit-mode",
+        }, {
+            icon: getToolbarCodicon("outline"),
+            name: "outline",
+        }, {
+            icon: getToolbarCodicon("code-theme"),
+            name: "code-theme",
+        }, {
+            name: "br",
+        },
+        // the heading level buttons (toolbar/HeadingLevel.ts): their icon and tip are built there
+        ...["h1", "h2", "h3", "h4", "h5", "h6"].map((name) => ({name}))];
+        const toolbarResult: IMenuItem[] = [];
+        toolbar.forEach((menuItem: IMenuItem) => {
+            let currentMenuItem = menuItem;
+            toolbarItem.forEach((defaultMenuItem: IMenuItem) => {
+                if (
+                    typeof menuItem === "string" &&
+                    defaultMenuItem.name === menuItem
+                ) {
+                    currentMenuItem = defaultMenuItem;
+                }
+                if (
+                    typeof menuItem === "object" &&
+                    defaultMenuItem.name === menuItem.name
+                ) {
+                    currentMenuItem = Object.assign({}, defaultMenuItem, menuItem);
+                }
+            });
+            if (menuItem.toolbar) {
+                currentMenuItem.toolbar = this.mergeToolbar(menuItem.toolbar);
+            }
+            toolbarResult.push(currentMenuItem);
+        });
+        return toolbarResult;
+    }
+}

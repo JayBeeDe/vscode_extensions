@@ -6,6 +6,7 @@ on:
       - ci
     tags:
       - "cacdhc_v*"
+      - "fo_v*"
       - "gvo_v*"
 jobs:
   publish-vscode-extension:
@@ -17,7 +18,11 @@ jobs:
           echo "::error title=Unauthorized Access::User ${GITHUB_ACTOR} is not authorized."
           exit 1
       - name: Install packages
-        run: sudo apt-get install -y git jq npm
+        run: sudo apt-get install -y git jq
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - name: Install vsce
         run: npm install -g @vscode/vsce
       - name: Check out repository
