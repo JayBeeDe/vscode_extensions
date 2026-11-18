@@ -134,7 +134,7 @@
 		"lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix",
 		"i18n:check": "node scripts/i18n-check.mjs",
 		"build": "vite build --mode=production",
-		"package": "vsce package --no-dependencies",
+		"package": "vsce package --no-dependencies --baseContentUrl https://github.com/JayBeeDe/vscode_extensions/blob/main/fo --baseImagesUrl https://raw.githubusercontent.com/JayBeeDe/vscode_extensions/refs/heads/main/fo",
 		"vscode:prepublish": "npm run build"
 	},
 	"activationEvents": [
