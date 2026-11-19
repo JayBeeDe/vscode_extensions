@@ -1,12 +1,116 @@
 # foss-office
 
-<div style="text-align: center;">
-    <img src="images/logo.png" title="foss-office" alt="FOSS editor for Markdown, document, spreadsheet, Parquet, presentation, PDF, eBook and xMind" width="256" height="256" />
-</div>
+<p align="center">
+  <img src="images/logo.png" title="foss-office" alt="FOSS editor for Markdown, document, spreadsheet, Parquet, presentation, PDF, eBook and xMind" width="256" height="256" />
+</p>
 
-## Introduction
+<p align="center">
+  <b>Open, read and edit your Markdown, Word, Excel, CSV, Parquet, PowerPoint, PDF, eBook and XMind files without leaving VS Code.</b><br>
+  Free and open source software: no paid tier, no account, no "pro" version. Ever.
+</p>
 
-This extension lets you preview and edit common office files directly in VS Code. The `foss-office.theme` setting makes every viewer light or dark: `auto` (the default) follows your current VS Code color theme.
+## Why foss-office
+
+- **One extension, eight viewers.** Double-click a `.docx`, a `.xlsx`, a `.pptx`, a `.pdf`, an `.epub`, a `.parquet` or an `.xmind` file in the Explorer and it opens in a tab, next to your code.
+- **Edit, not only view.** Write Markdown in a WYSIWYG editor, change Word documents, spreadsheets, CSV files, Parquet tables and mind maps, and save them back in their own format.
+- **At home in VS Code.** Every viewer follows your light or dark theme and your display language, opens files from a git diff read-only, and works in [vscode.dev](https://vscode.dev) too.
+- **Free, for real.** foss-office is released under the [GPL-3.0](LICENSE) and built on open source libraries ([credits](#credits)). It will never ask you for money: if it helps you, a star, a bug report, a translation or a pull request is the best thanks.
+
+## Screenshots
+
+Each viewer is shown twice: in a light theme, then in a dark high contrast theme with a custom accent color. Two themes are at work, and each can be light or dark on its own:
+
+- **The interface theme**: toolbars, menus, sidebars and dialogs. It follows `foss-office.theme`: `auto` (the default) takes your VS Code color theme and its accent color.
+- **The page theme**: the content itself, for the viewers that show pages. It follows `foss-office.markdown.theme`, `foss-office.document.theme`, `foss-office.pdf.theme` and `foss-office.epub.theme`, each `auto` by default (the interface theme). The document and PDF viewers also have a toolbar button, and the eBook reader a "Themes" choice, to switch their pages between light and dark.
+
+So a dark interface can show white pages: in the dark screenshots, the document has black pages and the PDF white ones.
+
+### Markdown
+
+A WYSIWYG editor with an outline, callouts, tables, highlighted code, task lists, math and Mermaid diagrams, which exports to PDF, DOCX and HTML.
+
+![The Markdown editor](images/screenshot-markdown-light.png)
+
+![The Markdown editor, in a dark high contrast theme](images/screenshot-markdown-dark.png)
+
+### Document
+
+Word documents (`.docx`, `.dotx`...) in an editor with pages, fonts, colors, lists, tables, images and comments.
+
+![The document editor](images/screenshot-document-light.png)
+
+![The document editor, in a dark high contrast theme](images/screenshot-document-dark.png)
+
+### Spreadsheet
+
+Excel workbooks, OpenDocument spreadsheets and CSV/TSV files in a grid with formulas, styles, merged cells, filters, find and replace. CSV files keep their encoding, delimiter and line ends when saved.
+
+![The spreadsheet editor](images/screenshot-spreadsheet-light.png)
+
+![The spreadsheet editor, in a dark high contrast theme](images/screenshot-spreadsheet-dark.png)
+
+### Parquet
+
+Parquet files with their schema, row count and column types; edit cells and save.
+
+![The Parquet viewer](images/screenshot-parquet-light.png)
+
+![The Parquet viewer, in a dark high contrast theme](images/screenshot-parquet-dark.png)
+
+### Presentation
+
+PowerPoint decks (`.pptx`, `.ppsx`, `.potx`...) with slide thumbnails.
+
+![The presentation viewer](images/screenshot-presentation-light.png)
+
+![The presentation viewer, in a dark high contrast theme](images/screenshot-presentation-dark.png)
+
+### PDF
+
+PDF.js with the outline, thumbnails, search, text selection, and dark pages when you want them.
+
+![The PDF viewer](images/screenshot-pdf-light.png)
+
+![The PDF viewer, in a dark high contrast theme](images/screenshot-pdf-dark.png)
+
+### eBook
+
+EPUB books with a table of contents and your choice of font, size and line height.
+
+![The eBook reader](images/screenshot-ebook-light.png)
+
+![The eBook reader, in a dark high contrast theme](images/screenshot-ebook-dark.png)
+
+### xMind
+
+XMind mind maps, editable, with several sheets, labels, notes, links, images, relationships and summaries.
+
+![The xMind editor](images/screenshot-xmind-light.png)
+
+![The xMind editor, in a dark high contrast theme](images/screenshot-xmind-dark.png)
+
+## Languages
+
+The interface follows the VS Code display language (**Configure Display Language** in the Command Palette):
+
+| Language   | Name in the language | Used for the VS Code locales                  |
+| ---------- | -------------------- | --------------------------------------------- |
+| English    | English              | `en`, every other locale without a translation |
+| Chinese    | 中文                 | `zh`, `zh-cn`, `zh-tw`    |
+| French     | Français             | `fr`, `fr-ca`, `fr-be`    |
+| German     | Deutsch              | `de`, `de-at`, `de-ch`    |
+| Japanese   | 日本語               | `ja`                                          |
+| Portuguese | Português            | `pt`, `pt-br`, `pt-pt`    |
+| Russian    | Русский              | `ru`                                          |
+| Spanish    | Español              | `es`, `es-419`, `es-mx`   |
+
+One translation serves every region of its language: the region is dropped to find it, so Brazilian and European Portuguese both read `pt.json`.
+
+Every viewer is translated: the toolbars, menus, dialogs and messages of the Markdown, document, spreadsheet, PDF, eBook, Parquet and xMind viewers. A string not translated yet shows in English, and other display languages show English. Missing your language, or found a clumsy translation? See [Translations](#translations): a language is one JSON file.
+
+## Supported formats
+
+The `foss-office.theme` setting makes every viewer light or dark: `auto` (the default) follows your current VS Code color theme.
 
 | Icon                                                                               | Feature      | Formats                                                                            | Mode                                               | Library behind it (version)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Technology                        |
 | ---------------------------------------------------------------------------------- | ------------ | ---------------------------------------------------------------------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
@@ -23,7 +127,7 @@ Notes:
 
 - A read-only file (permissions, read-only file system) opens read-only in every viewer.
 - While a file opens, every viewer shows the same loading spinner with the file's kind and name ("Loading spreadsheet data.csv..."), and the VS Code status bar shows the same message until the file is displayed.
-- The interface follows the VS Code display language: English, Chinese, French, German, Japanese, Portuguese, Russian and Spanish. Other languages show English. The translations live in [`i18n/`](i18n/); see [Translations](#translations).
+- The interface is translated into eight languages: see [Languages](#languages).
 - [Keyboard shortcuts](#keyboard-shortcuts) lists the keyboard shortcuts of every viewer.
 - The versions are those installed when this table was written; `package.json` has the exact ranges.
 - The webviews are built with [React](https://react.dev/) 19 and [Ant Design](https://ant.design/) 5, except the PDF viewer and the Markdown editor.
@@ -287,7 +391,7 @@ before the extension starts, so it would need `package.nls.<language>.json` file
 
 ## Credits
 
-The libraries behind each viewer are listed in the table in the [introduction](#introduction).
+The libraries behind each viewer are listed in the table in [Supported formats](#supported-formats).
 
 - Original extension: [cweijan/vscode-office](https://github.com/cweijan/vscode-office) by Weijan Chen (MIT)
 
