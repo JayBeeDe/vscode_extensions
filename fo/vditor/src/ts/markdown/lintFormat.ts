@@ -127,11 +127,50 @@ const decodeURIComponentSafe = (text: string) => {
     }
 };
 
+// the CommonMark HTML blocks (https://spec.commonmark.org/0.31.2/#html-blocks) that end at a blank line
+const HTML_BLOCK_TAGS = "address|article|aside|base|basefont|blockquote|body|caption|center|col|colgroup|dd|details|dialog|dir|div|dl|dt|fieldset|figcaption|figure|footer|form|frame|frameset|h[1-6]|head|header|hr|html|iframe|legend|li|link|main|menu|menuitem|nav|noframes|ol|optgroup|option|p|param|search|section|summary|table|tbody|td|tfoot|th|thead|title|tr|track|ul";
+const HTML_BLOCK_START_RE = new RegExp(`^ {0,3}</?(?:${HTML_BLOCK_TAGS})(?:\\s|/?>|$)`, "i");
+// a line holding only one complete tag (type 7), which cannot interrupt a paragraph
+const HTML_TAG_LINE_RE = /^ {0,3}(?:<(?!(?:script|style|pre|textarea)\b)[a-z][a-z0-9-]*(?:\s+[a-z_:][\w.:-]*(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'=<>`]+))?)*\s*\/?>|<\/[a-z][a-z0-9-]*\s*>)\s*$/i;
+
+/** The indexes of the lines inside a top-level HTML block that ends at a blank line. */
+const htmlBlockLines = (lines: Line[]) => {
+    const inside = new Set<number>();
+    let inBlock = false;
+    let inParagraph = false;
+    lines.forEach((line, index) => {
+        if (line.code || isBlank(line.text)) {
+            inBlock = false;
+            inParagraph = false;
+            return;
+        }
+        if (!inBlock && (HTML_BLOCK_START_RE.test(line.text) || (!inParagraph && HTML_TAG_LINE_RE.test(line.text)))) {
+            inBlock = true;
+        }
+        if (inBlock) {
+            inside.add(index);
+        } else {
+            inParagraph = true;
+        }
+    });
+    return inside;
+};
+
 /**
  * MD033: inline HTML with a Markdown equivalent. `<br>` ends the paragraph (a blank line), the
- * other tags become their Markdown; other HTML (details, kbd, sup...) is kept.
+ * other tags become their Markdown; other HTML (details, kbd, sup...) is kept. HTML blocks are
+ * left as they are: Lute shows and writes them back unchanged, and Markdown is not read inside
+ * them (`<p align="center"><img ...></p>`, the usual way to center an image on GitHub).
  */
-const convertInlineHtml = (markdown: string) => mapTextLines(markdown, (text) => outsideInlineCode(text, (part) => part
+const convertInlineHtml = (markdown: string) => {
+    let blockLines: Set<number> | undefined;
+    return mapTextLines(markdown, (text, index, lines) => {
+        blockLines ??= htmlBlockLines(lines);
+        return blockLines.has(index) ? text : convertInlineHtmlLine(text);
+    });
+};
+
+const convertInlineHtmlLine = (text: string) => outsideInlineCode(text, (part) => part
     .replace(/<img\b[^>]*>/gi, (tag) => {
         const src = attribute(tag, "src");
         if (!src) {
@@ -147,7 +186,7 @@ const convertInlineHtml = (markdown: string) => mapTextLines(markdown, (text) =>
     .replace(/<(strong|b)>([^<]*?)<\/\1>/gi, (_tag, _name, inner: string) => (inner.trim() ? `**${inner.trim()}**` : inner))
     .replace(/<(em|i)>([^<]*?)<\/\1>/gi, (_tag, _name, inner: string) => (inner.trim() ? `*${inner.trim()}*` : inner))
     // a line break: a new paragraph, the only break markdownlint and the editor both keep
-    .replace(/\s*<br\s*\/?>\s*/gi, "\n\n")));
+    .replace(/\s*<br\s*\/?>\s*/gi, "\n\n"));
 
 /** A hard line break (2 trailing spaces or a backslash) ends the paragraph too. */
 const hardBreaksToParagraphs = (markdown: string) => {
@@ -610,9 +649,15 @@ const fixBlankLinesAround = (markdown: string) => {
         }
         return "text";
     };
+    // an HTML block ends at a blank line: none goes between its lines
+    const htmlLines = htmlBlockLines(lines);
     const out: Line[] = [];
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
+        if (htmlLines.has(i) && htmlLines.has(i - 1)) {
+            out.push(line);
+            continue;
+        }
         const current = kind(line);
         const previous = out[out.length - 1];
         const previousKind = kind(previous);
