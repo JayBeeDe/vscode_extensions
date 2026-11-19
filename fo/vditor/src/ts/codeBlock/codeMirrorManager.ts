@@ -24,6 +24,7 @@ import {
 import { loadCodeMirrorHighlightLanguage } from "./codeBlockHighlightLanguages";
 import { resolveCodeMirrorCopyPayload } from "./codeMirrorRichCopy";
 import { stopHandledCodeMirrorKeymap, vditorCodeMirrorSetup } from "./codeMirrorSetup";
+import { keepVoidInlineHtml } from "../markdown/lintFormat";
 import { mathRender } from "../markdown/mathRender";
 import { mermaidRender } from "../markdown/mermaidRender";
 import { plantumlRender } from "../markdown/plantumlRender";
@@ -2158,6 +2159,7 @@ export const buildEditorHtmlForMarkdown = (vditor: IVditor) => {
     for (const el of clone.querySelectorAll(".vditor-cm-chrome, .cm-editor, .vditor-editor-boundary")) {
         el.remove();
     }
+    keepVoidInlineHtml(clone);
     for (const container of clone.querySelectorAll(".vditor-math-inline--editing")) {
         container.classList.remove("vditor-math-inline--editing");
         container.removeAttribute("contenteditable");

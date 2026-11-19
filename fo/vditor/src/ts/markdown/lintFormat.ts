@@ -156,6 +156,30 @@ const htmlBlockLines = (lines: Line[]) => {
     return inside;
 };
 
+// the <img> attributes `![alt](src "title")` can write
+const IMG_MARKDOWN_ATTRIBUTES = ["src", "alt", "title"];
+
+const hasAttributesBeyond = (tag: string, allowed: string[]) => {
+    const names = tag.replace(/^<[a-z][a-z0-9-]*/i, "")
+        .replace(/=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/g, "")
+        .match(/[a-z_:][\w.:-]*/gi) || [];
+    return names.some((name) => !allowed.includes(name.toLowerCase()));
+};
+
+/**
+ * Inline HTML without a closing tag (`<img ...>`): Lute shows it, but writes nothing for it when
+ * it turns the editor's DOM back into Markdown. Its source, as the text of an inline HTML node,
+ * is written as it is. `root` is a copy of the editor's DOM.
+ */
+export const keepVoidInlineHtml = (root: ParentNode) => {
+    for (const element of Array.from(root.querySelectorAll('[data-type="html-inline"][data-md-source]:not([data-open-tag])'))) {
+        const node = element.ownerDocument.createElement("span");
+        node.setAttribute("data-type", "html-inline");
+        node.textContent = (element.getAttribute("data-md-source") || "").replace(/_esc_newline_/g, "\n");
+        element.replaceWith(node);
+    }
+};
+
 /**
  * MD033: inline HTML with a Markdown equivalent. `<br>` ends the paragraph (a blank line), the
  * other tags become their Markdown; other HTML (details, kbd, sup...) is kept. HTML blocks are
@@ -173,11 +197,13 @@ const convertInlineHtml = (markdown: string) => {
 const convertInlineHtmlLine = (text: string) => outsideInlineCode(text, (part) => part
     .replace(/<img\b[^>]*>/gi, (tag) => {
         const src = attribute(tag, "src");
-        if (!src) {
+        // a size, an alignment, a class...: Markdown has no syntax for them, the tag is kept
+        if (!src || hasAttributesBeyond(tag, IMG_MARKDOWN_ATTRIBUTES)) {
             return tag;
         }
         const alt = attribute(tag, "alt") || baseName(src);
-        return `![${alt}](${src})`;
+        const title = attribute(tag, "title").replace(/"/g, "&quot;");
+        return title ? `![${alt}](${src} "${title}")` : `![${alt}](${src})`;
     })
     .replace(/<a\b[^>]*\bhref\s*=[^>]*>([\s\S]*?)<\/a>/gi, (tag, inner: string) => {
         const href = attribute(tag, "href");
@@ -358,9 +384,10 @@ const replaceWithCode = (element: Element, text: string) => {
  * Normalises the WYSIWYG DOM Lute writes the Markdown from, its markers being attributes:
  * MD004 `-` bullets, MD029 lists numbered from 1, MD003 ATX headings, MD049/MD050 `*` and `**`,
  * MD048 backtick fences, MD001 heading levels, MD041 a first heading, MD040/MD046 a language for
- * every code block, MD042/MD051/MD052 dead links as inline code, MD045 image alt text.
+ * every code block, MD042/MD051/MD052 dead links as inline code, MD045 image alt text; inline `<img>` tags are kept.
  */
 export const normalizeEditorDom = (root: Element, options: LintFormatOptions = {}) => {
+    keepVoidInlineHtml(root);
     // MD004: every bullet is `-`
     for (const element of Array.from(root.querySelectorAll("ul[data-marker], ul > li[data-marker]"))) {
         if (/^[*+-]$/.test(element.getAttribute("data-marker") || "")) {
