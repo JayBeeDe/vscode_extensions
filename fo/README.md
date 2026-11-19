@@ -1,7 +1,7 @@
 # foss-office
 
 <div style="text-align: center;">
-    <img src="https://raw.githubusercontent.com/JayBeeDe/vscode_extensions/refs/heads/main/fo/images/logo.png" title="foss-office" alt="FOSS editor for Markdown, document, spreadsheet, Parquet, presentation, PDF, eBook and xMind" width="256" height="256" />
+    <img src="images/logo.png" title="foss-office" alt="FOSS editor for Markdown, document, spreadsheet, Parquet, presentation, PDF, eBook and xMind" width="256" height="256" />
 </div>
 
 ## Introduction
