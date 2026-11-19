@@ -24,6 +24,7 @@ export class ReactApp {
     private static context: vscode.ExtensionContext;
     private static webviewUri: vscode.Uri;
     public static IS_DEV = false;
+    private static readonly DEV_SERVER_URL = 'http://127.0.0.1:5739';
 
     public static init(context: vscode.ExtensionContext) {
         this.context = context;
@@ -32,7 +33,9 @@ export class ReactApp {
     }
 
     public static async view(webview: vscode.Webview, uri: vscode.Uri, option: ViewOption) {
-        const html = withLoadingOverlay(await this.readContent(), uri);
+        // in Development mode, use the Vite dev server (`npm run dev`) when it is running, the built webview otherwise
+        const devHtml = this.IS_DEV ? await this.readDevServerContent() : undefined;
+        const html = withLoadingOverlay(devHtml ?? await readExtensionText(this.context, 'out', 'webview', 'index.html'), uri);
         const configs = JSON.stringify({
             ...option,
             language: vscode.env.language,
@@ -42,29 +45,23 @@ export class ReactApp {
             documentTheme: getDocumentTheme(),
         });
         // the configs go into a quoted attribute: escape them, and use a replacer function so `$` patterns are not expanded
-        webview.html = this.buildPath(html, webview)
+        webview.html = this.buildPath(html, webview, devHtml !== undefined)
             .replace(`{{configs}}`, () => escapeHtmlAttribute(configs));
     }
 
-    private static async readContent(): Promise<string> {
-        if (this.IS_DEV) {
-            const devServerUrl = 'http://127.0.0.1:5739';
-            const data: string = (await axios.get(`${devServerUrl}/index.html`, { transformResponse: [] })).data;
+    private static async readDevServerContent(): Promise<string | undefined> {
+        const devServerUrl = this.DEV_SERVER_URL;
+        try {
+            const data: string = (await axios.get(`${devServerUrl}/index.html`, { transformResponse: [], timeout: 1000 })).data;
             return data.replace(/(["'])\/(?=(?:@|src\/|index\.html\?))/g, `$1${devServerUrl}/`);
+        } catch {
+            return undefined;
         }
-        return readExtensionText(this.context, 'out', 'webview', 'index.html');
     }
 
-    private static buildPath(data: string, webview: vscode.Webview): string {
-        const baseUrl = ReactApp.getBaseUrl(webview);
+    private static buildPath(data: string, webview: vscode.Webview, useDevServer: boolean): string {
+        const baseUrl = useDevServer ? this.DEV_SERVER_URL : webview.asWebviewUri(this.webviewUri).toString();
         return data.replace('<base href="/">', () => `<base href="${escapeHtmlAttribute(baseUrl)}/">`);
-    }
-
-    private static getBaseUrl(webview: vscode.Webview) {
-        if (this.IS_DEV) {
-            return `http://127.0.0.1:5739`;
-        }
-        return webview.asWebviewUri(this.webviewUri).toString();
     }
 
     public static getExtensionUri(): vscode.Uri {
