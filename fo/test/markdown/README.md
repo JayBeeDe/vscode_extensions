@@ -9,6 +9,7 @@ test/markdown/
 ├── README.md           ← this file
 ├── Home.md             ← start from this file
 ├── Callouts.md         ← callout tests
+├── Showcase.md         ← tables, code, math, a Mermaid diagram (the README screenshot)
 ├── Projects/
 │   ├── Vditor.md
 │   └── Roadmap.md

@@ -1,0 +1,8 @@
+﻿id;name;city;amount;note
+1;Alice;Paris;1250,50;plain
+2;Bob, Jr.;Lyon;-42;"""comma"" in the name, quotes in the note"
+3;Chloé;Montréal;0;"line
+break inside a quoted field"
+4;;Zürich;;empty cells
+5;王小明;北京;3,14159;Chinese characters
+6;Émile;Besançon;1e6;café, crème, œuf, €
