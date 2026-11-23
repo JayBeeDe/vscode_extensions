@@ -11,8 +11,12 @@ const HIGHLIGHT_CLASS = "vditor-find-highlight";
 const CURRENT_CLASS = "vditor-find-highlight--current";
 const CSS_FIND_MATCH = "vditor-find-match";
 const CSS_FIND_CURRENT = "vditor-find-current";
+// inline code (`foo`) is searched like any text: only the sources searched in their CodeMirror
+// view (code and math blocks) and an inline formula's hidden source are skipped
 const FIND_SKIP_SELECTOR = [
-    "code",
+    "[data-type='code-block'] pre",
+    "[data-type='math-block'] pre",
+    "code[data-type='math-inline']",
     ".cm-editor",
     ".vditor-cm-chrome",
     ".vditor-find-bar",
