@@ -20,6 +20,8 @@
       "noPasteDirectory": "ディレクトリの貼り付けはサポートされていません。",
       "installXclip": "先に xclip コマンドをインストールしてください。",
       "wikilinkNotFound": "ウィキリンクのターゲットが見つかりません: {target}",
+      "linkNotFound": "リンク先が見つかりません: {path}",
+      "copyPath": "パスをコピー",
       "statusBar": "行 {lines} 文字数 {chars}",
       "tempHtmlNotFound": "一時 HTML ファイルが見つかりません: {path}",
       "folderEmpty": "このフォルダーは空です。",

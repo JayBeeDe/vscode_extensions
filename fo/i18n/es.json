@@ -20,6 +20,8 @@
       "noPasteDirectory": "No se admite pegar directorios.",
       "installXclip": "Primero debe instalar el comando xclip.",
       "wikilinkNotFound": "Destino del wikilink no encontrado: {target}",
+      "linkNotFound": "No se encontró el destino del enlace: {path}",
+      "copyPath": "Copiar ruta",
       "statusBar": "Línea {lines} Caracteres {chars}",
       "tempHtmlNotFound": "No se encontró el archivo HTML temporal: {path}",
       "folderEmpty": "Esta carpeta está vacía.",

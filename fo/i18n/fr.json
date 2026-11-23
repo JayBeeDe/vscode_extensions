@@ -20,6 +20,8 @@
       "noPasteDirectory": "Le collage de répertoires n'est pas pris en charge.",
       "installXclip": "Vous devez d'abord installer la commande xclip.",
       "wikilinkNotFound": "Cible du wikilink introuvable : {target}",
+      "linkNotFound": "Cible du lien introuvable : {path}",
+      "copyPath": "Copier le chemin",
       "statusBar": "Ligne {lines} Caractères {chars}",
       "tempHtmlNotFound": "Fichier HTML temporaire introuvable : {path}",
       "folderEmpty": "Ce dossier est vide.",

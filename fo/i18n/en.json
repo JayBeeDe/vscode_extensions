@@ -20,6 +20,8 @@
       "noPasteDirectory": "Not support paste directory.",
       "installXclip": "You need to install xclip command first.",
       "wikilinkNotFound": "Wikilink target not found: {target}",
+      "linkNotFound": "Link target not found: {path}",
+      "copyPath": "Copy Path",
       "statusBar": "Line {lines} Count {chars}",
       "tempHtmlNotFound": "Temporary HTML file not found: {path}",
       "folderEmpty": "This folder is empty.",

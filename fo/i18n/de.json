@@ -20,6 +20,8 @@
       "noPasteDirectory": "Einfügen von Verzeichnissen wird nicht unterstützt.",
       "installXclip": "Sie müssen zuerst den Befehl xclip installieren.",
       "wikilinkNotFound": "Wikilink-Ziel nicht gefunden: {target}",
+      "linkNotFound": "Linkziel nicht gefunden: {path}",
+      "copyPath": "Pfad kopieren",
       "statusBar": "Zeile {lines} Zeichen {chars}",
       "tempHtmlNotFound": "Temporäre HTML-Datei nicht gefunden: {path}",
       "folderEmpty": "Dieser Ordner ist leer.",

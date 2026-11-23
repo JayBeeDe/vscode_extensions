@@ -20,6 +20,8 @@
       "noPasteDirectory": "Вставка каталогов не поддерживается.",
       "installXclip": "Сначала необходимо установить команду xclip.",
       "wikilinkNotFound": "Цель викиссылки не найдена: {target}",
+      "linkNotFound": "Цель ссылки не найдена: {path}",
+      "copyPath": "Копировать путь",
       "statusBar": "Строка {lines} Символов {chars}",
       "tempHtmlNotFound": "Временный HTML-файл не найден: {path}",
       "folderEmpty": "Эта папка пуста.",

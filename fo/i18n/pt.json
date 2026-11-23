@@ -20,6 +20,8 @@
       "noPasteDirectory": "Não é suportado colar diretórios.",
       "installXclip": "Você precisa instalar o comando xclip primeiro.",
       "wikilinkNotFound": "Destino do wikilink não encontrado: {target}",
+      "linkNotFound": "Destino do link não encontrado: {path}",
+      "copyPath": "Copiar caminho",
       "statusBar": "Linha {lines} Caracteres {chars}",
       "tempHtmlNotFound": "Arquivo HTML temporário não encontrado: {path}",
       "folderEmpty": "Esta pasta está vazia.",

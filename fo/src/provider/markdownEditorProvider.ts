@@ -22,6 +22,24 @@ import { parseWebviewResourceUri } from '@/common/webviewUri';
 import { consumePendingMatch, openInEditor, openMarkdownAsText } from '@/service/markdown/searchReveal';
 import { folderOfView, isFolder, openFolderView, openInPlaceOf } from '@/service/markdown/folderView';
 
+async function exists(uri: vscode.Uri): Promise<boolean> {
+    try {
+        await vscode.workspace.fs.stat(uri);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+/** A local link's target is missing: an error with the path it resolved to, and a button to copy it */
+async function showLinkNotFound(target: vscode.Uri) {
+    const path = target.scheme === 'file' ? target.fsPath : target.toString();
+    const copy = i18n('markdown.copyPath');
+    if (await vscode.window.showErrorMessage(i18n('markdown.linkNotFound', { path }), copy) === copy) {
+        await vscode.env.clipboard.writeText(path);
+    }
+}
+
 function getRuntimePlatform(): string {
     if (typeof process !== 'undefined' && process.platform) {
         return process.platform;
@@ -286,7 +304,10 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
                 return;
             }
             const localUri = parseWebviewResourceUri(linkUri, linkBaseUri, this.getWorkspaceUriByFileUtil(linkBaseUri));
-            if (localUri && await isFolder(localUri.with({ query: '', fragment: '' }))) {
+            if (localUri && !await exists(localUri.with({ query: '', fragment: '' }))) {
+                // a wrong local link: say where it led, the path one click away to check it
+                void showLinkNotFound(localUri.with({ query: '', fragment: '' }));
+            } else if (localUri && await isFolder(localUri.with({ query: '', fragment: '' }))) {
                 // a folder: its files and subfolders, then its README; from a folder's view, in its place
                 void openFolderView(localUri, replacing);
             } else if (localUri) {
