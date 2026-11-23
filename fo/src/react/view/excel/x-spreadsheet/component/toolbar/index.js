@@ -1,7 +1,6 @@
 /* global window */
 
-import Align from './align';
-import Valign from './valign';
+import AlignGroup from './align_group';
 import Autofilter from './autofilter';
 import Bold from './bold';
 import Italic from './italic';
@@ -113,6 +112,8 @@ export default class Toolbar {
     this.widthFn = widthFn;
     this.isHide = isHide;
     const style = data.defaultStyle();
+    this.alignEl = new AlignGroup('align', ['left', 'center', 'right'], style.align);
+    this.valignEl = new AlignGroup('valign', ['top', 'middle', 'bottom'], style.valign);
     this.items = [
       [
         this.undoEl = new Undo(),
@@ -159,9 +160,10 @@ export default class Toolbar {
         this.mergeEl = new Merge(),
       ],
       buildDivider(),
+      this.alignEl.buttons,
+      buildDivider(),
       [
-        this.alignEl = new Align(style.align),
-        this.valignEl = new Valign(style.valign),
+        ...this.valignEl.buttons,
         this.textwrapEl = new Textwrap(),
       ],
       buildDivider(),
