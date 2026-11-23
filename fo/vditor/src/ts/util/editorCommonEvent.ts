@@ -25,6 +25,7 @@ import { handleAutoSymbolPair } from "./autoSymbol";
 import { handleVscodeShortcut } from "./vscodeShortcut";
 import { applyEditorSettings, getEditorFontSize, stepEditorFontSize } from "./editorSettings";
 import {hasTopHeadingBeforeCaret} from "./singleTitle";
+import {isReadOnly} from "./readOnly";
 
 const markImageLoading = (img: HTMLImageElement) => {
     if (img.complete && img.naturalWidth > 0) {
@@ -170,6 +171,10 @@ export const dropEvent = (vditor: IVditor, editorElement: HTMLElement) => {
     });
     editorElement.addEventListener("drop",
         (event: ClipboardEvent & { dataTransfer?: DataTransfer, target: HTMLElement }) => {
+            if (isReadOnly(vditor)) {
+                event.preventDefault();
+                return;
+            }
             if (event.dataTransfer.getData(Constants.DROP_EDITOR)) {
                 // dragging text selected inside the editor
                 execAfterRender(vditor);

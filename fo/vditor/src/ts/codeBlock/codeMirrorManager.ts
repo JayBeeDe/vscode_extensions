@@ -1,6 +1,6 @@
 import { indentLess, redo, redoDepth, undo, undoDepth } from "@codemirror/commands";
 import { LanguageSupport } from "@codemirror/language";
-import { Compartment, EditorSelection, Prec } from "@codemirror/state";
+import { Compartment, EditorSelection, EditorState, Prec } from "@codemirror/state";
 import { EditorView, keymap } from "@codemirror/view";
 
 import { expandMarker } from "../ir/expandMarker";
@@ -35,6 +35,7 @@ import {
 import {
     flushFrontMatterYamlToSyncCode,
 } from "./frontMatterEditor";
+import {isReadOnly} from "../util/readOnly";
 
 export { focusCodeBlockChromeLanguage, isInsideCodeBlockChrome } from "./codeBlockChrome";
 
@@ -1604,6 +1605,8 @@ const mountCodeMirror = (blockElement: HTMLElement, vditor: IVditor, force = fal
         parent: editPre,
         extensions: [
             vditorCodeMirrorSetup,
+            // a read-only document's code can be selected and copied, not changed
+            isReadOnly(vditor) ? [EditorState.readOnly.of(true), EditorView.editable.of(false)] : [],
             keymap.of(stopHandledCodeMirrorKeymap([{ key: "Tab", run: insertLiteralTab, shift: indentLess }])),
             buildCodeMirrorNavigationKeymap(vditor, blockElement),
             languageCompartment.of([]),

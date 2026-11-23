@@ -8,6 +8,7 @@ import { stopHandledCodeMirrorKeymap, vditorCodeMirrorSetup } from "./codeMirror
 import { processAfterRender } from "../ir/process";
 import { formatAltEnterHotkeyTip } from "../util/compatibility";
 import { afterRenderEvent } from "../wysiwyg/afterRenderEvent";
+import {isReadOnly} from "../util/readOnly";
 
 const FRONT_MATTER_POPOVER_CLASS = "vditor-popover--front-matter";
 const FRONT_MATTER_PANEL_CLASS = "vditor-panel--front-matter";
@@ -278,7 +279,7 @@ export const showFrontMatterEditorPopover = (vditor: IVditor, blockElement: HTML
     const popover = getModePopover(vditor);
     const editButton = blockElement.querySelector(".vditor-properties__edit") as HTMLElement | null;
     const anchorElement = editButton || blockElement;
-    if (!popover || !blockElement.isConnected) {
+    if (!popover || !blockElement.isConnected || isReadOnly(vditor)) {
         return;
     }
 

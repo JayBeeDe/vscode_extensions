@@ -11,6 +11,7 @@ import { MarkdownEditorProvider } from './provider/markdownEditorProvider';
 import { OfficeViewerProvider } from './provider/officeViewerProvider';
 import { MarkdownService } from './service/markdownService';
 import { bindMarkdownSearchReveal } from './service/markdown/searchReveal';
+import { registerFolderView } from './service/markdown/folderView';
 import { switchCsvEditor } from './service/csvService';
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -21,6 +22,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	const viewOption = { webviewOptions: { retainContextWhenHidden: true } };
 	bindMarkdownSearchReveal(context);
+	registerFolderView(context);
 	const markdownService = new MarkdownService(context);
 	const markdownEditorProvider = new MarkdownEditorProvider(context, { isWeb: true });
 	const viewerInstance = new OfficeViewerProvider(context);

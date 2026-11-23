@@ -38,6 +38,7 @@ import {codicon} from "../util/codicon";
 import {updateTableHandle} from "./tableHandle";
 import {resolveAdjacentElementFromRange} from "../util/rangeAdjacentElement";
 import {normalizeLinkDestInput} from "../util/linkDest";
+import {isReadOnly} from "../util/readOnly";
 
 export const hideLinkPopover = (vditor: IVditor) => {
     if (vditor.currentMode === "wysiwyg" || vditor.currentMode === "ir") {
@@ -407,7 +408,7 @@ export const repositionEditPopover = (vditor: IVditor, element: HTMLElement) => 
 
 export const genLinkRefPopover = (vditor: IVditor, linkRefElement: HTMLElement) => {
     const popover = getModePopover(vditor);
-    if (!popover) {
+    if (!popover || isReadOnly(vditor)) {
         return;
     }
     (popover as { _sourceElement?: HTMLElement })._sourceElement = linkRefElement;
@@ -583,7 +584,7 @@ const linkHotkey = (
 
 export const genAPopover = (vditor: IVditor, aElement: HTMLElement) => {
     const popover = getModePopover(vditor);
-    if (!popover) {
+    if (!popover || isReadOnly(vditor)) {
         return;
     }
     (popover as { _sourceElement?: HTMLElement })._sourceElement = aElement;
@@ -705,7 +706,7 @@ export const genAPopover = (vditor: IVditor, aElement: HTMLElement) => {
 
 export const genImagePopoverForElement = (vditor: IVditor, imgElement: HTMLImageElement) => {
     const popover = getModePopover(vditor);
-    if (!popover) {
+    if (!popover || isReadOnly(vditor)) {
         return;
     }
     (popover as { _sourceElement?: HTMLElement })._sourceElement = imgElement;

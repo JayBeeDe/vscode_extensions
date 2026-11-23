@@ -40,11 +40,11 @@ export function openMarkdownAsText(uri: vscode.Uri, column: vscode.ViewColumn) {
 }
 
 /** Opens `uri` in the Markdown editor when it is a Markdown file, else in its default editor. */
-export function openInEditor(uri: vscode.Uri) {
+export function openInEditor(uri: vscode.Uri, viewColumn?: vscode.ViewColumn) {
     if (isMarkdownFile(uri)) {
-        return vscode.commands.executeCommand('vscode.openWith', uri, 'foss-office.markdownViewer', { preview: false });
+        return vscode.commands.executeCommand('vscode.openWith', uri, 'foss-office.markdownViewer', { preview: false, viewColumn });
     }
-    return vscode.commands.executeCommand('vscode.open', uri, { preview: false });
+    return vscode.commands.executeCommand('vscode.open', uri, { preview: false, viewColumn });
 }
 
 /** The match the Markdown editor opening `uri` shows, once. */

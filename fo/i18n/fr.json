@@ -21,10 +21,20 @@
       "installXclip": "Vous devez d'abord installer la commande xclip.",
       "wikilinkNotFound": "Cible du wikilink introuvable : {target}",
       "statusBar": "Ligne {lines} Caractères {chars}",
-      "tempHtmlNotFound": "Fichier HTML temporaire introuvable : {path}"
+      "tempHtmlNotFound": "Fichier HTML temporaire introuvable : {path}",
+      "folderEmpty": "Ce dossier est vide.",
+      "folderUnreadable": "Impossible de lire ce dossier : {error}",
+      "folderEditReadme": "Modifier {name}",
+      "folderLinkTitle": "Ouvrir le dossier <Clic>\nOuvrir le dossier dans un nouvel onglet <{key}+Clic>",
+      "fileLinkTitle": "Ouvrir le fichier <Clic>\nOuvrir le fichier dans un nouvel onglet <{key}+Clic>",
+      "parentLinkTitle": "Ouvrir le dossier parent <Clic>\nOuvrir le dossier parent dans un nouvel onglet <{key}+Clic>",
+      "folderTitle": "Répertoire {name}",
+      "folderReadmeNoticeTitle": "Lecture seule",
+      "folderReadmeNotice": "{name} est affiché ici en lecture seule : {link} pour le modifier."
     },
     "loading": {
       "document": "Chargement {kind} {name}...",
+      "directory": "Chargement du répertoire {name}...",
       "mermaid": {
         "one": "Chargement de {count} diagramme Mermaid restant {kind} {name}...",
         "many": "Chargement de {count} diagrammes Mermaid restants {kind} {name}...",
@@ -39,7 +49,8 @@
         "xmind": "de la carte mentale",
         "parquet": "du fichier Parquet",
         "markdown": "du Markdown",
-        "file": "du fichier"
+        "file": "du fichier",
+        "directory": "du répertoire"
       }
     },
     "saving": {

@@ -460,6 +460,8 @@ interface IEditorSettings {
 
 /** @link https://ld246.com/article/1549638745630#options */
 interface IOptions {
+    /** Only to be read: nothing in it can be edited (ts/util/readOnly.ts) */
+    readOnly?: boolean;
     /** RTL */
     rtl?: boolean;
     /** History recording interval */

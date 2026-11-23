@@ -1,0 +1,240 @@
+// A folder's listing (src/service/markdown/folderView.ts): the first table of a read-only page,
+// folders on the left, files on the right, each link with a codicon by its kind, VS Code's file
+// icon theme being out of a webview's reach. The icon is the link's ::before, an inline block:
+// out of the link's underline.
+.vditor--readonly .vditor-reset > table:first-of-type {
+  // across the page but for a small margin on each side, its two columns half each, a long name
+  // wrapping
+  display: table;
+  width: calc(100% - 100px);
+  margin-inline: 50px;
+  max-width: none;
+  table-layout: fixed;
+  word-break: break-word;
+
+  // the ".." heading starts at the left, like the rows under it
+  th {
+    text-align: start;
+  }
+}
+
+.vditor--readonly .vditor-reset > table:first-of-type :is(th, td) > a {
+  &::before {
+    // file
+    content: "\ea7b";
+    display: inline-block;
+    margin-inline-end: 0.4em;
+    font: normal normal normal 16px/1 codicon;
+    vertical-align: text-bottom;
+    text-decoration: none;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  // folder
+  &[href$="/"]::before {
+    content: "\ea83";
+  }
+
+  // the parent folder
+  &[href$="../"]::before {
+    content: "\eaa1";
+  }
+
+  // file-code
+  &[href$=".js" i]::before,
+  &[href$=".mjs" i]::before,
+  &[href$=".cjs" i]::before,
+  &[href$=".ts" i]::before,
+  &[href$=".mts" i]::before,
+  &[href$=".cts" i]::before,
+  &[href$=".jsx" i]::before,
+  &[href$=".tsx" i]::before,
+  &[href$=".py" i]::before,
+  &[href$=".java" i]::before,
+  &[href$=".c" i]::before,
+  &[href$=".h" i]::before,
+  &[href$=".cpp" i]::before,
+  &[href$=".hpp" i]::before,
+  &[href$=".cc" i]::before,
+  &[href$=".go" i]::before,
+  &[href$=".rs" i]::before,
+  &[href$=".rb" i]::before,
+  &[href$=".php" i]::before,
+  &[href$=".cs" i]::before,
+  &[href$=".swift" i]::before,
+  &[href$=".kt" i]::before,
+  &[href$=".scala" i]::before,
+  &[href$=".lua" i]::before,
+  &[href$=".pl" i]::before,
+  &[href$=".r" i]::before,
+  &[href$=".html" i]::before,
+  &[href$=".htm" i]::before,
+  &[href$=".css" i]::before,
+  &[href$=".less" i]::before,
+  &[href$=".scss" i]::before,
+  &[href$=".sass" i]::before,
+  &[href$=".vue" i]::before,
+  &[href$=".svelte" i]::before,
+  &[href$=".xml" i]::before {
+    content: "\eae9";
+  }
+
+  // markdown
+  &[href$=".md" i]::before,
+  &[href$=".markdown" i]::before,
+  &[href$=".mdx" i]::before {
+    content: "\eb1d";
+  }
+
+  // json
+  &[href$=".json" i]::before,
+  &[href$=".jsonc" i]::before,
+  &[href$=".json5" i]::before {
+    content: "\eb0f";
+  }
+
+  // table
+  &[href$=".csv" i]::before,
+  &[href$=".tsv" i]::before,
+  &[href$=".xlsx" i]::before,
+  &[href$=".xls" i]::before,
+  &[href$=".xlsm" i]::before,
+  &[href$=".xltx" i]::before,
+  &[href$=".ods" i]::before,
+  &[href$=".parquet" i]::before {
+    content: "\ebb7";
+  }
+
+  // file-text
+  &[href$=".docx" i]::before,
+  &[href$=".doc" i]::before,
+  &[href$=".dotx" i]::before,
+  &[href$=".odt" i]::before,
+  &[href$=".rtf" i]::before,
+  &[href$=".txt" i]::before {
+    content: "\ec5e";
+  }
+
+  // preview
+  &[href$=".pptx" i]::before,
+  &[href$=".ppt" i]::before,
+  &[href$=".potx" i]::before,
+  &[href$=".odp" i]::before {
+    content: "\eb2f";
+  }
+
+  // file-pdf
+  &[href$=".pdf" i]::before {
+    content: "\eaeb";
+  }
+
+  // book
+  &[href$=".epub" i]::before {
+    content: "\eaa4";
+  }
+
+  // graph
+  &[href$=".xmind" i]::before {
+    content: "\eb03";
+  }
+
+  // notebook
+  &[href$=".ipynb" i]::before {
+    content: "\ebaf";
+  }
+
+  // file-media
+  &[href$=".png" i]::before,
+  &[href$=".jpg" i]::before,
+  &[href$=".jpeg" i]::before,
+  &[href$=".gif" i]::before,
+  &[href$=".svg" i]::before,
+  &[href$=".webp" i]::before,
+  &[href$=".bmp" i]::before,
+  &[href$=".ico" i]::before,
+  &[href$=".tif" i]::before,
+  &[href$=".tiff" i]::before,
+  &[href$=".avif" i]::before,
+  &[href$=".mp3" i]::before,
+  &[href$=".wav" i]::before,
+  &[href$=".ogg" i]::before,
+  &[href$=".flac" i]::before,
+  &[href$=".mp4" i]::before,
+  &[href$=".webm" i]::before,
+  &[href$=".mov" i]::before,
+  &[href$=".mkv" i]::before,
+  &[href$=".avi" i]::before {
+    content: "\eaea";
+  }
+
+  // file-zip
+  &[href$=".zip" i]::before,
+  &[href$=".tar" i]::before,
+  &[href$=".gz" i]::before,
+  &[href$=".tgz" i]::before,
+  &[href$=".bz2" i]::before,
+  &[href$=".xz" i]::before,
+  &[href$=".7z" i]::before,
+  &[href$=".rar" i]::before {
+    content: "\eaef";
+  }
+
+  // terminal
+  &[href$=".sh" i]::before,
+  &[href$=".bash" i]::before,
+  &[href$=".zsh" i]::before,
+  &[href$=".fish" i]::before,
+  &[href$=".ps1" i]::before,
+  &[href$=".bat" i]::before,
+  &[href$=".cmd" i]::before {
+    content: "\ea85";
+  }
+
+  // gear
+  &[href$=".yaml" i]::before,
+  &[href$=".yml" i]::before,
+  &[href$=".toml" i]::before,
+  &[href$=".ini" i]::before,
+  &[href$=".cfg" i]::before,
+  &[href$=".conf" i]::before,
+  &[href$=".env" i]::before,
+  &[href$=".editorconfig" i]::before,
+  &[href$=".gitignore" i]::before,
+  &[href$=".gitattributes" i]::before,
+  &[href$=".npmrc" i]::before {
+    content: "\eaf8";
+  }
+
+  // database
+  &[href$=".db" i]::before,
+  &[href$=".sqlite" i]::before,
+  &[href$=".sql" i]::before {
+    content: "\eace";
+  }
+
+  // file-binary
+  &[href$=".exe" i]::before,
+  &[href$=".dll" i]::before,
+  &[href$=".so" i]::before,
+  &[href$=".dylib" i]::before,
+  &[href$=".bin" i]::before,
+  &[href$=".wasm" i]::before,
+  &[href$=".class" i]::before,
+  &[href$=".jar" i]::before {
+    content: "\eae8";
+  }
+}
+
+// the link to edit the README shown under the listing, in the warning right after the separator
+.vditor--readonly .vditor-reset > hr:first-of-type + [data-type="callout"] .vditor-callout__content a {
+  &::before {
+    // edit
+    content: "\ea73";
+    display: inline-block;
+    margin-inline-end: 0.4em;
+    font: normal normal normal 16px/1 codicon;
+    vertical-align: text-bottom;
+    text-decoration: none;
+    -webkit-font-smoothing: antialiased;
+  }
+}

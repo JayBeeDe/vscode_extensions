@@ -13,6 +13,7 @@ import { formatAltEnterHotkeyTip } from "../util/compatibility";
 import { codicon } from "../util/codicon";
 import { afterRenderEvent } from "../wysiwyg/afterRenderEvent";
 import { processAfterRender } from "../ir/process";
+import {isReadOnly} from "../util/readOnly";
 
 const HTML_EDITOR_POPOVER_CLASS = "vditor-popover--html-inline";
 const HTML_EDITOR_PANEL_CLASS = "vditor-panel--html-inline";
@@ -454,7 +455,7 @@ const toggleHtmlEditorLineWrap = (wrapButton: HTMLButtonElement) => {
 
 export const showHtmlEditorPopover = (vditor: IVditor, target: HtmlEditTarget) => {
     const popover = getModePopover(vditor);
-    if (!popover || !target.anchorElement.isConnected) {
+    if (!popover || !target.anchorElement.isConnected || isReadOnly(vditor)) {
         return;
     }
 

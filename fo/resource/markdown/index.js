@@ -128,7 +128,8 @@ async function openMarkdown(md) {
   window.__officeMarkdownFileName = fileName || 'Note';
   const {
     language, i18n, isWeb, isDev, markdown,
-    editMode, sidebar, theme, pageTheme, codeMirrorTheme, mermaidTheme, editorSettings, waitForAllMermaidDiagrams
+    editMode, sidebar, theme, pageTheme, codeMirrorTheme, mermaidTheme, editorSettings, waitForAllMermaidDiagrams,
+    readOnly
   } = config;
   if (isWeb) {
     document.body.classList.add('is-web')
@@ -175,7 +176,8 @@ async function openMarkdown(md) {
       id: documentCacheId,
       focusHost: 'vscode',
     },
-    mode: editMode,
+    // a folder's listing: its icons need the WYSIWYG mode's links (_folderView.less)
+    mode: readOnly ? 'wysiwyg' : editMode,
     colorTheme: theme,
     pageTheme,
     editorSettings,
@@ -184,12 +186,24 @@ async function openMarkdown(md) {
     lang: mapVscodeLanguageToVditorLang(language),
     i18n,
     tab: '\t',
+    // a folder's listing (folderView.ts): read, never edited
+    readOnly: !!readOnly,
     toolbar: await getToolbar(rootPath, i18n, () => {
       saveFormatted();
     }, isWeb),
     onLinkClick(payload, event) {
       const isCompose = event.metaKey || event.ctrlKey;
-      if (payload.action !== "dblclick" && !(payload.action === "click" && isCompose)) {
+      // in a folder's listing, a link opens in its place, or in a tab of its own (see below)
+      let newTab = false;
+      if (readOnly) {
+        // nothing to edit: a click follows the link, a double click once only; Ctrl/⌘+click or
+        // a middle click, in a new tab
+        const middleClick = payload.action === "auxclick" && event.button === 1;
+        if (payload.action !== "click" && !middleClick) {
+          return;
+        }
+        newTab = isCompose || middleClick;
+      } else if (payload.action !== "dblclick" && !(payload.action === "click" && isCompose)) {
         return;
       }
       if (payload.type === "footnote-ref") {
@@ -221,7 +235,7 @@ async function openMarkdown(md) {
         }
         uri = `wiki:${payload.href}`;
       }
-      handler.emit("openLink", uri);
+      handler.emit("openLink", newTab ? { uri, newTab } : uri);
     },
     debugger: isDev,
     wysiwygInputPerf: isDev && false,
@@ -259,6 +273,11 @@ async function openMarkdown(md) {
       },
     },
     after() {
+      // a folder's listing (folderView.ts): to read and follow its links, not to edit
+      if (readOnly) {
+        editor.vditor.element.classList.add('vditor--readonly');
+        editor.disabled();
+      }
       openOutlineIfHeadings(editor, sidebar);
       // the file shows once its diagrams are drawn, or at once, each diagram with its own spinner
       const root = document.getElementById('vditor');
@@ -287,7 +306,7 @@ async function openMarkdown(md) {
         if (update.mermaidTheme !== undefined) {
           editor.setMermaidTheme(update.mermaidTheme);
         }
-        if (update.editMode !== undefined) {
+        if (update.editMode !== undefined && !readOnly) {
           editor.switchEditMode(update.editMode);
         }
         if (update.editorSettings !== undefined) {

@@ -21,10 +21,20 @@
       "installXclip": "先に xclip コマンドをインストールしてください。",
       "wikilinkNotFound": "ウィキリンクのターゲットが見つかりません: {target}",
       "statusBar": "行 {lines} 文字数 {chars}",
-      "tempHtmlNotFound": "一時 HTML ファイルが見つかりません: {path}"
+      "tempHtmlNotFound": "一時 HTML ファイルが見つかりません: {path}",
+      "folderEmpty": "このフォルダーは空です。",
+      "folderUnreadable": "このフォルダーを読み取れません: {error}",
+      "folderEditReadme": "{name} を編集",
+      "folderLinkTitle": "フォルダーを開く <クリック>\n新しいタブでフォルダーを開く <{key}+クリック>",
+      "fileLinkTitle": "ファイルを開く <クリック>\n新しいタブでファイルを開く <{key}+クリック>",
+      "parentLinkTitle": "親フォルダーを開く <クリック>\n新しいタブで親フォルダーを開く <{key}+クリック>",
+      "folderTitle": "{name} ディレクトリ",
+      "folderReadmeNoticeTitle": "読み取り専用",
+      "folderReadmeNotice": "{name} はここでは読み取り専用です。変更するには: {link}"
     },
     "loading": {
       "document": "{kind} {name} を読み込んでいます...",
+      "directory": "{name} ディレクトリを読み込んでいます...",
       "mermaid": {
         "other": "{kind} {name} の残り {count} 件の Mermaid 図を読み込んでいます..."
       },
@@ -37,7 +47,8 @@
         "xmind": "マインドマップ",
         "parquet": "Parquet ファイル",
         "markdown": "Markdown",
-        "file": "ファイル"
+        "file": "ファイル",
+        "directory": "ディレクトリ"
       }
     },
     "saving": {

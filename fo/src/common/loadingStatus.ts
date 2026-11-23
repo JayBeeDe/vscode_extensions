@@ -3,6 +3,7 @@ import { Handler } from './handler';
 import { i18n } from './global';
 import { getFileSuffix } from './fileSuffix';
 import { resolveLanguage } from '../i18n';
+import { folderName, folderOfView } from '@/service/markdown/folderView';
 
 /**
  * The loading screen every viewer shows while its document opens: a spinner over the whole
@@ -98,6 +99,11 @@ function documentKind(suffix: string): string {
 
 /** "Loading spreadsheet excel.csv...": the kind of document, then its file name. */
 function loadingLabel(uri: vscode.Uri): string {
+    // a folder's listing (folderView.ts): "Loading docs directory...", not its virtual file's name
+    const folder = folderOfView(uri);
+    if (folder) {
+        return i18n('loading.directory', { name: folderName(folder) });
+    }
     const name = documentName(uri);
     return i18n('loading.document', { kind: documentKind(getFileSuffix(name)), name });
 }
@@ -145,8 +151,9 @@ export function trackDocumentLoading(handler: Handler, uri: vscode.Uri): void {
  * for that number (every form written out, so the i18n check sees them).
  */
 function mermaidLoadingLabel(uri: vscode.Uri, count: number): string {
-    const name = documentName(uri);
-    const vars = { count, kind: documentKind(getFileSuffix(name)), name };
+    const folder = folderOfView(uri);
+    const name = folder ? folderName(folder) : documentName(uri);
+    const vars = { count, kind: folder ? i18n('loading.kind.directory') : documentKind(getFileSuffix(name)), name };
     switch (new Intl.PluralRules(resolveLanguage(vscode.env.language)).select(count)) {
         case 'one': return i18n('loading.mermaid.one', vars);
         case 'few': return i18n('loading.mermaid.few', vars);

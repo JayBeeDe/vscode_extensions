@@ -21,10 +21,20 @@
       "installXclip": "Você precisa instalar o comando xclip primeiro.",
       "wikilinkNotFound": "Destino do wikilink não encontrado: {target}",
       "statusBar": "Linha {lines} Caracteres {chars}",
-      "tempHtmlNotFound": "Arquivo HTML temporário não encontrado: {path}"
+      "tempHtmlNotFound": "Arquivo HTML temporário não encontrado: {path}",
+      "folderEmpty": "Esta pasta está vazia.",
+      "folderUnreadable": "Não é possível ler esta pasta: {error}",
+      "folderEditReadme": "Editar {name}",
+      "folderLinkTitle": "Abrir a pasta <Clique>\nAbrir a pasta em uma nova aba <{key}+Clique>",
+      "fileLinkTitle": "Abrir o arquivo <Clique>\nAbrir o arquivo em uma nova aba <{key}+Clique>",
+      "parentLinkTitle": "Abrir a pasta superior <Clique>\nAbrir a pasta superior em uma nova aba <{key}+Clique>",
+      "folderTitle": "Diretório {name}",
+      "folderReadmeNoticeTitle": "Somente leitura",
+      "folderReadmeNotice": "{name} é exibido aqui somente para leitura: {link} para alterá-lo."
     },
     "loading": {
       "document": "Carregando {kind} {name}...",
+      "directory": "Carregando o diretório {name}...",
       "mermaid": {
         "one": "Carregando {count} diagrama Mermaid restante de {kind} {name}...",
         "many": "Carregando {count} diagramas Mermaid restantes de {kind} {name}...",
@@ -39,7 +49,8 @@
         "xmind": "mapa mental",
         "parquet": "arquivo Parquet",
         "markdown": "Markdown",
-        "file": "arquivo"
+        "file": "arquivo",
+        "directory": "diretório"
       }
     },
     "saving": {

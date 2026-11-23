@@ -456,6 +456,9 @@
 					},
 					{
 						"filenamePattern": "vscode-remote:/**/*.markdown"
+					},
+					{
+						"filenamePattern": "foss-office-folder:/**/*.md"
 					}
 				]
 			},

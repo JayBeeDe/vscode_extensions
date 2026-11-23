@@ -20,6 +20,7 @@ import {
 } from '@/service/markdown/blockScroll';
 import { parseWebviewResourceUri } from '@/common/webviewUri';
 import { consumePendingMatch, openInEditor, openMarkdownAsText } from '@/service/markdown/searchReveal';
+import { folderOfView, isFolder, openFolderView, openInPlaceOf } from '@/service/markdown/folderView';
 
 function getRuntimePlatform(): string {
     if (typeof process !== 'undefined' && process.platform) {
@@ -144,7 +145,8 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
         // console.log('schema', document.uri.scheme, document.uri.path, document.uri.query);
         const uri = document.uri;
         const webview = webviewPanel.webview;
-        const folderPath = vscode.Uri.joinPath(uri, '..')
+        // a folder view's links and images are the real folder's
+        const folderPath = folderOfView(uri) ?? vscode.Uri.joinPath(uri, '..')
         webview.options = {
             enableScripts: true,
             localResourceRoots: [
@@ -168,6 +170,9 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 
         const uri = document.uri;
         const webview = handler.panel.webview;
+        // a folder view (folderView.ts) is read-only: its relative links start from the real folder
+        const readOnly = !!folderOfView(uri);
+        const linkBaseUri = readOnly ? vscode.Uri.joinPath(folderPath, uri.path.slice(uri.path.lastIndexOf('/') + 1)) : uri;
 
         let content = document.getText();
         const contextUri = extensionResource(this.context, 'resource', 'markdown');
@@ -238,7 +243,7 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
             }
         });
         handler.on("init", async () => {
-            const workspaceUri = this.getWorkspaceUriByFileUtil(uri);
+            const workspaceUri = this.getWorkspaceUriByFileUtil(linkBaseUri);
             handler.emit("open", {
                 content, rootPath,
                 workspaceBaseUrl: workspaceUri ? webview.asWebviewUri(workspaceUri).toString().replace(/\?.+$/, '') : '',
@@ -250,7 +255,7 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
                 pendingMatch: consumePendingMatch(uri),
                 // a PDF or DOCX export started from another panel
                 exporting: MarkdownService.exporting,
-                config: this.getMarkdownWebviewConfig(config),
+                config: { ...this.getMarkdownWebviewConfig(config), readOnly },
             })
             this.countOwner = handler;
             this.updateCount(content, handler)
@@ -272,14 +277,21 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
                 triggerSearch: true,
                 filesToInclude: '*.md,*.markdown',
             });
-        }).on("openLink", async (linkUri: string) => {
+        }).on("openLink", async (link: string | { uri: string; newTab?: boolean }) => {
+            const linkUri = typeof link === 'string' ? link : link.uri;
+            // from a folder's view, a link takes its place, unless asked in a new tab (Ctrl+click)
+            const replacing = readOnly && !(typeof link === 'object' && link.newTab) ? uri : undefined;
             if (linkUri.startsWith('wiki:')) {
-                await openWikiLink(uri, linkUri);
+                await openWikiLink(linkBaseUri, linkUri);
                 return;
             }
-            const localUri = parseWebviewResourceUri(linkUri, uri, this.getWorkspaceUriByFileUtil(uri));
-            if (localUri) {
-                void openInEditor(localUri);
+            const localUri = parseWebviewResourceUri(linkUri, linkBaseUri, this.getWorkspaceUriByFileUtil(linkBaseUri));
+            if (localUri && await isFolder(localUri.with({ query: '', fragment: '' }))) {
+                // a folder: its files and subfolders, then its README; from a folder's view, in its place
+                void openFolderView(localUri, replacing);
+            } else if (localUri) {
+                // from a folder's view, the file takes its place
+                void openInPlaceOf(replacing, viewColumn => openInEditor(localUri, viewColumn));
             } else {
                 vscode.env.openExternal(vscode.Uri.parse(linkUri));
             }
@@ -304,15 +316,19 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
             void openMarkdownAsText(uri, side);
         }).on("save", (newContent) => {
             // every edit counts, also those typed right after Ctrl+S
+            if (readOnly) return;
             if (newContent === content && pendingDocumentSync === undefined) return;
             scheduleDocumentSync(newContent);
         }).on("doSave", async (saveContent) => {
+            if (readOnly) return;
             pendingDocumentSync = saveContent;
             content = saveContent;
             await flushDocumentSync();
             this.updateCount(content, handler);
             vscode.commands.executeCommand('workbench.action.files.save');
         }).on("export", async (option) => {
+            // a folder view has no file on disk to export
+            if (readOnly) return;
             // the export reads the file: write the latest edits to it first
             await flushDocumentSync();
             await document.save();

@@ -579,6 +579,16 @@
     }
   }
 
+  // a read-only document's task list can't be ticked
+  &--readonly .vditor-reset input[type="checkbox"] {
+    pointer-events: none;
+  }
+
+  // a click follows a read-only document's links (resource/markdown/index.js)
+  &--readonly .vditor-reset a {
+    cursor: pointer;
+  }
+
   // as specific as the content's links (.vditor-reset a), which are underlined
   .vditor-reset &-footnotes__goto-ref {
     text-decoration: none;

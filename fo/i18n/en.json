@@ -21,10 +21,20 @@
       "installXclip": "You need to install xclip command first.",
       "wikilinkNotFound": "Wikilink target not found: {target}",
       "statusBar": "Line {lines} Count {chars}",
-      "tempHtmlNotFound": "Temporary HTML file not found: {path}"
+      "tempHtmlNotFound": "Temporary HTML file not found: {path}",
+      "folderEmpty": "This folder is empty.",
+      "folderUnreadable": "This folder can't be read: {error}",
+      "folderEditReadme": "Edit {name}",
+      "folderLinkTitle": "Open folder <Click>\nOpen folder in a new tab <{key}+Click>",
+      "fileLinkTitle": "Open file <Click>\nOpen file in a new tab <{key}+Click>",
+      "parentLinkTitle": "Open parent folder <Click>\nOpen parent folder in a new tab <{key}+Click>",
+      "folderTitle": "{name} directory",
+      "folderReadmeNoticeTitle": "Read-only",
+      "folderReadmeNotice": "{name} is shown here read-only: {link} to change it."
     },
     "loading": {
       "document": "Loading {kind} {name}...",
+      "directory": "Loading {name} directory...",
       "mermaid": {
         "one": "Loading {count} remaining Mermaid diagram of {kind} {name}...",
         "few": "Loading {count} remaining Mermaid diagrams of {kind} {name}...",
@@ -40,7 +50,8 @@
         "xmind": "mind map",
         "parquet": "Parquet file",
         "markdown": "Markdown",
-        "file": "file"
+        "file": "file",
+        "directory": "directory"
       }
     },
     "saving": {

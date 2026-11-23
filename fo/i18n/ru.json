@@ -21,10 +21,20 @@
       "installXclip": "Сначала необходимо установить команду xclip.",
       "wikilinkNotFound": "Цель викиссылки не найдена: {target}",
       "statusBar": "Строка {lines} Символов {chars}",
-      "tempHtmlNotFound": "Временный HTML-файл не найден: {path}"
+      "tempHtmlNotFound": "Временный HTML-файл не найден: {path}",
+      "folderEmpty": "Эта папка пуста.",
+      "folderUnreadable": "Не удалось прочитать эту папку: {error}",
+      "folderEditReadme": "Редактировать {name}",
+      "folderLinkTitle": "Открыть папку <Щелчок>\nОткрыть папку в новой вкладке <{key}+Щелчок>",
+      "fileLinkTitle": "Открыть файл <Щелчок>\nОткрыть файл в новой вкладке <{key}+Щелчок>",
+      "parentLinkTitle": "Открыть родительскую папку <Щелчок>\nОткрыть родительскую папку в новой вкладке <{key}+Щелчок>",
+      "folderTitle": "Каталог {name}",
+      "folderReadmeNoticeTitle": "Только чтение",
+      "folderReadmeNotice": "{name} показан здесь только для чтения: {link}, чтобы изменить его."
     },
     "loading": {
       "document": "Загрузка: {kind} {name}...",
+      "directory": "Загрузка: каталог {name}...",
       "mermaid": {
         "one": "Загрузка: осталась {count} диаграмма Mermaid, {kind} {name}...",
         "few": "Загрузка: осталось {count} диаграммы Mermaid, {kind} {name}...",
@@ -40,7 +50,8 @@
         "xmind": "интеллект-карта",
         "parquet": "файл Parquet",
         "markdown": "Markdown",
-        "file": "файл"
+        "file": "файл",
+        "directory": "каталог"
       }
     },
     "saving": {

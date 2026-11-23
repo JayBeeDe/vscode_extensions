@@ -6,6 +6,7 @@ import { stopHandledCodeMirrorKeymap, vditorCodeMirrorSetup } from "../codeBlock
 import { Constants } from "../constants";
 import { mathRender } from "../markdown/mathRender";
 import { setSelectionFocus } from "../util/selection";
+import {isReadOnly} from "../util/readOnly";
 
 type InlineMathBinding = {
     view: EditorView;
@@ -255,7 +256,7 @@ export const deactivateInlineMathEditorsInScope = (scope: ParentNode) => {
 
 export const enterInlineMathEdit = (vditor: IVditor, fromEl: HTMLElement, focusAtStart = true) => {
     const containerEl = resolveInlineMathContainer(fromEl);
-    if (!containerEl) {
+    if (!containerEl || isReadOnly(vditor)) {
         return false;
     }
     const parts = getInlineMathParts(containerEl);

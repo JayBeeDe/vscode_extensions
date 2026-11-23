@@ -37,6 +37,12 @@
     &[contenteditable="false"] {
       opacity: 0.3;
       cursor: not-allowed;
+
+      // read-only on purpose (a folder's listing): to be read, not dimmed
+      .vditor--readonly & {
+        opacity: 1;
+        cursor: auto;
+      }
     }
 
     &:empty::before {
