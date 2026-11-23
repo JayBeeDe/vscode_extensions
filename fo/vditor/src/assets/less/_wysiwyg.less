@@ -186,7 +186,12 @@
     color: var(--second-color);
   }
 
-  span[data-type="link-ref"],
+  // a reference link ([text][ref]) looks like any other link: colored and underlined
+  span[data-type="link-ref"] {
+    color: var(--link-color, @blurColor);
+    text-decoration: underline;
+  }
+
   sup[data-type="footnotes-ref"] {
     color: var(--link-color, @blurColor);
   }

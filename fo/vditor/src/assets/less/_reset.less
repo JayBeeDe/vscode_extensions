@@ -176,8 +176,10 @@
       margin-bottom: 1em;
     }
 
+    // underlined on purpose: VS Code's webview styles drop the browser's default underline
     a {
       color: var(--link-color, @blurColor);
+      text-decoration: underline;
     }
 
     ::selection {
@@ -577,7 +579,8 @@
     }
   }
 
-  &-footnotes__goto-ref {
+  // as specific as the content's links (.vditor-reset a), which are underlined
+  .vditor-reset &-footnotes__goto-ref {
     text-decoration: none;
   }
 

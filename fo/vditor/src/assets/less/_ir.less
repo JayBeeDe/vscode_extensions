@@ -43,6 +43,11 @@
       color: var(--link-color, @blurColor);
     }
 
+    // a reference link's text is underlined like an inline link's (.vditor-ir__link), not its [ref]
+    &[data-type="link-ref"] > span:not(.vditor-ir__marker) {
+      text-decoration: underline;
+    }
+
     &[data-type="html-block"] {
       margin-bottom: 1em;
     }
