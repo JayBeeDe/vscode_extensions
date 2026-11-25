@@ -125,7 +125,7 @@
 	"main": "./out/extension.js",
 	"browser": "./out/extension.web.js",
 	"scripts": {
-		"desktop": "npm run build && code --wait --extensionDevelopmentPath=${PWD} --disable-extensions",
+		"desktop": "npm run build && code --wait --extensionDevelopmentPath=${PWD} \"${INIT_CWD:-$PWD}\"",
 		"web": "npm run build && npx @vscode/test-web --extensionDevelopmentPath=. --open-devtools",
 		"prepackage": "npm install",
 		"dev": "vite --mode=development",
