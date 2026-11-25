@@ -1,6 +1,5 @@
 import { shownMermaidTheme } from "../ui/setMermaidTheme";
 import { codicon } from "../util/codicon";
-import { svgAsPngUri } from "save-svg-as-png";
 import { showToast } from "../ui/toast";
 
 const MERMAID_HOST_CLASS = "vditor-mermaid-host";
@@ -11,6 +10,8 @@ const chromeMap = new WeakMap<HTMLElement, HTMLElement>();
 const createMermaidChrome = () => {
     const chromeRoot = document.createElement("div");
     chromeRoot.className = MERMAID_CHROME_CLASS;
+    // no tooltip over its button: not the diagram's "click to edit" (util/linkHoverTooltip.ts)
+    chromeRoot.setAttribute("title", "");
 
     const toolbar = document.createElement("div");
     toolbar.className = "vditor-mermaid-chrome__toolbar";
@@ -25,7 +26,7 @@ const createMermaidChrome = () => {
     const copyBtn = document.createElement("button");
     copyBtn.type = "button";
     copyBtn.className = "vditor-mermaid-chrome__copy-btn";
-    copyBtn.setAttribute("aria-label", window.VditorI18n.copyAsImage);
+    copyBtn.setAttribute("aria-label", window.VditorI18n.copy);
     copyBtn.innerHTML = `<span class="vditor-mermaid-chrome__copy-icon">${codicon("copy")}</span>`;
     actions.appendChild(copyBtn);
 
@@ -65,26 +66,51 @@ export const ensureMermaidChrome = (vditor: IVditor, mermaidElement: HTMLElement
         event.preventDefault();
         event.stopPropagation();
     });
-    created.copyBtn.addEventListener("click", async (event) => {
+    created.copyBtn.addEventListener("click", (event) => {
         event.preventDefault();
         event.stopPropagation();
-        const svg = host.querySelector("svg");
-        if (!svg) return;
-        try {
-            const scale = window.devicePixelRatio || 1;
-            const uri = await svgAsPngUri(svg, { scale });
-            const res = await fetch(uri);
-            const blob = await res.blob();
-            await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+        copyText(diagramSource(host, mermaidElement)).then(() => {
             const icon = created.copyBtn.querySelector(".codicon");
             if (icon) {
                 icon.className = "codicon codicon-check";
                 setTimeout(() => { icon.className = "codicon codicon-copy"; }, 1500);
             }
-        } catch (error) {
+        }, () => {
             showToast(vditor, window.VditorI18n.copyFailed, 1000, "error");
-        }
+        });
     });
+};
+
+/**
+ * The diagram's Mermaid code: its block's, as written in the markdown (edited or not), else the
+ * code it was drawn from (mermaidRender.ts keeps it in data-mermaid)
+ */
+const diagramSource = (host: HTMLElement, mermaidElement: HTMLElement) => {
+    const block = host.closest("[data-type='code-block']");
+    const code = block?.querySelector("pre:not(.vditor-wysiwyg__preview):not(.vditor-ir__preview) > code.language-mermaid");
+    return (code?.textContent || mermaidElement.getAttribute("data-mermaid") || "").replace(/\n$/, "");
+};
+
+/** Text put on the clipboard; refused when there is none, or the clipboard refuses it */
+export const copyText = async (text: string) => {
+    if (!text) {
+        throw new Error("no code");
+    }
+    try {
+        await navigator.clipboard.writeText(text);
+    } catch {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        const copied = document.execCommand("copy");
+        textarea.remove();
+        if (!copied) {
+            throw new Error("copy refused");
+        }
+    }
 };
 
 export const removeMermaidChrome = (host: HTMLElement) => {

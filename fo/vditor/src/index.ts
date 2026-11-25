@@ -342,6 +342,13 @@ class Vditor {
         } else {
             document.execCommand("insertText", false, markdown);
         }
+        // what was inserted is drawn: a diagram, a formula, highlighted code (they wait with a spinner)
+        if (vditor.currentMode === "ir" || vditor.currentMode === "wysiwyg") {
+            vditor[vditor.currentMode].element.querySelectorAll(`.vditor-${vditor.currentMode}__preview[data-render='2']`)
+                .forEach((item: HTMLElement) => {
+                    processCodeRender(item, vditor);
+                });
+        }
         markOutlineEditing(vditor);
         vditor.outline.render(vditor);
         recordHistoryChange(vditor);

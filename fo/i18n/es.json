@@ -1426,7 +1426,6 @@
     "empty": "Ninguno",
     "current": "actual",
     "languageSearch": "Buscar lenguaje",
-    "copyAsImage": "Copiar como imagen",
     "openInPlantuml": "Abrir en PlantUML",
     "toggleLineWrap": "Ajuste de línea",
     "htmlReadOnly": "HTML, de solo lectura aquí: {key}+clic para editarlo",
@@ -1435,6 +1434,9 @@
     "linkHoverOpenEdit": "Abrir {url} en una pestaña nueva, <{key}+Clic> para editar el enlace",
     "linkHoverCtrlTooltip": "<{key}+Clic> para abrir {tooltip}",
     "linkHoverCtrlUrl": "<{key}+Clic> para abrir {url} en una pestaña nueva",
+    "clickToEditMermaid": "Haga clic para editar el diagrama Mermaid",
+    "clickToEditMath": "Haga clic para editar",
+    "insertMermaid": "Diagrama Mermaid",
     "mermaidRenderError": "Error al representar Mermaid",
     "plantumlRenderError": "Error al representar PlantUML"
   },

@@ -1451,7 +1451,6 @@
     "empty": "无",
     "current": "当前",
     "languageSearch": "搜索语言",
-    "copyAsImage": "复制为图片",
     "openInPlantuml": "在 PlantUML 中打开",
     "toggleLineWrap": "切换自动换行",
     "htmlReadOnly": "HTML，此处只读：{key}+单击进行编辑",
@@ -1460,6 +1459,9 @@
     "linkHoverOpenEdit": "在新标签页中打开 {url}，<{key}+单击> 编辑链接",
     "linkHoverCtrlTooltip": "<{key}+单击> 打开 {tooltip}",
     "linkHoverCtrlUrl": "<{key}+单击> 在新标签页中打开 {url}",
+    "clickToEditMermaid": "单击编辑 Mermaid 图表",
+    "clickToEditMath": "单击编辑",
+    "insertMermaid": "Mermaid 图表",
     "mermaidRenderError": "Mermaid 渲染错误",
     "plantumlRenderError": "PlantUML 渲染错误"
   },

@@ -344,7 +344,6 @@
     "empty": "なし",
     "current": "現在",
     "languageSearch": "言語を検索",
-    "copyAsImage": "画像としてコピー",
     "openInPlantuml": "PlantUML で開く",
     "toggleLineWrap": "行の折り返しの切り替え",
     "htmlReadOnly": "HTML（ここでは読み取り専用）: {key}+クリックで編集",
@@ -353,6 +352,9 @@
     "linkHoverOpenEdit": "{url} を新しいタブで開く、<{key}+クリック>でリンクを編集",
     "linkHoverCtrlTooltip": "<{key}+クリック>で {tooltip} を開く",
     "linkHoverCtrlUrl": "<{key}+クリック>で {url} を新しいタブで開く",
+    "clickToEditMermaid": "クリックして Mermaid 図を編集",
+    "clickToEditMath": "クリックして編集",
+    "insertMermaid": "Mermaid 図",
     "mermaidRenderError": "Mermaid の描画エラー",
     "plantumlRenderError": "PlantUML の描画エラー"
   },

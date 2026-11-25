@@ -1,3 +1,4 @@
+import {ensureMathCopyButton} from "../markdown/mathCopyButton";
 import {isMacPlatform} from "./compatibility";
 
 /** As long as the browser waits before its own tooltips */
@@ -48,6 +49,32 @@ const showIrImageTooltip = (vditor: IVditor, target: EventTarget | null) => {
         target.setAttribute("title", title);
     } else {
         target.removeAttribute("title");
+    }
+};
+
+/**
+ * A Mermaid diagram's or a formula's drawing says that a click on it edits its source (the block's
+ * code, ```mermaid, ```math or $$ … $$). Only the drawing gets it, never written in the markdown.
+ */
+const showDrawnBlockTooltip = (vditor: IVditor, target: EventTarget | null) => {
+    if (!(target instanceof Element)) {
+        return;
+    }
+    const preview = target.closest(".vditor-wysiwyg__preview, .vditor-ir__preview") as HTMLElement | null;
+    const block = preview?.closest("[data-type='code-block'], [data-type='math-block']");
+    if (!preview || !block) {
+        return;
+    }
+    const code = block.querySelector("pre > code");
+    const isMath = block.getAttribute("data-type") === "math-block" || code?.classList.contains("language-math");
+    if (isMath) {
+        ensureMathCopyButton(vditor, preview, block);
+    }
+    const title = isMath
+        ? window.VditorI18n.clickToEditMath
+        : code?.classList.contains("language-mermaid") ? window.VditorI18n.clickToEditMermaid : "";
+    if (title && preview.getAttribute("title") !== title) {
+        preview.setAttribute("title", title);
     }
 };
 
@@ -110,6 +137,7 @@ export const linkHoverTooltipEvent = (vditor: IVditor, editorElement: HTMLElemen
 
     editorElement.addEventListener("mouseover", (event) => {
         showIrImageTooltip(vditor, event.target);
+        showDrawnBlockTooltip(vditor, event.target);
         const link = resolveLink(vditor, event.target);
         if (link?.element === current) {
             return;

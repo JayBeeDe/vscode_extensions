@@ -1,7 +1,7 @@
 import { indentLess, redo, redoDepth, undo, undoDepth } from "@codemirror/commands";
 import { LanguageSupport } from "@codemirror/language";
 import { Compartment, EditorSelection, EditorState, Prec } from "@codemirror/state";
-import { EditorView, keymap } from "@codemirror/view";
+import { EditorView, keymap, lineNumbers } from "@codemirror/view";
 
 import { expandMarker } from "../ir/expandMarker";
 import { processAfterRender, recordHistory as recordIrHistory } from "../ir/process";
@@ -1605,6 +1605,9 @@ const mountCodeMirror = (blockElement: HTMLElement, vditor: IVditor, force = fal
         parent: editPre,
         extensions: [
             vditorCodeMirrorSetup,
+            // numbered lines for code, not for a formula ($$ … $$ or ```math)
+            blockElement.getAttribute("data-type") === "math-block" || code.classList.contains("language-math")
+                ? [] : lineNumbers(),
             // a read-only document's code can be selected and copied, not changed
             isReadOnly(vditor) ? [EditorState.readOnly.of(true), EditorView.editable.of(false)] : [],
             keymap.of(stopHandledCodeMirrorKeymap([{ key: "Tab", run: insertLiteralTab, shift: indentLess }])),

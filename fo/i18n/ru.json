@@ -347,7 +347,6 @@
     "empty": "Нет",
     "current": "текущий",
     "languageSearch": "Поиск языка",
-    "copyAsImage": "Копировать как изображение",
     "openInPlantuml": "Открыть в PlantUML",
     "toggleLineWrap": "Перенос строк",
     "htmlReadOnly": "HTML, здесь только для чтения: {key}+щелчок для редактирования",
@@ -356,6 +355,9 @@
     "linkHoverOpenEdit": "Открыть {url} в новой вкладке, <{key}+Щелчок> для редактирования ссылки",
     "linkHoverCtrlTooltip": "<{key}+Щелчок>, чтобы открыть {tooltip}",
     "linkHoverCtrlUrl": "<{key}+Щелчок>, чтобы открыть {url} в новой вкладке",
+    "clickToEditMermaid": "Щелкните, чтобы изменить диаграмму Mermaid",
+    "clickToEditMath": "Щелкните, чтобы изменить",
+    "insertMermaid": "Диаграмма Mermaid",
     "mermaidRenderError": "Ошибка отрисовки Mermaid",
     "plantumlRenderError": "Ошибка отрисовки PlantUML"
   },

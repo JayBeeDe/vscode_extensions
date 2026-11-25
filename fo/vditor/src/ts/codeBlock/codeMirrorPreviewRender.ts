@@ -93,6 +93,7 @@ export const codeMirrorPreviewRender = (element: HTMLElement | Document = docume
         if (!isPreviewCodeElement(code as HTMLElement)) {
             continue;
         }
-        mountPreviewCodeMirror(code.parentElement as HTMLElement, code as HTMLElement, false);
+        // numbered like the code blocks edited (codeMirrorManager.ts)
+        mountPreviewCodeMirror(code.parentElement as HTMLElement, code as HTMLElement, true);
     }
 };

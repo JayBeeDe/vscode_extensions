@@ -1446,7 +1446,6 @@
     "empty": "Nenhum",
     "current": "atual",
     "languageSearch": "Pesquisar linguagem",
-    "copyAsImage": "Copiar como imagem",
     "openInPlantuml": "Abrir no PlantUML",
     "toggleLineWrap": "Alternar quebra de linha",
     "htmlReadOnly": "HTML, somente leitura aqui: {key}+clique para editá-lo",
@@ -1455,6 +1454,9 @@
     "linkHoverOpenEdit": "Abrir {url} em uma nova guia, <{key}+Clique> para editar o link",
     "linkHoverCtrlTooltip": "<{key}+Clique> para abrir {tooltip}",
     "linkHoverCtrlUrl": "<{key}+Clique> para abrir {url} em uma nova guia",
+    "clickToEditMermaid": "Clique para editar o diagrama Mermaid",
+    "clickToEditMath": "Clique para editar",
+    "insertMermaid": "Diagrama Mermaid",
     "mermaidRenderError": "Erro de renderização do Mermaid",
     "plantumlRenderError": "Erro de renderização do PlantUML"
   },

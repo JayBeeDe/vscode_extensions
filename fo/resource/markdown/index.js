@@ -190,7 +190,10 @@ async function openMarkdown(md) {
     readOnly: !!readOnly,
     toolbar: await getToolbar(rootPath, i18n, () => {
       saveFormatted();
-    }, isWeb),
+    }, isWeb, () => {
+      // a small flowchart to start from, drawn at once, its code edited with a click on it
+      editor.insertMarkdown('\n```mermaid\nflowchart LR\n    A[Start] --> B[End]\n```\n');
+    }),
     onLinkClick(payload, event, vditor) {
       const isCompose = event.metaKey || event.ctrlKey;
       // WYSIWYG: a click follows a link (not a linked image: its click opens the image's popup),

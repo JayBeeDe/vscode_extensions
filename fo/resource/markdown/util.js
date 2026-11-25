@@ -10,7 +10,7 @@ const shortcutTip = isMac ? '⌃⌘E' : 'Ctrl+Alt+E';
 // Ctrl+S, in the format vditor gives its buttons' shortcuts (Bold <Ctrl+B>, ⌘B on a Mac)
 const saveShortcutTip = isMac ? '⌘S' : 'Ctrl+S';
 
-export async function getToolbar(resPath, i18n, onSave = null, isWeb = false) {
+export async function getToolbar(resPath, i18n, onSave = null, isWeb = false, onInsertMermaid = null) {
     const codicon = (name) => `<span class="codicon codicon-${name}" aria-hidden="true"></span>`;
     const exportItem = (name, type, icon) => ({
         name,
@@ -68,6 +68,15 @@ export async function getToolbar(resPath, i18n, onSave = null, isWeb = false) {
         "|",
         "link",
         'upload',
+        // a new Mermaid diagram at the caret, ready to be edited (resource/markdown/index.js)
+        {
+            name: 'insert-mermaid',
+            tip: i18n.insertMermaid,
+            icon: codicon('type-hierarchy-sub'),
+            click() {
+                onInsertMermaid?.()
+            }
+        },
         "table",
         "quote",
         "code",

@@ -199,3 +199,53 @@
     line-height: 1;
   }
 }
+
+// a formula's copy button (markdown/mathCopyButton.ts): a diagram's one, in its drawing's top right
+// corner, shown while the pointer is over the drawing
+.vditor-math-copy-host {
+  position: relative;
+  .vditor-mermaid-chrome-vars();
+}
+
+.vditor-math-copy {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  z-index: 3;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 8px;
+  background: var(--mm-chrome-trigger-bg);
+  color: var(--mm-chrome-fg);
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease, visibility 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background: var(--mm-chrome-hover-bg);
+  }
+}
+
+.vditor-math-copy-host:hover .vditor-math-copy {
+  opacity: 1;
+  visibility: visible;
+}
+
+.vditor-math-copy__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--mm-chrome-fg);
+
+  .codicon {
+    font-size: 16px;
+    line-height: 1;
+  }
+}

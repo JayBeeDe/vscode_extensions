@@ -82,6 +82,15 @@ const COMMON_CODE_MIRROR_LANGUAGES = new Set([
 
 const codeMirrorLanguages = languages.filter((language) => COMMON_CODE_MIRROR_LANGUAGES.has(language.name));
 
+/**
+ * The blocks drawn rather than highlighted (codeMirrorManager.ts, SPECIAL_LANGUAGES), not CodeMirror
+ * languages: listed by their label, their fence and class written in lower case
+ */
+const DRAWN_LANGUAGES: Record<string, string> = {
+    Math: "math",
+    Mermaid: "mermaid",
+};
+
 const buildLanguageEntries = (): CodeMirrorLanguageEntry[] => {
     const entries: CodeMirrorLanguageEntry[] = [];
     for (const language of codeMirrorLanguages) {
@@ -97,6 +106,9 @@ const buildLanguageEntries = (): CodeMirrorLanguageEntry[] => {
             terms: [...terms],
         });
     }
+    for (const [label, name] of Object.entries(DRAWN_LANGUAGES)) {
+        entries.push({canonical: label, terms: [label, name]});
+    }
     return entries;
 };
 
@@ -110,6 +122,9 @@ const PLAIN_TEXT_LANGUAGE_TERMS = ["plain text", "plaintext", "plain", "text"];
 export const toCodeBlockLanguageName = (displayName: string): string => {
     if (displayName === getPlainTextLanguageLabel() || displayName === "Plain Text") {
         return "";
+    }
+    if (DRAWN_LANGUAGES[displayName]) {
+        return DRAWN_LANGUAGES[displayName];
     }
     return displayName;
 };
@@ -237,73 +252,29 @@ export const buildCodeMirrorLanguageMap = (): Record<string, LanguageDescription
     return map;
 };
 
-const PINNED_CODE_MIRROR_LANGUAGES = [
-    "Shell",
-    "JavaScript",
-    "TypeScript",
-    "Python",
-    "Java",
-    "C",
-    "C++",
-    "C#",
-    "Go",
-    "Rust",
-    "SQL",
-    "HTML",
-    "CSS",
-    "JSON",
-    "YAML",
-    "Markdown",
-    "PHP",
-    "Ruby",
-    "Kotlin",
-    "Swift",
-    "Vue",
-    "XML",
-    "SCSS",
-];
-
-const pinnedLanguageOrder = new Map(PINNED_CODE_MIRROR_LANGUAGES.map((name, index) => [name, index]));
-
-const sortLanguageNamesWithPinnedFirst = (names: string[]) => {
-    const remaining = new Set(names);
-    const sorted: string[] = [];
-    for (const pinned of PINNED_CODE_MIRROR_LANGUAGES) {
-        if (remaining.has(pinned)) {
-            sorted.push(pinned);
-            remaining.delete(pinned);
-        }
+/**
+ * The languages are always listed alphabetically, plain text (no language) first: in the code
+ * block's language list and in the suggestions after ``` alike
+ */
+const compareLanguageNames = (a: string, b: string) => {
+    const plainText = getPlainTextLanguageLabel();
+    if (a === plainText || b === plainText) {
+        return a === plainText ? (b === plainText ? 0 : -1) : 1;
     }
-    const rest = [...remaining].sort((a, b) => a.localeCompare(b, undefined, {sensitivity: "base"}));
-    for (const name of rest) {
-        sorted.push(name);
-    }
-    return sorted;
+    return a.localeCompare(b, undefined, {sensitivity: "base"});
 };
 
-const sortHintDataWithPinnedFirst = (items: IHintData[]) => {
-    return items.sort((a, b) => {
-        const aPinned = pinnedLanguageOrder.get(a.value);
-        const bPinned = pinnedLanguageOrder.get(b.value);
-        if (aPinned !== undefined && bPinned !== undefined) {
-            return aPinned - bPinned;
-        }
-        if (aPinned !== undefined) {
-            return -1;
-        }
-        if (bPinned !== undefined) {
-            return 1;
-        }
-        return a.value.localeCompare(b.value, undefined, {sensitivity: "base"});
-    });
-};
+const sortLanguageNamesAlphabetically = (names: string[]) => [...names].sort(compareLanguageNames);
+
+const sortHintDataAlphabetically = (items: IHintData[]) =>
+    items.sort((a, b) => compareLanguageNames(a.value, b.value));
 
 export const getAllCodeMirrorLanguageNames = (): string[] => {
     const names: string[] = [getPlainTextLanguageLabel()];
     for (const entry of CODE_MIRROR_LANGUAGE_ENTRIES) {
         names.push(entry.canonical);
     }
-    return sortLanguageNamesWithPinnedFirst(names);
+    return sortLanguageNamesAlphabetically(names);
 };
 
 export const filterCodeMirrorLanguageNames = (query: string): string[] => {
@@ -324,7 +295,7 @@ export const filterCodeMirrorLanguageNames = (query: string): string[] => {
             }
         }
     }
-    return sortLanguageNamesWithPinnedFirst([...matched]);
+    return sortLanguageNamesAlphabetically([...matched]);
 };
 
 export const matchCodeMirrorLanguages = (key: string, currentLanguage = ""): IHintData[] => {
@@ -352,5 +323,5 @@ export const matchCodeMirrorLanguages = (key: string, currentLanguage = ""): IHi
             addLanguage(entry.canonical, entry.canonical);
         }
     }
-    return sortHintDataWithPinnedFirst(matchLangData);
+    return sortHintDataAlphabetically(matchLangData);
 };

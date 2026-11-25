@@ -1459,7 +1459,6 @@
     "empty": "Empty",
     "current": "current",
     "languageSearch": "Search language",
-    "copyAsImage": "Copy as image",
     "openInPlantuml": "Open in PlantUML",
     "toggleLineWrap": "Toggle line wrap",
     "htmlReadOnly": "HTML, read-only here: {key}+click to edit it",
@@ -1468,6 +1467,9 @@
     "linkHoverOpenEdit": "Open {url} in a new tab, <{key}+Click> to edit the link",
     "linkHoverCtrlTooltip": "<{key}+Click> to open {tooltip}",
     "linkHoverCtrlUrl": "<{key}+Click> to open {url} in a new tab",
+    "clickToEditMermaid": "Click to edit mermaid diagram",
+    "clickToEditMath": "Click to edit",
+    "insertMermaid": "Mermaid diagram",
     "mermaidRenderError": "Mermaid render error",
     "plantumlRenderError": "PlantUML render error"
   },

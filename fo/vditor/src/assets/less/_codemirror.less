@@ -423,9 +423,12 @@
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease;
 
-  &:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--cm-fg-color, var(--toolbar-icon-color)) 10%, var(--cm-lang-trigger-bg, var(--second-bg-color, var(--dropdown-hover-background, var(--toolbar-background-color)))));
-    color: var(--cm-copy-color, var(--link-color));
+  // hovered, or its list open: VS Code's accent, like the list itself (--list-hover-color is
+  // --vscode-focusBorder in the editor themes)
+  &:hover:not(:disabled),
+  .vditor-cm-chrome__lang--open & {
+    background: color-mix(in srgb, var(--list-hover-color, var(--link-color, @blurColor)) 14%, var(--cm-lang-trigger-bg, var(--second-bg-color, var(--dropdown-hover-background, var(--toolbar-background-color)))));
+    color: var(--list-hover-color, var(--link-color, @blurColor));
   }
 
   &:disabled {
@@ -452,6 +455,9 @@
   box-shadow: 0 4px 16px color-mix(in srgb, var(--cm-fg-color, #000) 12%, transparent);
   pointer-events: auto;
   transition: box-shadow 0.15s ease;
+  // the hovered and chosen languages and the focused search take VS Code's accent, like the link
+  // popups and the outline (--list-hover-color is --vscode-focusBorder in the editor themes)
+  --vditor-lang-accent: var(--list-hover-color, var(--link-color, @blurColor));
 }
 
 .vditor-cm-chrome__lang--open .vditor-cm-chrome__lang-panel {
@@ -480,8 +486,12 @@
 
   &:focus,
   .vditor-cm-chrome__lang--focused & {
-    border-color: var(--cm-lang-search-focus-color, var(--cm-copy-color, var(--link-color)));
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--cm-lang-search-focus-color, var(--cm-copy-color, var(--link-color))) 28%, transparent);
+    border-color: var(--vditor-lang-accent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--vditor-lang-accent) 28%, transparent);
+  }
+
+  &::selection {
+    background-color: color-mix(in srgb, var(--vditor-lang-accent) 35%, transparent);
   }
 
   &::placeholder {
@@ -512,17 +522,18 @@
   cursor: pointer;
 
   &:hover {
-    background: color-mix(in srgb, var(--cm-copy-color, var(--link-color)) 12%, transparent);
+    color: var(--vditor-lang-accent);
+    background: color-mix(in srgb, var(--vditor-lang-accent) 12%, transparent);
   }
 
   &--active {
     font-weight: 600;
-    background: color-mix(in srgb, var(--cm-copy-color, var(--link-color)) 12%, transparent);
+    color: var(--vditor-lang-accent);
+    background: color-mix(in srgb, var(--vditor-lang-accent) 12%, transparent);
   }
 
   &--current {
-    color: var(--cm-fg-color, var(--toolbar-icon-color));
-    background: color-mix(in srgb, var(--cm-copy-color, var(--link-color)) 8%, transparent);
+    background: color-mix(in srgb, var(--vditor-lang-accent) 8%, transparent);
   }
 }
 
