@@ -34,7 +34,7 @@ async function convertMarkdown(inputMarkdownFile, config) {
   const containsMermaid = root.querySelector('.mermaid') != null;
   if (containsMermaid) {
     const mermaidScript = `
-    <script src="${getMermaidScriptSrc(type)}"></script>
+    ${getMermaidScript(type)}
     <script>mermaid.initialize(${JSON.stringify({ startOnLoad: true, ...buildMermaidInitConfig(config.mermaidTheme || "light") }).replace(/</g, "\\u003c")});</script>
     `;
     outputHtml = appendHtmlToBody(outputHtml, mermaidScript);
@@ -43,11 +43,18 @@ async function convertMarkdown(inputMarkdownFile, config) {
   return exportByType(inputMarkdownFile, outputHtml, type, config)
 }
 
-function getMermaidScriptSrc(type) {
+/**
+ * The HTML export loads Mermaid from the CDN. PDF and DOCX inline it: a sandboxed Chromium (snap,
+ * flatpak) cannot read the extension's folder (~/.vscode/extensions is hidden), so a file:// link
+ * left the diagrams out.
+ */
+function getMermaidScript(type) {
   if (type === "html") {
-    return `https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js`;
+    return `<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>`;
   }
-  return url.pathToFileURL(path.resolve(__dirname, '..', "resource", 'markdown', 'dist', 'js', 'mermaid', 'mermaid.min.js')).href;
+  const mermaidPath = path.resolve(__dirname, '..', "resource", 'markdown', 'dist', 'js', 'mermaid', 'mermaid.min.js')
+  // "</script" would end the inline script early; "<\/script" means the same in JavaScript
+  return `<script>${fs.readFileSync(mermaidPath, "utf-8").replace(/<\/script/gi, "<\\/script")}</script>`;
 }
 
 
@@ -162,7 +169,8 @@ function mergeHtml(content, uri, type, config) {
 
 function appendHtmlToBody(html, fragment) {
   if (html.includes("</body>")) {
-    return html.replace("</body>", `${fragment}</body>`)
+    // a function: the fragment is inserted as is, its "$&" or "$'" (in Mermaid's code) not expanded
+    return html.replace("</body>", () => `${fragment}</body>`)
   }
   return `${html}${fragment}`
 }

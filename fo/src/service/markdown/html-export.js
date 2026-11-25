@@ -75,6 +75,8 @@ export async function exportByType(filePath, data, type, config) {
 
         // generate pdf
         if (type == "pdf") {
+            // Mermaid draws after the page has loaded
+            await waitForMermaid(page)
             // https://pptr.dev/api/puppeteer.pdfoptions
             const margin = config["margin"] || {};
             const pdfOptions = {
@@ -204,9 +206,11 @@ async function waitForMermaid(page) {
         if (!hasMermaid) {
             return
         }
+        // every diagram has its svg, an invalid one Mermaid's error drawing; data-processed is set
+        // before the drawing is done, so it is not enough
         await page.waitForFunction(() => {
             const elements = Array.from(document.querySelectorAll('.mermaid'))
-            return elements.length === 0 || elements.every(element => element.querySelector('svg') || element.getAttribute('data-processed') === 'true')
+            return elements.every(element => element.querySelector('svg'))
         }, { timeout: 10000 })
     } catch (error) {
         showErrorMessage("waitForMermaid()", error)
