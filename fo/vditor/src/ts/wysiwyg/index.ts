@@ -4,7 +4,7 @@ import { isCtrl, isFirefox, isMacPlatform } from "../util/compatibility";
 import {
     bindImageLoadingState,
     blurEvent,
-    copyEvent, cutEvent, dblclickEvent,
+    copyEvent, cutEvent,
     dropEvent,
     focusEvent,
     hotkeyEvent,
@@ -93,7 +93,6 @@ class WYSIWYG {
         linkClickEvent(vditor, divElement);
         linkHoverTooltipEvent(vditor, this.element);
         focusEvent(vditor, this.element);
-        dblclickEvent(vditor, this.element);
         blurEvent(vditor, this.element);
         hotkeyEvent(vditor, this.element);
         wheelZoomFontSizeEvent(vditor, this.element);

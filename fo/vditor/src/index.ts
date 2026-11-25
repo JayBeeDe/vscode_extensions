@@ -6,7 +6,6 @@ import { mathRender } from "./ts/markdown/mathRender";
 import { mermaidRender } from "./ts/markdown/mermaidRender";
 import { outlineRender } from "./ts/markdown/outlineRender";
 import { plantumlRender } from "./ts/markdown/plantumlRender";
-import { previewImage } from "./ts/preview/image";
 import { Constants, VDITOR_VERSION } from "./ts/constants";
 import { Hint } from "./ts/hint/index";
 import { IR } from "./ts/ir/index";
@@ -50,7 +49,6 @@ import { ensureEditorBoundaryParagraphs, renderDomByMd } from "./ts/wysiwyg/rend
 
 class Vditor {
     public static adapterRender = adapterRender;
-    public static previewImage = previewImage;
     public static codeRender = codeRender;
     public static codeMirrorPreviewRender = codeMirrorPreviewRender;
     public static mathRender = mathRender;

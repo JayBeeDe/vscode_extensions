@@ -159,14 +159,23 @@ const defaultLinkClickBehavior = (payload: ILinkClickPayload) => {
     }
 };
 
-export const linkClickEvent = (vditor: IVditor, editorElement: HTMLElement) => {
-    const onPointer = (event: MouseEvent) => {
-        const payload = resolveLinkClickFromTarget(event.target, vditor);
-        if (!payload) {
-            return;
-        }
+/** How long after a click on an image a double click is still its own */
+const IMAGE_DBLCLICK_DELAY = 500;
 
-        if (event.type === "dblclick" && payload.type === "image") {
+export const linkClickEvent = (vditor: IVditor, editorElement: HTMLElement) => {
+    // IR: the first click shows the image's markdown, moving the image aside, so that the double
+    // click lands beside it: it is the image's, which opens in a tab of its own (resource/markdown/index.js)
+    let lastImageClick: { image: HTMLElement, time: number } | null = null;
+    const onPointer = (event: MouseEvent) => {
+        let target = event.target;
+        if (event.type === "click" && target instanceof HTMLImageElement) {
+            lastImageClick = { image: target, time: Date.now() };
+        } else if (event.type === "dblclick" && !(target instanceof HTMLImageElement) && lastImageClick &&
+            lastImageClick.image.isConnected && Date.now() - lastImageClick.time < IMAGE_DBLCLICK_DELAY) {
+            target = lastImageClick.image;
+        }
+        const payload = resolveLinkClickFromTarget(target, vditor);
+        if (!payload) {
             return;
         }
 
