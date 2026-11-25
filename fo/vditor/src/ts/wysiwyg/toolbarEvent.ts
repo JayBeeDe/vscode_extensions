@@ -221,7 +221,9 @@ export const toolbarEvent = (vditor: IVditor, actionBtn: Element, event: Event) 
                 genAPopover(vditor, aElement);
                 const textInputElement = vditor.wysiwyg.popover.querySelector("input");
                 textInputElement.value = "";
-                textInputElement.focus();
+                // no text yet: the link comes first, and becomes the text if none is typed
+                // (highlightToolbarWYSIWYG.ts, hideLinkPopover)
+                (vditor.wysiwyg.popover.querySelector(".vditor-link-popover__href") as HTMLInputElement).focus();
                 useRender = false;
             } else {
                 const node = document.createElement("a");

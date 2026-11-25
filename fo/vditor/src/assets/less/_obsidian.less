@@ -344,6 +344,15 @@
     cursor: pointer;
     user-select: none;
     margin-bottom: 1em;
+    .vditor-block-marker-aligned-host();
+
+    // in the left margin, like a heading's H1…H6, once clicked or while its HTML editor is open
+    // (util/updateActiveHeadingMarker.ts)
+    &.vditor-heading--active:not([data-md-source="<br>"]):before,
+    &.vditor-html-block--editing:not([data-md-source="<br>"]):before {
+      .vditor-block-marker-aligned-before();
+      content: '</>';
+    }
 
     .vditor-html-block__display {
       pointer-events: none;
@@ -353,6 +362,27 @@
     &:hover {
       outline: 1px dashed var(--border-color, #d0d7de);
       border-radius: 4px;
+    }
+  }
+
+  // WYSIWYG: rendered HTML is read like text, selected and copied, a click on it doing nothing
+  // (Alt+click opens its editor) or following a link in it (wysiwyg/index.ts)
+  .vditor-wysiwyg & .vditor-ir__node[data-type="html-inline"][contenteditable="false"],
+  .vditor-wysiwyg & .vditor-wysiwyg__block[data-type="html-block"][contenteditable="false"] {
+    // the text cursor with a lock: selectable, not editable (the text cursor without the image);
+    // the tooltip says so too (wysiwyg/index.ts)
+    cursor: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48ZyBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNCAzaDJxMSAwIDEgMXYxNnEwIDEtMSAxSDRNMTAgM0g4cS0xIDAtMSAxdjE2cTAgMSAxIDFoMiIgZmlsbD0ibm9uZSIvPjxwYXRoIGQ9Ik0xNSAxNXYtMi41YTIuNSAyLjUgMCAwIDEgNSAwVjE1IiBmaWxsPSJub25lIi8+PHJlY3QgeD0iMTMiIHk9IjE1IiB3aWR0aD0iOSIgaGVpZ2h0PSI3IiByeD0iMSIvPjwvZz48ZyBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMS4yIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiIGZpbGw9IiMwMDAiPjxwYXRoIGQ9Ik00IDNoMnExIDAgMSAxdjE2cTAgMS0xIDFINE0xMCAzSDhxLTEgMC0xIDF2MTZxMCAxIDEgMWgyIiBmaWxsPSJub25lIi8+PHBhdGggZD0iTTE1IDE1di0yLjVhMi41IDIuNSAwIDAgMSA1IDBWMTUiIGZpbGw9Im5vbmUiLz48cmVjdCB4PSIxMyIgeT0iMTUiIHdpZHRoPSI5IiBoZWlnaHQ9IjciIHJ4PSIxIi8+PC9nPjwvc3ZnPg==") 7 12, text;
+    user-select: text;
+
+    .vditor-html-inline__display,
+    .vditor-html-block__display {
+      pointer-events: auto;
+    }
+
+    // a drag on a link selects its text, rather than dragging the link away
+    a {
+      cursor: pointer;
+      -webkit-user-drag: none;
     }
   }
 

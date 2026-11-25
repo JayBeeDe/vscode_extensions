@@ -14,6 +14,7 @@ import { codicon } from "../util/codicon";
 import { afterRenderEvent } from "../wysiwyg/afterRenderEvent";
 import { processAfterRender } from "../ir/process";
 import {isReadOnly} from "../util/readOnly";
+import { markEditedHtmlBlock } from "../util/updateActiveHeadingMarker";
 
 const HTML_EDITOR_POPOVER_CLASS = "vditor-popover--html-inline";
 const HTML_EDITOR_PANEL_CLASS = "vditor-panel--html-inline";
@@ -96,13 +97,20 @@ const clampHtmlEditorPopoverPosition = (vditor: IVditor, anchorElement: HTMLElem
     }
 
     popover.style.display = "block";
+    // as wide as the page's text (foss-office.markdown.pageWidth), under its left edge
+    const editorStyle = getComputedStyle(editorElement);
+    const pageLeft = editorElement.getBoundingClientRect().left + parseFloat(editorStyle.paddingLeft);
+    const pageWidth = editorElement.clientWidth - parseFloat(editorStyle.paddingLeft) - parseFloat(editorStyle.paddingRight);
+    // (a variable: the popover is also the link one, whose width _panel.less sets otherwise)
+    popover.style.setProperty("--vditor-html-editor-width",
+        `${Math.round(Math.min(pageWidth, window.innerWidth - 2 * VIEWPORT_MARGIN))}px`);
     const anchorRect = anchorElement.getClientRects()[0] || anchorElement.getBoundingClientRect();
     const popoverWidth = popover.offsetWidth;
     const popoverHeight = popover.offsetHeight;
     const containerRect = container.getBoundingClientRect();
 
     let viewportTop = anchorRect.bottom + POPOVER_INSET;
-    let viewportLeft = anchorRect.left + POPOVER_INSET;
+    let viewportLeft = pageLeft;
 
     if (viewportTop + popoverHeight > window.innerHeight - VIEWPORT_MARGIN) {
         const aboveTop = anchorRect.top - popoverHeight - POPOVER_INSET;
@@ -179,6 +187,7 @@ const hideHtmlEditorPopover = (vditor: IVditor) => {
     popover.style.display = "none";
     popover.classList.remove(HTML_EDITOR_POPOVER_CLASS, HTML_EDITOR_PANEL_CLASS);
     popover.innerHTML = "";
+    markEditedHtmlBlock(vditor, null);
 };
 
 const restoreFocusAfterHtmlRemove = (
@@ -461,6 +470,7 @@ export const showHtmlEditorPopover = (vditor: IVditor, target: HtmlEditTarget) =
 
     popover.classList.add(HTML_EDITOR_POPOVER_CLASS, HTML_EDITOR_PANEL_CLASS);
     popover.innerHTML = "";
+    markEditedHtmlBlock(vditor, target.focusElement);
 
     const panel = document.createElement("div");
     panel.className = "vditor-html-inline-popover";
@@ -552,6 +562,13 @@ const resolveHtmlBlockFromClick = (target: HTMLElement): HTMLElement | false => 
         return false;
     }
     return block;
+};
+
+/** A click on rendered HTML, inline or block: the one handleHtmlEditorClick opens the editor for */
+export const isHtmlContentClick = (target: HTMLElement): boolean => {
+    const htmlInline = hasClosestByAttribute(target, "data-type", "html-inline") as HTMLElement | false;
+    return (htmlInline && htmlInline.getAttribute("contenteditable") === "false")
+        || !!resolveHtmlBlockFromClick(target);
 };
 
 export const handleHtmlEditorClick = (

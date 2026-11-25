@@ -1,6 +1,6 @@
 import { Constants } from "../constants";
 import { hidePanel } from "../toolbar/setToolbar";
-import { isCtrl, isFirefox } from "../util/compatibility";
+import { isCtrl, isFirefox, isMacPlatform } from "../util/compatibility";
 import {
     bindImageLoadingState,
     blurEvent,
@@ -27,11 +27,13 @@ import {
     getEditorRange,
     getSelectPosition,
     setRangeByWbr,
+    setSelectionFocus,
 } from "../util/selection";
 import { clickToc, scheduleRenderToc } from "../util/toc";
 import { scheduleHighlightToolbar } from "../util/highlightToolbar";
 import { afterRenderEvent } from "./afterRenderEvent";
 import {
+    focusLinkPopoverHrefEnd,
     genAPopover,
     genImagePopover,
     genLinkRefPopover,
@@ -55,9 +57,10 @@ import { focusWysiwygCodeBlock, showCode } from "./showCode";
 import { getMarkdown } from "../markdown/getMarkdown";
 import { fireContentInput } from "../util/saveToolbarState";
 import { linkClickEvent } from "../util/linkClick";
+import { linkHoverTooltipEvent } from "../util/linkHoverTooltip";
 import { initTableHandle } from "./tableHandle";
 import { expandMarkerWithMathSync } from "../ir/expandMarkerSync";
-import { handleHtmlEditorClick } from "../htmlInline/htmlInlineEditor";
+import { handleHtmlEditorClick, isHtmlContentClick } from "../htmlInline/htmlInlineEditor";
 import { handleFrontMatterEditorClick } from "../codeBlock/frontMatterEditor";
 
 class WYSIWYG {
@@ -88,6 +91,7 @@ class WYSIWYG {
         initTableHandle(vditor, divElement, this.element);
 
         linkClickEvent(vditor, divElement);
+        linkHoverTooltipEvent(vditor, this.element);
         focusEvent(vditor, this.element);
         dblclickEvent(vditor, this.element);
         blurEvent(vditor, this.element);
@@ -368,12 +372,63 @@ class WYSIWYG {
             }
         });
 
+        // rendered HTML is read-only here: its tooltip says so, and how to edit it
+        this.element.addEventListener("mouseover", (event: MouseEvent & { target: HTMLElement }) => {
+            const html = event.target.closest?.(
+                "[data-type='html-block'][contenteditable='false'], [data-type='html-inline'][contenteditable='false']");
+            if (html && !html.hasAttribute("title")) {
+                html.setAttribute("title", window.VditorI18n.htmlReadOnly.replace("{key}", isMacPlatform() ? "⌥" : "Alt"));
+            }
+        });
+
         this.element.addEventListener("mousedown", (event: MouseEvent & { target: HTMLElement }) => {
             if (isInsideCodeMirror(event.target) || isInsideCodeBlockChrome(event.target)) {
                 return;
             }
             this.impreciseLineClickHandled = preventImpreciseLineStartClick(event, this.element);
         }, true);
+
+        // a drag in inline HTML selects its text, to copy it: Chrome won't put the selection's end
+        // inside such a read-only island, so the drag is made here, Chrome's own one prevented
+        this.element.addEventListener("mousedown", (event: MouseEvent & { target: HTMLElement }) => {
+            const island = event.target.closest?.("[data-type='html-inline'][contenteditable='false']") as HTMLElement;
+            if (event.button !== 0 || event.altKey || event.shiftKey || isCtrl(event) || !island) {
+                return;
+            }
+            const anchor = textPositionAt(island, event.clientX, event.clientY);
+            if (!anchor) {
+                return;
+            }
+            event.preventDefault();
+            this.element.focus({ preventScroll: true });
+            getSelection().setBaseAndExtent(anchor.node, anchor.offset, anchor.node, anchor.offset);
+            const onMove = (moveEvent: MouseEvent) => {
+                const rect = island.getBoundingClientRect();
+                const inside = moveEvent.clientX >= rect.left && moveEvent.clientX <= rect.right &&
+                    moveEvent.clientY >= rect.top && moveEvent.clientY <= rect.bottom;
+                const focus = inside ? textPositionAt(island, moveEvent.clientX, moveEvent.clientY) : (() => {
+                    const caret = document.caretRangeFromPoint(moveEvent.clientX, moveEvent.clientY);
+                    return caret && this.element.contains(caret.startContainer)
+                        ? { node: caret.startContainer, offset: caret.startOffset } : null;
+                })();
+                if (focus) {
+                    getSelection().setBaseAndExtent(anchor.node, anchor.offset, focus.node, focus.offset);
+                }
+            };
+            const onUp = () => {
+                document.removeEventListener("mousemove", onMove);
+                document.removeEventListener("mouseup", onUp);
+                // a click without a drag: the caret goes after the HTML, where it can type
+                if (getSelection().isCollapsed && island.isConnected) {
+                    const range = document.createRange();
+                    range.setStartAfter(island);
+                    range.collapse(true);
+                    setSelectionFocus(range);
+                }
+            };
+            document.addEventListener("mousemove", onMove);
+            document.addEventListener("mouseup", onUp);
+        });
 
         this.element.addEventListener("mouseup", (event: MouseEvent) => {
             if (this.impreciseLineClickHandled) {
@@ -395,7 +450,26 @@ class WYSIWYG {
                 return;
             }
 
-            if (handleHtmlEditorClick(vditor, event)) {
+            // HTML: Alt+click opens its editor; a click follows a link in it (util/linkClick.ts, the
+            // click going on to it) and does nothing else, like on text
+            if (event.altKey) {
+                if (handleHtmlEditorClick(vditor, event)) {
+                    clickToc(event, vditor);
+                    return;
+                }
+            } else if (isHtmlContentClick(event.target)) {
+                // an HTML block takes no caret, and the one left where it was would type there:
+                // it goes beside the block, which shows the block's marker (updateActiveHeadingMarker.ts)
+                // (not after a drag: the text selected in the block stays selected, to be copied)
+                const htmlBlock = event.target.closest("[data-type='html-block']");
+                if (htmlBlock?.parentElement === this.element && !hasClosestByMatchTag(event.target, "A")
+                    && getSelection().isCollapsed) {
+                    const blockRange = document.createRange();
+                    blockRange.setStartAfter(htmlBlock);
+                    blockRange.collapse(true);
+                    setSelectionFocus(blockRange);
+                }
+                highlightToolbarWYSIWYG(vditor);
                 clickToc(event, vditor);
                 return;
             }
@@ -461,13 +535,17 @@ class WYSIWYG {
                 }
             }
 
-            const linkRefElement = hasClosestByAttribute(event.target, "data-type", "link-ref");
-            if (linkRefElement) {
-                genLinkRefPopover(vditor, linkRefElement as HTMLElement);
-            } else {
-                const aElement = hasClosestByMatchTag(event.target, "A");
-                if (aElement) {
-                    genAPopover(vditor, aElement as HTMLElement);
+            // a link's popup opens on Alt+click; a click follows the link (util/linkClick.ts)
+            if (event.altKey) {
+                const linkRefElement = hasClosestByAttribute(event.target, "data-type", "link-ref");
+                if (linkRefElement) {
+                    genLinkRefPopover(vditor, linkRefElement as HTMLElement);
+                } else {
+                    const aElement = hasClosestByMatchTag(event.target, "A");
+                    if (aElement) {
+                        genAPopover(vditor, aElement as HTMLElement);
+                        focusLinkPopoverHrefEnd(vditor);
+                    }
                 }
             }
 
@@ -605,6 +683,31 @@ class WYSIWYG {
         });
     }
 }
+
+/**
+ * The text position under a point in an element, between the characters nearest to it: what
+ * caretRangeFromPoint gives, which in the editor never points inside read-only HTML.
+ */
+const textPositionAt = (element: HTMLElement, x: number, y: number): { node: Text, offset: number } | null => {
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+    const range = document.createRange();
+    let last: { node: Text, offset: number } | null = null;
+    for (let node = walker.nextNode() as Text; node; node = walker.nextNode() as Text) {
+        for (let i = 0; i < node.length; i++) {
+            range.setStart(node, i);
+            range.setEnd(node, i + 1);
+            const rect = range.getBoundingClientRect();
+            if (y < rect.top || y > rect.bottom) {
+                continue;
+            }
+            if (x < rect.left + rect.width / 2) {
+                return { node, offset: i };
+            }
+            last = { node, offset: i + 1 };
+        }
+    }
+    return last;
+};
 
 const buildCopiedCodeHTML = (sourceCodeElement: HTMLElement, text: string, wrapPre: boolean) => {
     const codeElement = document.createElement("code");

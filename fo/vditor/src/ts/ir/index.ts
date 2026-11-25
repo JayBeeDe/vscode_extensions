@@ -39,6 +39,7 @@ import { expandMarkerWithMathSync } from "./expandMarkerSync";
 import { handleHtmlEditorClick } from "../htmlInline/htmlInlineEditor";
 import { handleFrontMatterEditorClick } from "../codeBlock/frontMatterEditor";
 import { linkClickEvent } from "../util/linkClick";
+import { linkHoverTooltipEvent } from "../util/linkHoverTooltip";
 import { highlightToolbarIR } from "./highlightToolbarIR";
 import { scheduleHighlightToolbar } from "../util/highlightToolbar";
 import { input } from "./input";
@@ -72,6 +73,7 @@ class IR {
         initTableHandle(vditor, divElement, this.element);
 
         linkClickEvent(vditor, divElement);
+        linkHoverTooltipEvent(vditor, this.element);
         focusEvent(vditor, this.element);
         dblclickEvent(vditor, this.element);
         blurEvent(vditor, this.element);

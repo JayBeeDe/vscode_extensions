@@ -48,6 +48,13 @@ export const hideLinkPopover = (vditor: IVditor) => {
     if (!popover) {
         return;
     }
+    // a link left without text (made with nothing selected, its URL typed alone): the URL is its text
+    const source = (popover as { _sourceElement?: HTMLElement })._sourceElement;
+    if (source?.tagName === "A" && source.isConnected && popover.style.display === "block" &&
+        source.textContent.replaceAll(Constants.ZWSP, "").trim() === "" && source.getAttribute("href")) {
+        source.textContent = source.getAttribute("href");
+        afterRenderEvent(vditor);
+    }
     popover.style.position = "";
     popover.style.display = "none";
     delete (popover as { _sourceElement?: HTMLElement })._sourceElement;
@@ -374,17 +381,27 @@ const setPopoverPosition = (vditor: IVditor, element: HTMLElement, popoverType?:
     popover.classList.toggle("vditor-panel--link-ref", popoverType === "link-ref");
     popover.classList.toggle("vditor-panel--image", popoverType === "image");
     popover.style.left = "0";
+    // a link's popup: as wide as the page's text, under its left edge (the HTML editor's too)
+    const editorStyle = getComputedStyle(editorElement);
+    const pageLeft = parseFloat(editorStyle.paddingLeft);
+    popover.style.setProperty("--vditor-page-text-width",
+        `${editorElement.clientWidth - pageLeft - parseFloat(editorStyle.paddingRight)}px`);
     popover.style.display = "block";
 
     const elementRect = element.getClientRects()[0] || element.getBoundingClientRect();
     const editorRect = editorElement.getBoundingClientRect();
     const anchorTop = elementRect.top - editorRect.top + editorElement.scrollTop;
     const anchorLeft = elementRect.left - editorRect.left + editorElement.scrollLeft;
-    const popoverTop = anchorTop - (isLinkPanel ? popover.clientHeight + 8 : 21);
+    let popoverTop = anchorTop - (isLinkPanel ? popover.clientHeight + 8 : 21);
+    // no room above it (the page's first lines): below it, not over it
+    if (isLinkPanel && popoverTop - editorElement.scrollTop < -8) {
+        popoverTop = anchorTop + elementRect.height + 8;
+    }
     const maxLeft = editorElement.clientWidth - popover.clientWidth;
 
     popover.style.top = `${Math.max(-8, popoverTop - editorElement.scrollTop)}px`;
-    popover.style.left = `${Math.max(0, Math.min(anchorLeft - editorElement.scrollLeft, maxLeft))}px`;
+    const left = popoverType === "link" ? pageLeft : anchorLeft - editorElement.scrollLeft;
+    popover.style.left = `${Math.max(0, Math.min(left, maxLeft))}px`;
     popover.setAttribute("data-top", popoverTop.toString());
 };
 
@@ -497,7 +514,7 @@ export const genLinkRefPopover = (vditor: IVditor, linkRefElement: HTMLElement) 
 
     const textInput = document.createElement("input");
     textInput.className = "vditor-link-popover__text vditor-input";
-    textInput.setAttribute("placeholder", window.VditorI18n.textIsNotEmpty);
+    textInput.setAttribute("placeholder", window.VditorI18n.linkText);
     textInput.value = getDisplayText();
     textInput.oninput = () => {
         updateText();
@@ -659,7 +676,7 @@ export const genAPopover = (vditor: IVditor, aElement: HTMLElement) => {
 
     const textInput = document.createElement("input");
     textInput.className = "vditor-link-popover__text vditor-input";
-    textInput.setAttribute("placeholder", window.VditorI18n.textIsNotEmpty);
+    textInput.setAttribute("placeholder", window.VditorI18n.linkText);
     textInput.value = aElement.innerHTML || "";
     textInput.oninput = () => {
         updateText();
@@ -676,6 +693,24 @@ export const genAPopover = (vditor: IVditor, aElement: HTMLElement) => {
         updateHref();
     };
     hrefInput.onkeydown = (event) => {
+        linkHotkey(vditor, aElement, event, titleInput);
+    };
+
+    // the optional tooltip: [text](url "tooltip"); shown first (_panel.less), its input last so
+    // that the text's stays the first one, which the callers focus
+    const titleInput = document.createElement("input");
+    titleInput.className = "vditor-link-popover__title vditor-input";
+    titleInput.setAttribute("placeholder", window.VditorI18n.linkTooltip);
+    titleInput.value = aElement.getAttribute("title") || "";
+    titleInput.oninput = () => {
+        if (titleInput.value.trim()) {
+            aElement.setAttribute("title", titleInput.value);
+        } else {
+            aElement.removeAttribute("title");
+        }
+        afterRenderEvent(vditor);
+    };
+    titleInput.onkeydown = (event) => {
         linkHotkey(vditor, aElement, event, textInput);
     };
 
@@ -699,7 +734,7 @@ export const genAPopover = (vditor: IVditor, aElement: HTMLElement) => {
 
     const hint = createLinkPopoverExitHint();
 
-    view.append(textInput, hrefInput, copy, remove, hint);
+    view.append(textInput, hrefInput, copy, remove, hint, titleInput);
     popover.insertAdjacentElement("beforeend", view);
     setPopoverPosition(vditor, aElement, "link");
 };
@@ -866,6 +901,17 @@ const resolveAdjacentEditableImage = (vditor: IVditor, range: Range) => {
     );
 };
 
+/** A link edited: the cursor at the end of its URL, after its last character */
+export const focusLinkPopoverHrefEnd = (vditor: IVditor) => {
+    const hrefInput = getModePopover(vditor)?.querySelector(".vditor-link-popover__href") as HTMLInputElement | null;
+    if (!hrefInput) {
+        return;
+    }
+    hrefInput.focus();
+    hrefInput.setSelectionRange(hrefInput.value.length, hrefInput.value.length);
+    hrefInput.scrollLeft = hrefInput.scrollWidth;
+};
+
 const focusLinkPopoverInput = (vditor: IVditor) => {
     const inputElement = getModePopover(vditor)?.querySelector("input") as HTMLInputElement | null;
     if (!inputElement) {
@@ -902,7 +948,7 @@ export const handleLinkPopoverAltEnter = (vditor: IVditor, range: Range): boolea
     const anchor = resolveAdjacentAnchor(range);
     if (anchor) {
         genAPopover(vditor, anchor);
-        focusLinkPopoverInput(vditor);
+        focusLinkPopoverHrefEnd(vditor);
         return true;
     }
 

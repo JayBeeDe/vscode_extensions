@@ -43,16 +43,17 @@
       opacity: 0.86;
     }
 
-    // as wide as the HTML editor and framed like it: long URLs stay readable. The frame, the fields
-    // and their selected text take VS Code's accent (--list-hover-color is --vscode-focusBorder)
+    // as wide as the page's text, like the HTML editor, and framed like it: long URLs stay readable
+    // (the width set by highlightToolbarWYSIWYG.ts). The frame, the fields and their selected text
+    // take VS Code's accent (--list-hover-color is --vscode-focusBorder)
     &--link {
       --vditor-link-accent: var(--list-hover-color, var(--link-color, #007aff));
       position: absolute;
       display: inline-flex;
       align-items: center;
-      width: min(760px, calc(100vw - 24px));
+      width: var(--vditor-page-text-width, min(760px, calc(100vw - 24px)));
       min-width: 320px;
-      max-width: min(760px, calc(100vw - 24px));
+      max-width: calc(100vw - 24px);
       padding: 10px 12px;
       border: 1px solid color-mix(in srgb, var(--vditor-link-accent) 60%, transparent);
       border-radius: 8px;
@@ -78,7 +79,8 @@
       }
 
       .vditor-link-popover__text,
-      .vditor-link-popover__href {
+      .vditor-link-popover__href,
+      .vditor-link-popover__title {
         padding: 6px 8px;
         margin-inline-end: 10px;
         border-radius: var(--vditor-popover-radius, 6px);
@@ -217,16 +219,28 @@
       }
     }
 
-    // a link on two lines: its text, the buttons and the hint, then its URL across the popup
+    // a link on two lines: its text and its optional tooltip side by side, with the buttons and the
+    // hint, then its URL across the popup (the tooltip's input comes last in the page: ordered here)
     &--link:not(.vditor-panel--link-ref):not(.vditor-panel--image) {
       .vditor-link-popover {
         flex-wrap: wrap;
         row-gap: 8px;
       }
 
-      .vditor-link-popover__text {
-        flex: 1 1 auto;
+      .vditor-link-popover__text,
+      .vditor-link-popover__title {
+        flex: 1 1 0;
+        min-width: 80px;
         max-width: none;
+      }
+
+      .vditor-link-popover__text {
+        order: -2;
+      }
+
+      .vditor-link-popover__title {
+        order: -1;
+        margin-inline-end: 6px;
       }
 
       .vditor-link-popover__href {
@@ -362,10 +376,11 @@
       }
     }
 
-    // the HTML editor: wide, its lines wrapping (htmlInlineEditor.ts), kept inside the window
+    // the HTML editor: as wide as the page's text, its lines wrapping (htmlInlineEditor.ts), kept
+    // inside the window
     &--html-inline {
-      width: min(760px, calc(100vw - 24px));
-      max-width: min(760px, calc(100vw - 24px));
+      width: var(--vditor-html-editor-width, min(760px, calc(100vw - 24px)));
+      max-width: calc(100vw - 24px);
     }
 
     &--arrow:before {
@@ -438,4 +453,23 @@
       pointer-events: none;
     }
   }
+}
+
+// the tooltip of a markdown link, saying what a click does (util/linkHoverTooltip.ts); inside the
+// editor's element, for its theme's colours
+.vditor-link-hover {
+  position: fixed;
+  z-index: 100;
+  max-width: min(480px, calc(100vw - 16px));
+  padding: 4px 8px;
+  border: 1px solid color-mix(in srgb, var(--toolbar-icon-color) 22%, transparent);
+  border-radius: 4px;
+  background: var(--panel-background-color);
+  color: var(--textarea-text-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  pointer-events: none;
 }

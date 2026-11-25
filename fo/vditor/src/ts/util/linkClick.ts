@@ -171,6 +171,11 @@ export const linkClickEvent = (vditor: IVditor, editorElement: HTMLElement) => {
         }
 
         event.stopPropagation();
+        // never the browser's own: a link in rendered HTML would load in the editor's page, and
+        // Alt+click (the popups' click, wysiwyg/index.ts) downloads a link's target
+        if (event.type === "click" && hasClosestByMatchTag(event.target as HTMLElement, "A")) {
+            event.preventDefault();
+        }
 
         const onLinkClick = vditor.options.onLinkClick;
         if (typeof onLinkClick === "function") {

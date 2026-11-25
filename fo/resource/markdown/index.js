@@ -191,8 +191,13 @@ async function openMarkdown(md) {
     toolbar: await getToolbar(rootPath, i18n, () => {
       saveFormatted();
     }, isWeb),
-    onLinkClick(payload, event) {
+    onLinkClick(payload, event, vditor) {
       const isCompose = event.metaKey || event.ctrlKey;
+      // WYSIWYG: a click follows a link (not a linked image: its click opens the image's popup),
+      // Alt+click opens the link's popup instead (vditor/src/ts/wysiwyg/index.ts)
+      const clickFollows = vditor?.currentMode === 'wysiwyg'
+        && (payload.type === 'link' || payload.type === 'link-ref')
+        && payload.element?.tagName !== 'IMG';
       // in a folder's listing, a link opens in its place, or in a tab of its own (see below)
       let newTab = false;
       if (readOnly) {
@@ -203,6 +208,12 @@ async function openMarkdown(md) {
           return;
         }
         newTab = isCompose || middleClick;
+      } else if (clickFollows) {
+        // a double click is two clicks: the first one has followed the link; the click ending a
+        // drag that selected text does not follow it
+        if (payload.action !== 'click' || event.altKey || !getSelection().isCollapsed) {
+          return;
+        }
       } else if (payload.action !== "dblclick" && !(payload.action === "click" && isCompose)) {
         return;
       }

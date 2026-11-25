@@ -1,6 +1,7 @@
 import {isInsideCodeBlockChrome, isInsideCodeMirror} from "../codeBlock/codeMirrorManager";
 import {clearBlockMarkerTop, syncBlockMarkerTop} from "./blockMarker";
 import {hasClosestByHeadings} from "./hasClosestByHeadings";
+import {resolveAdjacentElementFromRange} from "./rangeAdjacentElement";
 import {getEditorRange, selectIsEditor} from "./selection";
 
 const ACTIVE_CLASS = "vditor-heading--active";
@@ -32,9 +33,29 @@ export const clearActiveHeadingMarker = (vditor: IVditor) => {
     }
 };
 
+/** The HTML block whose editor is open, its </> marker shown meanwhile (the editor takes the focus) */
+const EDITING_CLASS = "vditor-html-block--editing";
+
+export const markEditedHtmlBlock = (vditor: IVditor, block: HTMLElement | null) => {
+    if (vditor.currentMode !== "wysiwyg" && vditor.currentMode !== "ir") {
+        return;
+    }
+    for (const item of vditor[vditor.currentMode].element.querySelectorAll(`.${EDITING_CLASS}`)) {
+        item.classList.remove(EDITING_CLASS);
+    }
+    if (block?.getAttribute("data-type") === "html-block") {
+        block.classList.add(EDITING_CLASS);
+    }
+};
+
 export const updateActiveHeadingMarker = (vditor: IVditor) => {
     if (vditor.currentMode !== "wysiwyg" && vditor.currentMode !== "ir") {
         return;
+    }
+    // the HTML editor closed by any way: no block is edited any more
+    const popover = vditor[vditor.currentMode].popover;
+    if (popover.style.display === "none" || !popover.classList.contains("vditor-panel--html-inline")) {
+        markEditedHtmlBlock(vditor, null);
     }
     const editorElement = vditor[vditor.currentMode].element;
     if (!selectIsEditor(editorElement) || !isEditorAreaFocused(vditor)) {
@@ -59,7 +80,21 @@ export const updateActiveHeadingMarker = (vditor: IVditor) => {
         syncBlockMarkerTop(headingElement);
         return;
     }
+    // an HTML block takes no caret: a click on it puts the caret beside it (as for Alt+Enter)
+    const htmlBlock = resolveAdjacentElementFromRange(range, () => null, htmlBlockOf);
+    if (htmlBlock && htmlBlock.parentElement === editorElement) {
+        if (currentActive === htmlBlock) {
+            return;
+        }
+        clearActiveHeadingMarker(vditor);
+        htmlBlock.classList.add(ACTIVE_CLASS);
+        return;
+    }
     if (currentActive) {
         clearActiveHeadingMarker(vditor);
     }
 };
+
+const htmlBlockOf = (node: Node | null): HTMLElement | null =>
+    node?.nodeType === 1 && (node as HTMLElement).getAttribute("data-type") === "html-block"
+        && (node as HTMLElement).getAttribute("contenteditable") === "false" ? node as HTMLElement : null;

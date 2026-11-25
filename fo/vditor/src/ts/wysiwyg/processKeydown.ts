@@ -29,7 +29,7 @@ import {
 } from "../util/hasClosest";
 import { hasClosestByHeadings } from "../util/hasClosestByHeadings";
 import { recordHistoryChange } from "../util/instantHistory";
-import { getEditorRange, getSelectPosition, setSelectionFocus } from "../util/selection";
+import { getEditorRange, getSelectPosition, setRangeByWbr, setSelectionFocus } from "../util/selection";
 import { keydownToc, renderTocNow } from "../util/toc";
 import { afterRenderEvent } from "./afterRenderEvent";
 import { handleLinkPopoverAltEnter } from "./highlightToolbarWYSIWYG";
@@ -38,6 +38,56 @@ import { removeHeading } from "./setHeading";
 import { focusWysiwygCodeBlock, showCode } from "./showCode";
 import { enterInlineMathEdit, skipZwspAfterInlineMath } from "../math/inlineMathCodeMirror";
 import { handleHtmlEditorAltEnter } from "../htmlInline/htmlInlineEditor";
+
+/** A paragraph's text, not a block of its own (code, math, HTML, table...) the caret can't go into */
+const isTextBlock = (element: Element | null): element is HTMLElement =>
+    !!element && !element.getAttribute("data-type") && element.tagName !== "TABLE"
+    && element.getAttribute("contenteditable") !== "false";
+
+/**
+ * The caret beside an HTML block, where a click on the block puts it (wysiwyg/index.ts), between
+ * two blocks: the browser's keys would type or move oddly from there. Enter or a character opens a
+ * paragraph after the block (the character going into it), an arrow goes to the text before or
+ * after it, and Backspace/Delete do nothing: the block is not deleted by mistake (Alt+click edits it).
+ */
+const handleCaretBesideHtmlBlock = (vditor: IVditor, event: KeyboardEvent) => {
+    if (isCtrl(event) || event.altKey || (event.shiftKey && event.key.startsWith("Arrow"))) {
+        return false;
+    }
+    const range = getEditorRange(vditor);
+    const editorElement = vditor.wysiwyg.element;
+    const block = range.collapsed && range.startContainer === editorElement && range.startOffset > 0
+        ? editorElement.childNodes[range.startOffset - 1] as HTMLElement : null;
+    if (block?.nodeType !== 1 || block.getAttribute("data-type") !== "html-block") {
+        return false;
+    }
+    if (event.key === "Enter" || event.key.length === 1) {
+        block.insertAdjacentHTML("afterend", `<p data-block="0">${Constants.ZWSP}<wbr></p>`);
+        setRangeByWbr(editorElement, range);
+        if (event.key !== "Enter") {
+            return false;
+        }
+        afterRenderEvent(vditor);
+    } else if (event.key === "ArrowDown" || event.key === "ArrowRight") {
+        const next = block.nextElementSibling;
+        if (isTextBlock(next)) {
+            range.selectNodeContents(next);
+            range.collapse(true);
+            setSelectionFocus(range);
+        }
+    } else if (event.key === "ArrowUp" || event.key === "ArrowLeft") {
+        const previous = block.previousElementSibling;
+        if (isTextBlock(previous)) {
+            range.selectNodeContents(previous);
+            range.collapse(false);
+            setSelectionFocus(range);
+        }
+    } else if (event.key !== "Backspace" && event.key !== "Delete") {
+        return false;
+    }
+    event.preventDefault();
+    return true;
+};
 
 export const processKeydown = (vditor: IVditor, event: KeyboardEvent) => {
     // Chrome and Firefox fire compositionend inconsistently https://github.com/Vanessa219/vditor/issues/188
@@ -66,6 +116,10 @@ export const processKeydown = (vditor: IVditor, event: KeyboardEvent) => {
             }
         }
         return false;
+    }
+
+    if (handleCaretBesideHtmlBlock(vditor, event)) {
+        return true;
     }
 
     // ZWSP after a formula: skip it before input so that characters do not jump to the line start when the caret is at the start of the ZWSP
