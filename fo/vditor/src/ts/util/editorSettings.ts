@@ -41,9 +41,6 @@ const BOLD_COLORS: Record<string, string> = {
     plain: "var(--textarea-text-color, inherit)",
     accent: "var(--link-color, #0550ae)",
     red: "var(--error-color, #cf222e)",
-    orange: "#bc4c00",
-    purple: "#8250df",
-    teal: "#1a7f64",
 };
 
 const PAGE_WIDTHS: Record<string, string> = {

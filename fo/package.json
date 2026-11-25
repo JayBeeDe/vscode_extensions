@@ -647,19 +647,13 @@
 							"default",
 							"plain",
 							"accent",
-							"red",
-							"orange",
-							"purple",
-							"teal"
+							"red"
 						],
 						"markdownEnumDescriptions": [
 							"Slightly tinted.",
 							"The text colour.",
 							"The link colour.",
-							"Red.",
-							"Orange.",
-							"Purple.",
-							"Teal."
+							"Red."
 						],
 						"default": "default",
 						"markdownDescription": "Colour of bold text in the Markdown editor."
