@@ -91,7 +91,7 @@ function publish() {
 }
 
 function checkPublication() {
-    TTL=8
+    TTL=10
     INTERVAL=90
     while [ $TTL -gt 0 ]; do
         if vsce show "$EXTENSION_FQDN" --json | jq -r '.versions[].version // empty' | grep -q -P "^${EXTENSION_VERSION}$"; then
