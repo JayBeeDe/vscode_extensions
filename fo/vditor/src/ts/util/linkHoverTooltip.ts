@@ -25,12 +25,30 @@ const resolveLink = (vditor: IVditor, target: EventTarget | null) => {
         if (!link || !url) {
             return null;
         }
-        // "tooltip", 'tooltip' or (tooltip)
-        const title = (link.querySelector(":scope > .vditor-ir__marker--title")?.textContent?.trim() || "")
-            .replace(/^["'(]([\s\S]*)["')]$/, "$1");
+        const title = unquoteTitle(link.querySelector(":scope > .vditor-ir__marker--title")?.textContent || "");
         return {element: link, url, title};
     }
     return null;
+};
+
+/** A title marker's text without its delimiters: "tooltip", 'tooltip' or (tooltip) */
+const unquoteTitle = (text: string) => text.trim().replace(/^["'(]([\s\S]*)["')]$/, "$1");
+
+/**
+ * IR: an image's preview shows its tooltip, ![alt](src "tooltip"), as in WYSIWYG, where the
+ * picture is the image itself. Only the preview gets it: the markdown is its markers' text.
+ */
+const showIrImageTooltip = (vditor: IVditor, target: EventTarget | null) => {
+    if (vditor.currentMode !== "ir" || !(target instanceof HTMLImageElement)) {
+        return;
+    }
+    const marker = target.closest("[data-type='img']")?.querySelector(":scope > .vditor-ir__marker--title");
+    const title = marker ? unquoteTitle(marker.textContent || "") : "";
+    if (title) {
+        target.setAttribute("title", title);
+    } else {
+        target.removeAttribute("title");
+    }
 };
 
 /**
@@ -91,6 +109,7 @@ export const linkHoverTooltipEvent = (vditor: IVditor, editorElement: HTMLElemen
     };
 
     editorElement.addEventListener("mouseover", (event) => {
+        showIrImageTooltip(vditor, event.target);
         const link = resolveLink(vditor, event.target);
         if (link?.element === current) {
             return;

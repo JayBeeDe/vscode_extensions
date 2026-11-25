@@ -381,7 +381,8 @@ const setPopoverPosition = (vditor: IVditor, element: HTMLElement, popoverType?:
     popover.classList.toggle("vditor-panel--link-ref", popoverType === "link-ref");
     popover.classList.toggle("vditor-panel--image", popoverType === "image");
     popover.style.left = "0";
-    // a link's popup: as wide as the page's text, under its left edge (the HTML editor's too)
+    // a link's or an image's popup: as wide as the page's text, under its left edge (the HTML
+    // editor's too)
     const editorStyle = getComputedStyle(editorElement);
     const pageLeft = parseFloat(editorStyle.paddingLeft);
     popover.style.setProperty("--vditor-page-text-width",
@@ -400,7 +401,7 @@ const setPopoverPosition = (vditor: IVditor, element: HTMLElement, popoverType?:
     const maxLeft = editorElement.clientWidth - popover.clientWidth;
 
     popover.style.top = `${Math.max(-8, popoverTop - editorElement.scrollTop)}px`;
-    const left = popoverType === "link" ? pageLeft : anchorLeft - editorElement.scrollLeft;
+    const left = popoverType === "link" || popoverType === "image" ? pageLeft : anchorLeft - editorElement.scrollLeft;
     popover.style.left = `${Math.max(0, Math.min(left, maxLeft))}px`;
     popover.setAttribute("data-top", popoverTop.toString());
 };
@@ -816,6 +817,23 @@ export const genImagePopoverForElement = (vditor: IVditor, imgElement: HTMLImage
         updateSrc();
     };
     srcInput.onkeydown = (elementEvent) => {
+        linkHotkey(vditor, imgElement, elementEvent, titleInput);
+    };
+
+    // the optional tooltip: ![alt](src "tooltip"), as for a link (genAPopover)
+    const titleInput = document.createElement("input");
+    titleInput.className = "vditor-link-popover__title vditor-input";
+    titleInput.setAttribute("placeholder", window.VditorI18n.linkTooltip);
+    titleInput.value = imgElement.getAttribute("title") || "";
+    titleInput.oninput = () => {
+        if (titleInput.value.trim()) {
+            imgElement.setAttribute("title", titleInput.value);
+        } else {
+            imgElement.removeAttribute("title");
+        }
+        afterRenderEvent(vditor);
+    };
+    titleInput.onkeydown = (elementEvent) => {
         linkHotkey(vditor, imgElement, elementEvent, altInput);
     };
 
@@ -837,7 +855,7 @@ export const genImagePopoverForElement = (vditor: IVditor, imgElement: HTMLImage
     remove.innerHTML = `<span class="vditor-link-popover__button-icon">${codicon("trash")}</span>`;
     remove.onclick = removeImage;
 
-    view.append(altInput, srcInput, copy, remove, createLinkPopoverExitHint());
+    view.append(altInput, srcInput, copy, remove, createLinkPopoverExitHint(), titleInput);
     popover.insertAdjacentElement("beforeend", view);
     setPopoverPosition(vditor, imgElement, "image");
 };

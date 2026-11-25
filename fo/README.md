@@ -29,7 +29,7 @@ So a dark interface can show white pages: in the dark screenshots, the document 
 
 A WYSIWYG editor with an outline, callouts, tables, highlighted code, task lists, math and Mermaid diagrams, which exports to PDF, DOCX and HTML.
 
-![The Markdown editor](images/screenshot-markdown-light.png)
+![The Markdown editor](images/screenshot-markdown-light.png "fdsfdsf")
 
 ![The Markdown editor, in a dark high contrast theme](images/screenshot-markdown-dark.png)
 

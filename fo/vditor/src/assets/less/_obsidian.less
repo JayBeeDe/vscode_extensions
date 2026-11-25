@@ -384,6 +384,22 @@
       cursor: pointer;
       -webkit-user-drag: none;
     }
+
+    // an image in it is read-only too (unless it is a link's, above)
+    img {
+      cursor: inherit;
+    }
+
+    a img {
+      cursor: pointer;
+    }
+  }
+
+  // an image: a click opens its popup (WYSIWYG) or shows its markdown (IR), and a double click
+  // previews it
+  .vditor-wysiwyg & img,
+  .vditor-ir & img {
+    cursor: pointer;
   }
 
   .vditor-wysiwyg__block[data-type="html-block"][data-md-source="<br>"],

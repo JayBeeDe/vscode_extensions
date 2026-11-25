@@ -219,9 +219,10 @@
       }
     }
 
-    // a link on two lines: its text and its optional tooltip side by side, with the buttons and the
-    // hint, then its URL across the popup (the tooltip's input comes last in the page: ordered here)
-    &--link:not(.vditor-panel--link-ref):not(.vditor-panel--image) {
+    // a link or an image on two lines: its text (an image's alternative text) and its optional
+    // tooltip side by side, with the buttons and the hint, then its URL across the popup (the
+    // tooltip's input comes last in the page: ordered here)
+    &--link:not(.vditor-panel--link-ref) {
       .vditor-link-popover {
         flex-wrap: wrap;
         row-gap: 8px;
@@ -251,13 +252,14 @@
       }
     }
 
+    // as wide as the page's text, like a link's (highlightToolbarWYSIWYG.ts), the URL taking the room
     &--image {
-      width: auto;
+      width: var(--vditor-page-text-width, auto);
       min-width: auto;
-      max-width: min(720px, calc(100vw - 32px));
+      max-width: calc(100vw - 24px);
 
       .vditor-link-popover {
-        width: auto;
+        width: 100%;
       }
     }
 
