@@ -184,6 +184,8 @@ export const outlineRender = (contentElement: HTMLElement, targetElement: Elemen
                     return;
                 }
                 if (vditor) {
+                    // going to a heading ends the search: its highlights and bar would stay over the page
+                    vditor.hideFindBar?.();
                     pinOutlineActive(vditor, targetId);
                     if (vditor.options.height === "auto") {
                         let windowScrollY = idElement.offsetTop + vditor.element.offsetTop;

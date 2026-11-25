@@ -644,6 +644,11 @@
       .vditor-outline__resize {
         right: auto;
         left: -2px;
+
+        &::before {
+          right: auto;
+          left: 2px;
+        }
       }
     }
 
@@ -662,10 +667,24 @@
       z-index: 2;
       cursor: col-resize;
 
-      &:hover,
-      .vditor-outline--resizing & {
-        background-color: var(--toolbar-icon-hover-color);
-        opacity: 0.45;
+      // always shown, in VS Code's accent: a line on the sidebar's edge (the half of the handle
+      // inside it, the outline clips the rest), thicker while hovered or dragged
+      &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 2px;
+        width: 1px;
+        background-color: var(--list-hover-color, #007aff);
+        opacity: 0.6;
+        transition: width 0.1s ease, opacity 0.1s ease;
+      }
+
+      &:hover::before,
+      .vditor-outline--resizing &::before {
+        width: 2px;
+        opacity: 1;
       }
     }
 

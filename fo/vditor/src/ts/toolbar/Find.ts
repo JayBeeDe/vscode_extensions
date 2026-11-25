@@ -19,6 +19,11 @@ export class Find extends MenuItem {
         };
 
         vditor.revealFindMatch = (text: string, index: number) => getOrCreateBar().revealMatch(text, index);
+        vditor.hideFindBar = () => {
+            if (findBar?.isVisible()) {
+                findBar.hide();
+            }
+        };
 
         btn.addEventListener(getEventName(), (e) => {
             e.preventDefault();
