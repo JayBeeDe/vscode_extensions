@@ -5,7 +5,6 @@ import { codeMirrorPreviewRender } from "./ts/codeBlock/codeMirrorPreviewRender"
 import { mathRender } from "./ts/markdown/mathRender";
 import { mermaidRender } from "./ts/markdown/mermaidRender";
 import { outlineRender } from "./ts/markdown/outlineRender";
-import { plantumlRender } from "./ts/markdown/plantumlRender";
 import { Constants, VDITOR_VERSION } from "./ts/constants";
 import { Hint } from "./ts/hint/index";
 import { IR } from "./ts/ir/index";
@@ -53,7 +52,6 @@ class Vditor {
     public static codeMirrorPreviewRender = codeMirrorPreviewRender;
     public static mathRender = mathRender;
     public static mermaidRender = mermaidRender;
-    public static plantumlRender = plantumlRender;
     public static outlineRender = outlineRender;
 
     public readonly version: string;

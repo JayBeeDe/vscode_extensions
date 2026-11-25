@@ -1459,7 +1459,6 @@
     "empty": "Empty",
     "current": "current",
     "languageSearch": "Search language",
-    "openInPlantuml": "Open in PlantUML",
     "toggleLineWrap": "Toggle line wrap",
     "htmlReadOnly": "HTML, read-only here: {key}+click to edit it",
     "linkTooltip": "Tooltip (optional)",
@@ -1470,8 +1469,7 @@
     "clickToEditMermaid": "Click to edit mermaid diagram",
     "clickToEditMath": "Click to edit",
     "insertMermaid": "Mermaid diagram",
-    "mermaidRenderError": "Mermaid render error",
-    "plantumlRenderError": "PlantUML render error"
+    "mermaidRenderError": "Mermaid render error"
   },
   "pdf": {
     "switchToLight": "Switch PDF to light mode",

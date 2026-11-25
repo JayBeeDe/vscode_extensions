@@ -1426,7 +1426,6 @@
     "empty": "Ninguno",
     "current": "actual",
     "languageSearch": "Buscar lenguaje",
-    "openInPlantuml": "Abrir en PlantUML",
     "toggleLineWrap": "Ajuste de línea",
     "htmlReadOnly": "HTML, de solo lectura aquí: {key}+clic para editarlo",
     "linkTooltip": "Información sobre herramientas (opcional)",
@@ -1437,8 +1436,7 @@
     "clickToEditMermaid": "Haga clic para editar el diagrama Mermaid",
     "clickToEditMath": "Haga clic para editar",
     "insertMermaid": "Diagrama Mermaid",
-    "mermaidRenderError": "Error al representar Mermaid",
-    "plantumlRenderError": "Error al representar PlantUML"
+    "mermaidRenderError": "Error al representar Mermaid"
   },
   "pdf": {
     "switchToLight": "Cambiar el PDF al modo claro",

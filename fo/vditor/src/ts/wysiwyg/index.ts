@@ -47,7 +47,6 @@ import { input } from "./input";
 import {
     focusCodeBlock, isCmCodeBlock, isInsideCodeBlockChrome, isInsideCodeMirror,
     getCodeMirrorSelectionTextForCopy,
-    isPlantumlRenderImage,
     isSpecialBlock,
     isSpecialPreviewBlock,
     sanitizeCodeBlocksInCopyFragment,
@@ -479,7 +478,6 @@ class WYSIWYG {
             }
 
             if (event.target.tagName === "IMG" &&
-                !isPlantumlRenderImage(event.target) &&
                 !event.target.parentElement.classList.contains("vditor-wysiwyg__preview")) {
                 if (event.target.getAttribute("data-type") === "link-ref") {
                     genLinkRefPopover(vditor, event.target);

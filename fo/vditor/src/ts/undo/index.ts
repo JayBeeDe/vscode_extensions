@@ -259,20 +259,14 @@ class Undo {
                 range.insertNode(wbrElement);
             }
         }
-        // remove math and plantuml rendering https://github.com/siyuan-note/siyuan/issues/537
+        // remove math rendering https://github.com/siyuan-note/siyuan/issues/537
         const cloneElement = vditor[vditor.currentMode].element.cloneNode(true) as HTMLElement;
         cloneElement.querySelectorAll(`.vditor-${vditor.currentMode}__preview[data-render='1']`)
             .forEach((item: HTMLElement) => {
                 if (!item.firstElementChild) {
                     return;
                 }
-                if (item.firstElementChild.classList.contains("language-plantuml")) {
-                    item.firstElementChild.removeAttribute("data-processed");
-                    item.firstElementChild.removeAttribute("data-plantuml");
-                    const sourceElement = item.previousElementSibling?.firstElementChild;
-                    item.firstElementChild.innerHTML = sourceElement?.innerHTML || "";
-                    item.setAttribute("data-render", "2");
-                } else if (item.firstElementChild.classList.contains("language-math")) {
+                if (item.firstElementChild.classList.contains("language-math")) {
                     item.setAttribute("data-render", "2");
                     item.firstElementChild.textContent = item.firstElementChild.getAttribute("data-math");
                     item.firstElementChild.removeAttribute("data-math");

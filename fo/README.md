@@ -400,7 +400,7 @@ The libraries behind each viewer are listed in the table in [Supported formats](
 - File icons for spreadsheet, document, `.csv`/`.tsv`, `.pdf` and Markdown formats, and the presentation icon (adapted from the document icon): [jesseweed/seti-ui](https://github.com/jesseweed/seti-ui)
 - Toolbar icons of the Markdown editor and of the spreadsheet, eBook and Parquet viewers: [Codicons](https://github.com/microsoft/vscode-codicons) (CC-BY-4.0)
 - Toolbar icons of the document editor: [Material Symbols](https://github.com/google/material-design-icons) (Apache-2.0), as used by docx-editor
-- Markdown diagrams, math and exports: [Mermaid](https://github.com/mermaid-js/mermaid) (MIT), [KaTeX](https://github.com/KaTeX/KaTeX) (MIT), [highlight.js](https://github.com/highlightjs/highlight.js) (BSD-3-Clause), [markdown-it-plantuml](https://github.com/gmunguia/markdown-it-plantuml) (MIT), [saveSvgAsPng](https://github.com/exupero/saveSvgAsPng) (MIT)
+- Markdown diagrams, math and exports: [Mermaid](https://github.com/mermaid-js/mermaid) (MIT), [KaTeX](https://github.com/KaTeX/KaTeX) (MIT), [highlight.js](https://github.com/highlightjs/highlight.js) (BSD-3-Clause), [saveSvgAsPng](https://github.com/exupero/saveSvgAsPng) (MIT)
 - Markdown editor undo history: [diff-match-patch](https://github.com/JackuB/diff-match-patch) (Apache-2.0)
 
 ## License

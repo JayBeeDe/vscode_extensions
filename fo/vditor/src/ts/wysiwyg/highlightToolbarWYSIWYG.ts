@@ -19,7 +19,6 @@ import {
     isCmCodeBlock,
     isInsideCodeBlockChrome,
     isInsideCodeMirror,
-    isPlantumlRenderImage,
     isSpecialBlock,
     CM_EDITING_CLASS,
     syncMathBlocksDisplayMode,
@@ -873,9 +872,6 @@ const anchorFromSibling = (node: Node | null): HTMLElement | null =>
 
 const createEditableImageMatcher = (vditor: IVditor) => (node: Node | null): HTMLImageElement | null => {
     if (!(node instanceof HTMLImageElement)) {
-        return null;
-    }
-    if (isPlantumlRenderImage(node)) {
         return null;
     }
     if (vditor.currentMode === "wysiwyg" && node.parentElement?.classList.contains("vditor-wysiwyg__preview")) {

@@ -1,4 +1,4 @@
-import { isInsideCodeBlockChrome, isInsideCodeMirror, isPlantumlRenderImage } from "../codeBlock/codeMirrorManager";
+import { isInsideCodeBlockChrome, isInsideCodeMirror } from "../codeBlock/codeMirrorManager";
 import { hasClosestByAttribute, hasClosestByMatchTag } from "./hasClosest";
 
 /** Without onLinkClick: Ctrl/⌘+click, double-click or middle-click follows the link by default */
@@ -102,7 +102,7 @@ export const resolveLinkClickFromTarget = (
         }
     }
 
-    if (target.tagName === "IMG" && !isPlantumlRenderImage(target)) {
+    if (target.tagName === "IMG") {
         const img = target as HTMLImageElement;
         const parentA = hasClosestByMatchTag(target, "A") as HTMLAnchorElement | false;
         if (parentA && parentA.href) {

@@ -8,7 +8,7 @@ Implementation details: [[Projects/Vditor|Vditor project]]
 ## Q2 2026
 
 - Obsidian callouts / wikilinks / tags
-- CodeMirror for special blocks (math, mermaid, plantuml)
+- CodeMirror for special blocks (math, mermaid)
 - AI dialog
 
 ## Q3 2026

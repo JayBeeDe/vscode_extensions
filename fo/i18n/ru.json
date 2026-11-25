@@ -347,7 +347,6 @@
     "empty": "Нет",
     "current": "текущий",
     "languageSearch": "Поиск языка",
-    "openInPlantuml": "Открыть в PlantUML",
     "toggleLineWrap": "Перенос строк",
     "htmlReadOnly": "HTML, здесь только для чтения: {key}+щелчок для редактирования",
     "linkTooltip": "Всплывающая подсказка (необязательно)",
@@ -358,8 +357,7 @@
     "clickToEditMermaid": "Щелкните, чтобы изменить диаграмму Mermaid",
     "clickToEditMath": "Щелкните, чтобы изменить",
     "insertMermaid": "Диаграмма Mermaid",
-    "mermaidRenderError": "Ошибка отрисовки Mermaid",
-    "plantumlRenderError": "Ошибка отрисовки PlantUML"
+    "mermaidRenderError": "Ошибка отрисовки Mermaid"
   },
   "document": {
     "common": {

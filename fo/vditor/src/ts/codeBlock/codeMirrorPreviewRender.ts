@@ -20,7 +20,6 @@ const isPreviewCodeElement = (code: HTMLElement) => {
         return false;
     }
     if (code.classList.contains("language-mermaid") ||
-        code.classList.contains("language-plantuml") ||
         code.classList.contains("language-math")) {
         return false;
     }

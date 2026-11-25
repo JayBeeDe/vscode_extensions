@@ -8,7 +8,6 @@ export const codeRender = (element: HTMLElement) => {
             return;
         }
         if (e.classList.contains("language-mermaid") ||
-            e.classList.contains("language-plantuml") ||
             e.classList.contains("language-math")) {
             return;
         }

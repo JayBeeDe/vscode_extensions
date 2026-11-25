@@ -7,7 +7,3 @@ export const mermaidRenderAdapter = {
     getCode: (el: Element) => el.textContent,
     getElements: (element: HTMLElement) => element.querySelectorAll(".language-mermaid"),
 };
-export const plantumlRenderAdapter = {
-    getCode: (el: Element) => el.textContent,
-    getElements: (el: HTMLElement | Document) => el.querySelectorAll(".language-plantuml"),
-};

@@ -15,7 +15,7 @@ export abstract class Constants {
   public static readonly EDIT_TOOLBARS: string[] = ["headings", "h1", "h2", "h3", "h4", "h5", "h6", "bold", "italic", "strike", "link", "list",
     "ordered-list", "outdent", "indent", "check", "line", "quote", "code", "inline-code", "insert-after",
     "insert-before", "upload", "table"];
-  public static readonly CODE_LANGUAGES: string[] = ["mermaid", "plantuml", "apache",
+  public static readonly CODE_LANGUAGES: string[] = ["mermaid", "apache",
     "js", "ts", "html",
     // common
     "properties", "apache", "bash", "c", "csharp", "cpp", "css", "coffeescript", "diff", "go", "xml", "http",

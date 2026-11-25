@@ -27,7 +27,6 @@ import { stopHandledCodeMirrorKeymap, vditorCodeMirrorSetup } from "./codeMirror
 import { keepVoidInlineHtml } from "../markdown/lintFormat";
 import { mathRender } from "../markdown/mathRender";
 import { mermaidRender } from "../markdown/mermaidRender";
-import { plantumlRender } from "../markdown/plantumlRender";
 import {
     deactivateInlineMathEditorsInScope,
     flushInlineMathToSyncCode,
@@ -44,7 +43,7 @@ export const CM_BLOCK_CLASS = "vditor-code-block--cm";
 export const CM_EDITING_CLASS = "vditor-cm-block--editing";
 export const CM_SPLIT_CLASS = "vditor-cm-block--split";
 const CM_BLOCK_DATA_TYPES = new Set(["code-block", "math-block"]);
-const SPECIAL_LANGUAGES = ["mermaid", "plantuml", "math"];
+const SPECIAL_LANGUAGES = ["mermaid", "math"];
 /** Maximum number of CodeMirror instances mounted at once in the viewport (Milkdown reference: <15 CM instances for a 25-block document) */
 const LAZY_CM_MAX_MOUNTED = 15;
 /** Margin around the viewport, same as Milkdown */
@@ -78,13 +77,6 @@ export const isSpecialCodeLanguage = (codeElement: HTMLElement) => {
         }
     }
     return false;
-};
-
-/** The PlantUML preview renders as an img inside code and must not open the regular image edit popup */
-export const isPlantumlRenderImage = (target: EventTarget | null) => {
-    return target instanceof HTMLElement
-        && target.tagName === "IMG"
-        && !!target.closest(".language-plantuml");
 };
 
 export const isSpecialBlock = (blockElement: HTMLElement | null) => {
@@ -290,7 +282,7 @@ const isBlockNearViewport = (blockElement: HTMLElement, margin = LAZY_CM_VIEWPOR
     return rect.bottom >= -margin && rect.top <= window.innerHeight + margin;
 };
 
-/** Only regular code blocks are lazy-loaded by viewport; math / mermaid / plantuml are not affected */
+/** Only regular code blocks are lazy-loaded by viewport; math / mermaid are not affected */
 const isLazyManagedCodeBlock = (blockElement: HTMLElement) =>
     !isSpecialBlock(blockElement);
 
@@ -605,13 +597,13 @@ const resetPreviewRenderElement = (
         return mathEl;
     }
     let codeEl = preview.querySelector(
-        language === "plantuml" || language === "mermaid"
+        language === "mermaid"
             ? `div.language-${language}, code.language-${language}`
             : "code",
     ) as HTMLElement | null;
     if (!codeEl) {
         codeEl = document.createElement(
-            language === "plantuml" || language === "mermaid" ? "div" : "code",
+            language === "mermaid" ? "div" : "code",
         );
         preview.replaceChildren(codeEl);
     }
@@ -623,9 +615,6 @@ const resetPreviewRenderElement = (
         codeEl.classList.remove("vditor-reset--error");
     } else if (language === "math") {
         codeEl.removeAttribute("data-math");
-        codeEl.classList.remove("vditor-reset--error");
-    } else if (language === "plantuml") {
-        codeEl.removeAttribute("data-plantuml");
         codeEl.classList.remove("vditor-reset--error");
     }
     codeEl.textContent = source;
@@ -661,8 +650,6 @@ const rerenderSpecialPreview = (preview: HTMLElement, vditor: IVditor, source?: 
     resetPreviewRenderElement(preview, codeText, language, blockElement);
     if (language === "mermaid") {
         mermaidRender(preview, vditor.options.cdn, vditor);
-    } else if (language === "plantuml") {
-        plantumlRender(preview, vditor.options.cdn, vditor);
     } else if (language === "math") {
         mathRender(preview, { cdn: vditor.options.cdn, math: vditor.options.preview.math });
     }
@@ -744,7 +731,7 @@ const exitSpecialBlockEdit = (vditor: IVditor, blockElement: HTMLElement) => {
     }
 };
 
-/** Math / Mermaid / PlantUML: CodeMirror on top, preview below, redrawn live while editing */
+/** Math / Mermaid: CodeMirror on top, preview below, redrawn live while editing */
 export const enterSpecialBlockEdit = (vditor: IVditor, blockElement: HTMLElement, focus = true) => {
     const block = normalizeCmBlockElement(blockElement, getModeEditor(vditor)) || blockElement;
     if (!isSpecialBlock(block)) {
@@ -1968,7 +1955,7 @@ const sanitizePreviewCodeBlockClone = (
     liveBlock: HTMLElement | undefined,
 ) => {
     removeBlockPreviews(cloneBlock);
-    cloneBlock.querySelectorAll(".vditor-cm-chrome, .cm-editor, .vditor-mermaid-chrome, .vditor-plantuml-chrome").forEach((el) => {
+    cloneBlock.querySelectorAll(".vditor-cm-chrome, .cm-editor, .vditor-mermaid-chrome").forEach((el) => {
         el.remove();
     });
     syncBlockSourceFromLive(cloneBlock, liveBlock);
@@ -2090,7 +2077,7 @@ const sanitizeCopyBlockClone = (
 
 const stripCopyFragmentChrome = (root: ParentNode) => {
     (root as HTMLElement).querySelectorAll(
-        ".vditor-cm-chrome, .vditor-mermaid-chrome, .vditor-plantuml-chrome, .cm-editor",
+        ".vditor-cm-chrome, .vditor-mermaid-chrome, .cm-editor",
     ).forEach((el) => {
         el.remove();
     });

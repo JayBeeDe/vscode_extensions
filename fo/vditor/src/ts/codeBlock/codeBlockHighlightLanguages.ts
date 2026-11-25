@@ -1,4 +1,4 @@
-import { LanguageSupport, StreamLanguage } from "@codemirror/language";
+import { LanguageSupport } from "@codemirror/language";
 import { mermaid } from "codemirror-lang-mermaid";
 import { latex } from "codemirror-lang-latex";
 
@@ -12,12 +12,6 @@ const HIGHLIGHT_LANGUAGE_ALIASES: Record<string, string> = {
     math: "latex",
 };
 
-const PLANTUML_KEYWORDS =
-    "abstract|actor|alt|as|autonumber|boundary|box|class|component|create|deactivate|destroy"
-    + "|else|endif|end|entity|enum|folder|fork|group|header|hide|if|interface|legend|loop"
-    + "|namespace|node|note|opt|package|participant|person|rectangle|ref|repeat|return"
-    + "|skinparam|split|start|state|title|together|usecase|while";
-
 let mermaidLanguageSupport: LanguageSupport | undefined;
 
 const getMermaidLanguageSupport = () => {
@@ -27,51 +21,11 @@ const getMermaidLanguageSupport = () => {
     return mermaidLanguageSupport;
 };
 
-/** StreamLanguage.token must return a string tag name, not an @lezer/highlight Tag object */
-const plantumlLanguage = StreamLanguage.define({
-    name: "plantuml",
-    startState: () => ({}),
-    token(stream) {
-        if (stream.eatSpace()) {
-            return null;
-        }
-        if (stream.match(/^@[\w-]+/)) {
-            return "annotation";
-        }
-        if (stream.match(/^#[0-9a-fA-F]{3,8}\b/)) {
-            return "number";
-        }
-        if (stream.match(/^"(?:[^"\\]|\\.)*"/)) {
-            return "string";
-        }
-        if (stream.match(/^'[^'\n]*/)) {
-            return "comment";
-        }
-        if (stream.match(/^\/\/.*/)) {
-            return "comment";
-        }
-        if (stream.match(/^\/\*(?:[^*]|\*(?!\/))*\*\//)) {
-            return "comment";
-        }
-        if (stream.match(/^(?:<[<]?--?[>]?|--?[>]?>|<-->|<->|\.{2,}>|==?)/)) {
-            return "operator";
-        }
-        if (stream.match(new RegExp(`^(?:${PLANTUML_KEYWORDS})\\b`, "i"))) {
-            return "keyword";
-        }
-        stream.next();
-        return null;
-    },
-});
-
-const plantumlLanguageSupport = new LanguageSupport(plantumlLanguage);
-
 const STATIC_LANGUAGE_SUPPORTS: Record<string, () => LanguageSupport> = {
     // Use codemirror-lang-latex for both highlight + completions (via language data).
     latex: () => latex({ enableAutocomplete: true, enableLinting: false }),
     mermaid: getMermaidLanguageSupport,
     nginx: getNginxLanguageSupport,
-    plantuml: () => plantumlLanguageSupport,
 };
 
 export const resolveCodeMirrorHighlightLanguage = (languageName: string): string => {

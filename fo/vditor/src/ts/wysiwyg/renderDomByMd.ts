@@ -35,7 +35,7 @@ export const renderDomByMd = (vditor: IVditor, md: string, options = {
         if (!parent) {
             return;
         }
-        // Regular code blocks use a lazy-loaded placeholder; math / mermaid / plantuml always render a preview
+        // Regular code blocks use a lazy-loaded placeholder; math / mermaid always render a preview
         if (parent.getAttribute("data-type") === "code-block" && !isSpecialBlock(parent)) {
             if (!isNearViewport(parent)) {
                 return;
