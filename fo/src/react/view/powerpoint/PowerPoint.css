@@ -79,12 +79,42 @@ body.office-dark .ppt-thumb img {
 }
 
 .ppt-thumbnails {
+    position: relative;
+    /* Ant Design animates the width: the sidebar would lag behind the mouse */
+    transition: none !important;
     border-right: 1px solid var(--viewer-border);
     background: var(--viewer-sider-bg) !important;
     overflow: hidden;
     height: 100% !important;
     /* a selection of the slide's text doesn't spill onto the slide numbers */
     user-select: none;
+}
+
+/* the sidebar's right edge, a VS Code sash: VS Code's accent on hover, focus and while dragging */
+.ppt-sider-resizer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 2;
+    width: 5px;
+    height: 100%;
+    cursor: col-resize;
+    touch-action: none;
+    transition: background-color 0.1s 0.15s;
+}
+
+.ppt-sider-resizer:hover,
+.ppt-sider-resizer:focus-visible,
+.is-resizing-sider .ppt-sider-resizer {
+    background: var(--vscode-sash-hoverBorder, var(--viewer-accent));
+    outline: none;
+}
+
+/* while dragging: the resize cursor everywhere, no text selected on the way */
+.is-resizing-sider,
+.is-resizing-sider * {
+    cursor: col-resize !important;
+    user-select: none !important;
 }
 
 .ppt-thumbnails-inner {

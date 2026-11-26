@@ -10,14 +10,24 @@ import './PowerPoint.css';
 
 const { Sider, Content } = Layout;
 
-const THUMB_WIDTH = 192;
-const THUMB_HEIGHT = 108;
+// drawn at twice the narrowest sidebar's size: still sharp when the sidebar is widened
+const THUMB_WIDTH = 384;
+const THUMB_HEIGHT = 216;
+/** the sidebar's width: the narrowest it can be dragged to, and where it starts */
 const SIDER_WIDTH = 220;
+const SIDER_MAX_WIDTH = 480;
+const SIDER_KEY_STEP = 16;
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 4;
 const WHEEL_NAV_INTERVAL_MS = 300;
 const WHEEL_ZOOM_BASE = 1.004;
 const PINCH_ZOOM_GAIN = 2.5;
+
+/** The sidebar's width, kept between its narrowest and the widest the window allows. */
+function clampSiderWidth(width: number): number {
+    const max = Math.max(SIDER_WIDTH, Math.min(SIDER_MAX_WIDTH, window.innerWidth * 0.6));
+    return Math.round(Math.min(max, Math.max(SIDER_WIDTH, width)));
+}
 
 async function waitForCanvasContainer(wrap: HTMLElement): Promise<{ width: number; height: number }> {
     for (let i = 0; i < 60; i++) {
@@ -190,6 +200,9 @@ export default function PowerPoint() {
     const [zoom, setZoom] = useState(1);
     const [pan, setPan] = useState({ x: 0, y: 0 });
     const [dragging, setDragging] = useState(false);
+    const [siderWidth, setSiderWidth] = useState(SIDER_WIDTH);
+    const [resizingSider, setResizingSider] = useState(false);
+    const siderResizeRef = useRef<{ startX: number; startWidth: number } | null>(null);
     useEffect(() => {
         zoomRef.current = zoom;
     }, [zoom]);
@@ -375,6 +388,12 @@ export default function PowerPoint() {
             if (viewerRef.current) disposeViewer(viewerRef.current);
         };
     }, [loadPresentation]);
+
+    useEffect(() => {
+        const onResize = () => setSiderWidth(width => clampSiderWidth(width));
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, []);
 
     useEffect(() => {
         thumbRefs.current[currentIndex]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
@@ -647,9 +666,15 @@ export default function PowerPoint() {
     return (
         <>
             {error && <Alert type="error" message={error} showIcon style={{ margin: 16 }} />}
-            <Layout className="ppt-viewer office-viewer-themed">
+            <Layout className={`ppt-viewer office-viewer-themed${resizingSider ? ' is-resizing-sider' : ''}`}>
                 <Layout className="ppt-body">
-                    <Sider width={SIDER_WIDTH} className="ppt-thumbnails">
+                    {/* no Cut/Copy/Paste menu on a right-click in the thumbnails: nothing there to edit */}
+                    <Sider
+                        width={siderWidth}
+                        className="ppt-thumbnails"
+                        data-vscode-context='{"preventDefaultContextMenuItems": true}'
+                        onContextMenu={event => event.preventDefault()}
+                    >
                         <div className="ppt-thumbnails-inner">
                             <div className="ppt-thumbnails-list" ref={thumbListRef}>
                                 {slideCount > 0 && thumbnails.length === 0 && thumbsLoading && (
@@ -679,6 +704,50 @@ export default function PowerPoint() {
                                 {thumbsLoading && ` · ${$t('presentation.loadingThumbnails')}`}
                             </div>
                         </div>
+                        {/* the sidebar's right edge: drag it, or the arrow keys once focused, to resize */}
+                        <div
+                            className="ppt-sider-resizer"
+                            role="separator"
+                            aria-orientation="vertical"
+                            aria-valuemin={SIDER_WIDTH}
+                            aria-valuemax={SIDER_MAX_WIDTH}
+                            aria-valuenow={siderWidth}
+                            tabIndex={0}
+                            onPointerDown={event => {
+                                // not cancelled: that would cancel the double-click too (is-resizing-sider
+                                // keeps the text from being selected)
+                                if (event.button !== 0) return;
+                                event.currentTarget.setPointerCapture(event.pointerId);
+                                siderResizeRef.current = { startX: event.clientX, startWidth: siderWidth };
+                                setResizingSider(true);
+                            }}
+                            onPointerMove={event => {
+                                const start = siderResizeRef.current;
+                                if (start) setSiderWidth(clampSiderWidth(start.startWidth + event.clientX - start.startX));
+                            }}
+                            onPointerUp={() => {
+                                siderResizeRef.current = null;
+                                setResizingSider(false);
+                            }}
+                            onPointerCancel={() => {
+                                siderResizeRef.current = null;
+                                setResizingSider(false);
+                            }}
+                            onDoubleClick={() => setSiderWidth(SIDER_WIDTH)}
+                            onKeyDown={event => {
+                                const next = {
+                                    ArrowLeft: siderWidth - SIDER_KEY_STEP,
+                                    ArrowRight: siderWidth + SIDER_KEY_STEP,
+                                    Home: SIDER_WIDTH,
+                                    End: SIDER_MAX_WIDTH,
+                                }[event.key];
+                                if (next === undefined) return;
+                                // not the slide change the arrows otherwise make (window keydown)
+                                event.preventDefault();
+                                event.stopPropagation();
+                                setSiderWidth(clampSiderWidth(next));
+                            }}
+                        />
                     </Sider>
                     <Content className="ppt-main" ref={mainPanelRef}>
                         <div

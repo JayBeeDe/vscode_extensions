@@ -126,6 +126,7 @@ The `foss-office.theme` setting makes every viewer light or dark: `auto` (the de
 Notes:
 
 - A read-only file (permissions, read-only file system) opens read-only in every viewer.
+- In the presentation viewer, the slide list can be widened by dragging its right edge (or with the arrow keys once the edge is focused), from its default width up to 480 px; a double-click on the edge brings it back to the default.
 - While a file opens, every viewer shows the same loading spinner with the file's kind and name ("Loading spreadsheet data.csv..."), and the VS Code status bar shows the same message until the file is displayed.
 - The interface is translated into eight languages: see [Languages](#languages).
 - [Keyboard shortcuts](#keyboard-shortcuts) lists the keyboard shortcuts of every viewer.
