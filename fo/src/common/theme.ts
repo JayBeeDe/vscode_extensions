@@ -27,6 +27,11 @@ export function getDocumentTheme(): Theme {
     return readTheme('document.theme');
 }
 
+/** The `foss-office.document.googleFonts` setting: whether the document editor loads fonts from Google Fonts. */
+export function getDocumentGoogleFonts(): boolean {
+    return Global.getConfig<boolean>('document.googleFonts', true) !== false;
+}
+
 /** The `foss-office.pdf.theme` setting: the PDF pages' colours, `auto` following `foss-office.theme`. */
 export function getPdfTheme(): Theme {
     return readTheme('pdf.theme');

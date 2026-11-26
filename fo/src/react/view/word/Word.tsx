@@ -1,4 +1,5 @@
 import { Alert } from "antd";
+import { setGoogleFontsEnabled } from "@eigenpal/docx-editor-core";
 import { DocxEditor, type DocxEditorRef } from "@eigenpal/docx-editor-react";
 import "@eigenpal/docx-editor-react/styles.css";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -19,6 +20,11 @@ const EDITOR_STRINGS = {
     ...getSection("document"),
     _lang: "document" in LANGUAGES[getLanguage()] ? getLanguage() : "en",
 };
+
+// foss-office.document.googleFonts: when off, the editor never asks Google Fonts for an equivalent
+// of a document's fonts (Carlito for Calibri…), installed fonts are used instead. Set before any
+// document is loaded: the library reads it when it loads a document's fonts
+setGoogleFontsEnabled(getConfigs()?.documentGoogleFonts !== false);
 
 // no preset texts in the Watermark dialog: its dropdown only filled the text field
 const WATERMARK_PRESETS: readonly string[] = [];

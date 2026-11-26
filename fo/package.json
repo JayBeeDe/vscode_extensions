@@ -833,6 +833,11 @@
 						],
 						"default": "auto",
 						"markdownDescription": "Colours of the document editor's pages (Word files); the toolbar and menus follow `#foss-office.theme#`. Only the display changes: the document's colours are kept as they are, for saving and printing. The toolbar's light/dark button changes this setting in the user settings; a workspace value overrides it."
+					},
+					"foss-office.document.googleFonts": {
+						"type": "boolean",
+						"default": true,
+						"markdownDescription": "Load open equivalents of common Office fonts from Google Fonts (Carlito for Calibri, Tinos for Times New Roman, Arimo for Arial…), so that Word documents are laid out as Word does. Each request tells Google your IP address and the names of the fonts. When off, nothing is requested: the fonts installed on your machine are used instead, and lines may break differently than in Word. Applies to the documents opened afterwards."
 					}
 				}
 			},

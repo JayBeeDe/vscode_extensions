@@ -2,7 +2,7 @@ import axios from 'axios';
 import * as vscode from 'vscode';
 import { extensionResource, getExtensionUri, readExtensionText } from './extensionResource';
 import { getEpubSettings } from '@/provider/epubSettings';
-import { getDocumentTheme, getEpubTheme, getTheme } from './theme';
+import { getDocumentGoogleFonts, getDocumentTheme, getEpubTheme, getTheme } from './theme';
 import { withLoadingOverlay } from './loadingStatus';
 
 interface ViewOption {
@@ -43,6 +43,7 @@ export class ReactApp {
             epubTheme: getEpubTheme(),
             epubSettings: getEpubSettings(),
             documentTheme: getDocumentTheme(),
+            documentGoogleFonts: getDocumentGoogleFonts(),
         });
         // the configs go into a quoted attribute: escape them, and use a replacer function so `$` patterns are not expanded
         webview.html = this.buildPath(html, webview, devHtml !== undefined)
