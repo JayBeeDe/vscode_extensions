@@ -5,6 +5,7 @@ import { handler, useDocumentLoading } from "../../util/vscode";
 import { loadOfficeBuffer } from "../../util/loadOfficeContent";
 import { $t } from "../../i18n/i18nConfig.ts";
 import { loadMasterImages } from "./masterImages";
+import { renderTextLayer, selectTextLayer, textRecorder } from "./textLayer";
 import './PowerPoint.css';
 
 const { Sider, Content } = Layout;
@@ -159,6 +160,8 @@ async function generateThumbnails(viewer: PPTXViewer, count: number, queueRender
 export default function PowerPoint() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const canvasWrapRef = useRef<HTMLDivElement>(null);
+    // the slide's text, transparent and selectable over the canvas (textLayer.ts)
+    const textLayerRef = useRef<HTMLDivElement>(null);
     const mainPanelRef = useRef<HTMLDivElement>(null);
     const thumbListRef = useRef<HTMLDivElement>(null);
     const viewerRef = useRef<PPTXViewer | null>(null);
@@ -254,7 +257,14 @@ export default function PowerPoint() {
         if (!viewer || !canvas || !syncCanvasSize()) {
             return;
         }
-        await viewer.goToSlide(currentIndexRef.current, canvas);
+        const recorder = textRecorder(canvas);
+        recorder?.start();
+        try {
+            await viewer.goToSlide(currentIndexRef.current, canvas);
+        } finally {
+            const runs = recorder?.stop() ?? [];
+            if (textLayerRef.current) renderTextLayer(textLayerRef.current, canvas, runs);
+        }
     }), [queueRender, syncCanvasSize]);
 
     // zoom is a CSS scale: draw the slide again at the zoomed resolution so it stays sharp
@@ -291,6 +301,7 @@ export default function PowerPoint() {
         setThumbsLoading(false);
         setError(null);
         setThumbnails([]);
+        textLayerRef.current?.replaceChildren();
         setCurrentIndex(0);
         setSlideCount(0);
         resetView();
@@ -373,6 +384,11 @@ export default function PowerPoint() {
         const onKeyDown = async (e: KeyboardEvent) => {
             const viewer = viewerRef.current;
             if (!viewer || loading) {
+                return;
+            }
+            if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'a' && textLayerRef.current) {
+                e.preventDefault();
+                selectTextLayer(textLayerRef.current);
                 return;
             }
             if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'PageDown') {
@@ -538,7 +554,9 @@ export default function PowerPoint() {
         }
 
         const onMouseDown = (e: MouseEvent) => {
-            if (zoomRef.current <= 1 || e.button !== 0) {
+            // a drag that starts on text selects it instead of panning
+            const onText = e.target instanceof Element && textLayerRef.current?.contains(e.target) && e.target !== textLayerRef.current;
+            if (zoomRef.current <= 1 || e.button !== 0 || onText) {
                 return;
             }
             e.preventDefault();
@@ -672,6 +690,7 @@ export default function PowerPoint() {
                                 style={{ transform: getStageTransform(zoom, pan) }}
                             >
                                 <canvas ref={canvasRef} id="ppt-canvas" />
+                                <div ref={textLayerRef} className="ppt-text-layer" />
                             </div>
                         </div>
                     </Content>

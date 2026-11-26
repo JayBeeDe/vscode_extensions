@@ -22,7 +22,8 @@ body {
     --viewer-hover: rgba(0, 0, 0, 0.04);
     --viewer-active-bg: rgba(22, 119, 255, 0.12);
     --viewer-active-fg: #1677ff;
-    --viewer-accent: #1677ff;
+    /* VS Code's accent, like the other viewers': the current slide's thumbnail, the selected text */
+    --viewer-accent: var(--vscode-focusBorder, var(--vscode-textLink-foreground, #1677ff));
     --viewer-placeholder: #e8e8e8;
     --viewer-scrollbar-track: #f5f5f5;
     --viewer-scrollbar-thumb: #c9d1d9;
@@ -44,7 +45,7 @@ body.office-dark .ppt-viewer.office-viewer-themed {
     --viewer-hover: var(--vscode-list-hoverBackground, rgba(90, 93, 94, 0.31));
     --viewer-active-bg: var(--vscode-list-activeSelectionBackground, #292d35);
     --viewer-active-fg: var(--vscode-list-activeSelectionForeground, #d7dae0);
-    --viewer-accent: var(--vscode-textLink-foreground, #3794ff);
+    --viewer-accent: var(--vscode-focusBorder, var(--vscode-textLink-foreground, #3794ff));
     --viewer-placeholder: var(--vscode-input-background, #3c3c3c);
     --viewer-scrollbar-track: var(--vscode-editor-background, #1e1e1e);
     --viewer-scrollbar-thumb: var(--vscode-scrollbarSlider-background, #797979);
@@ -82,6 +83,8 @@ body.office-dark .ppt-thumb img {
     background: var(--viewer-sider-bg) !important;
     overflow: hidden;
     height: 100% !important;
+    /* a selection of the slide's text doesn't spill onto the slide numbers */
+    user-select: none;
 }
 
 .ppt-thumbnails-inner {
@@ -199,6 +202,7 @@ body.office-dark .ppt-thumb img {
 }
 
 .ppt-canvas-stage {
+    position: relative;
     transform-origin: center center;
     flex-shrink: 0;
     will-change: transform;
@@ -209,6 +213,42 @@ body.office-dark .ppt-thumb img {
     width: 100%;
     height: 100%;
     background: #fff;
+}
+
+/* the slide's text over the canvas (textLayer.ts): invisible, but selectable and copied */
+.ppt-text-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    pointer-events: none;
+    user-select: text;
+    line-height: 1;
+    /* kept: the spaces between texts (bullet and text, table cells) are copied */
+    white-space: pre;
+}
+
+.ppt-text-layer > span {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: 0 0;
+    white-space: pre;
+    color: transparent;
+    cursor: text;
+    pointer-events: auto;
+}
+
+/* the line breaks and spaces between the texts sit at the layer's corner: no highlight there */
+.ppt-text-layer::selection,
+.ppt-text-layer ::selection {
+    background: transparent;
+    color: transparent;
+}
+
+/* VS Code's accent, as the xMind viewer's selection */
+.ppt-text-layer > span::selection {
+    background: color-mix(in srgb, var(--viewer-accent) 30%, transparent);
 }
 
 /* the bands around a slide that doesn't fill the canvas: black in a dark foss-office.theme */
