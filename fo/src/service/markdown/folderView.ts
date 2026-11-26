@@ -3,14 +3,21 @@ import { i18n } from '@/common/global';
 
 /**
  * A local folder shown in the Markdown editor, as a read-only virtual Markdown file: its
- * subfolders, then its files, each a link, followed by the folder's README.md when it has one.
+ * subfolders, then its files, each a link, followed by the folder's README when it has one
+ * (README.md, else README.markdown, else a plain text README).
  *
  * The virtual file is `<folder>/<folder name>.md` on its own scheme, the folder's scheme kept in
  * the query: its links and images, the README's too, resolve against the real folder.
  */
 export const FOLDER_VIEW_SCHEME = 'foss-office-folder';
 
-const README = /^readme\.md$/i;
+/** The README shown under the listing: the first of these the folder has, case aside */
+const READMES: { pattern: RegExp, markdown: boolean }[] = [
+    { pattern: /^readme\.md$/i, markdown: true },
+    { pattern: /^readme\.markdown$/i, markdown: true },
+    // no extension: plain text, shown as written
+    { pattern: /^readme$/i, markdown: false },
+];
 const FRONT_MATTER = /^---\r?\n[\s\S]*?\r?\n---\r?\n/;
 
 /** The virtual file showing `folder`. */
@@ -73,12 +80,49 @@ export async function openInPlaceOf(
 }
 
 /** Shows `folder` in the Markdown editor, in the place of the folder view `replacing` if any. */
-export function openFolderView(folder: vscode.Uri, replacing?: vscode.Uri) {
+export function openFolderView(folder: vscode.Uri, replacing?: vscode.Uri, previous?: vscode.Uri) {
     const target = folder.with({ path: folder.path.replace(/(.)\/+$/, '$1'), query: '', fragment: '' });
     const view = folderViewUri(target);
+    if (previous && folderViewUri(previous).toString() !== view.toString()) {
+        previousFolders.set(view.toString(), previous);
+    } else {
+        previousFolders.delete(view.toString());
+    }
+    // the page is written anew, with its "Previous" link or without, even when it was opened before
+    folderViewChanged?.fire(view);
     return openInPlaceOf(replacing, viewColumn => vscode.commands.executeCommand(
         'vscode.openWith', view, 'foss-office.markdownViewer', { preview: false, viewColumn },
     ), view);
+}
+
+/**
+ * The folder whose page each folder page replaced in its tab: its "Previous" link, in the listing's
+ * first row. Only one step: following it opens that page without a "Previous" of its own
+ * (markdownEditorProvider.ts), and a page opened otherwise (Browse Folder, a new tab, a Markdown
+ * file's link) has none.
+ */
+const previousFolders = new Map<string, vscode.Uri>();
+let folderViewChanged: vscode.EventEmitter<vscode.Uri> | undefined;
+
+/** The folder a folder page's "Previous" link goes back to, if it has one */
+export function previousFolderOf(view: vscode.Uri): vscode.Uri | undefined {
+    return previousFolders.get(view.toString());
+}
+
+/** A link from one folder's page to another folder: relative, so that it resolves as the listing's links */
+function relativeFolderHref(from: vscode.Uri, to: vscode.Uri): string | undefined {
+    if (from.scheme !== to.scheme || from.authority !== to.authority) {
+        return undefined;
+    }
+    const fromParts = from.path.split('/').filter(Boolean);
+    const toParts = to.path.split('/').filter(Boolean);
+    let common = 0;
+    while (common < fromParts.length && common < toParts.length && fromParts[common] === toParts[common]) {
+        common++;
+    }
+    const up = '../'.repeat(fromParts.length - common);
+    const down = toParts.slice(common).map(part => `${encodeURIComponent(part)}/`).join('');
+    return up + down || undefined;
 }
 
 /** Link text: the characters Markdown would take for markup are escaped. */
@@ -155,7 +199,30 @@ function linkTitle(text: string): string {
     return text.replace(/[\\"]/g, '\\$&').replace(/\n/g, '&#10;');
 }
 
-async function folderMarkdown(folder: vscode.Uri): Promise<string> {
+/** The README the listing shows among a folder's entries: the first kind of READMES it has */
+function pickReadme<T extends { name: string, type: vscode.FileType }>(entries: T[]) {
+    const files = entries.filter(entry => (entry.type & vscode.FileType.File) !== 0 && (entry.type & vscode.FileType.Directory) === 0);
+    return READMES.map(kind => ({ kind, entry: files.find(entry => kind.pattern.test(entry.name)) }))
+        .find(({ entry }) => entry);
+}
+
+/**
+ * Whether a folder's listing shows a Markdown README (README.md or README.markdown): without one,
+ * its page has no headings worth an outline, and the outline sidebar stays closed
+ * (markdownEditorProvider.ts). Entries hidden by files.exclude don't count, as in the listing.
+ */
+export async function folderHasMarkdownReadme(folder: vscode.Uri): Promise<boolean> {
+    try {
+        const all = await vscode.workspace.fs.readDirectory(folder);
+        const isExcluded = excludedFilter(folder, new Set(all.map(([name]) => name)));
+        const found = pickReadme(all.filter(([name]) => !isExcluded(name)).map(([name, type]) => ({ name, type })));
+        return !!found?.kind.markdown;
+    } catch {
+        return false;
+    }
+}
+
+async function folderMarkdown(folder: vscode.Uri, previous?: vscode.Uri): Promise<string> {
     const all = await vscode.workspace.fs.readDirectory(folder);
     // the entries the Explorer shows: .gitignore yes, .git and .DS_Store not (files.exclude)
     const isExcluded = excludedFilter(folder, new Set(all.map(([name]) => name)));
@@ -181,7 +248,12 @@ async function folderMarkdown(folder: vscode.Uri): Promise<string> {
         .map(entry => cell(entry.name, encodeURIComponent(entry.name), fileTitle));
     // no title: the folders column is headed by the parent folder's link, the files one by nothing
     const parent = folder.path.replace(/\/+$/, '') ? cell('..', '../', parentTitle) : '';
-    lines.push(`| ${parent} |  |`, '| --- | --- |');
+    // the files column is headed by the "Previous" link, when this page replaced another folder's
+    const previousHref = previous && relativeFolderHref(folder, previous);
+    const back = previousHref
+        ? cell(i18n('markdown.folderPrevious'), previousHref, linkTitle(i18n('markdown.previousLinkTitle', { name: folderName(previous!) })))
+        : '';
+    lines.push(`| ${parent} | ${back} |`, '| --- | --- |');
     // folders on the left, files on the right, one of each per row
     for (let row = 0; row < Math.max(folders.length, files.length); row++) {
         lines.push(`| ${folders[row] ?? ''} | ${files[row] ?? ''} |`);
@@ -190,11 +262,14 @@ async function folderMarkdown(folder: vscode.Uri): Promise<string> {
         lines.push('', `*${escapeText(i18n('markdown.folderEmpty'))}*`);
     }
 
-    const readme = entries.find(entry => !entry.isFolder && (entry.type & vscode.FileType.File) !== 0 && README.test(entry.name));
-    if (readme) {
+    const found = pickReadme(entries);
+    if (found?.entry) {
+        const readme = found.entry;
         const bytes = await vscode.workspace.fs.readFile(vscode.Uri.joinPath(folder, readme.name));
-        // its front matter would show in the middle of the page
-        const text = new TextDecoder().decode(bytes).replace(FRONT_MATTER, '');
+        const text = found.kind.markdown
+            // its front matter would show in the middle of the page
+            ? new TextDecoder().decode(bytes).replace(FRONT_MATTER, '')
+            : plainTextBlock(bytes);
         if (text.trim()) {
             // the README shown here can't be edited: a warning says so, its link opens the file itself
             // (_folderView.less)
@@ -207,14 +282,38 @@ async function folderMarkdown(folder: vscode.Uri): Promise<string> {
     return `${lines.join('\n').trimEnd()}\n`;
 }
 
+/**
+ * A README without extension, shown as written: its text in a code block, which keeps its line
+ * breaks and alignment (such files are written for a fixed-width font). Nothing for a binary file.
+ */
+function plainTextBlock(bytes: Uint8Array): string {
+    if (bytes.includes(0)) {
+        return '';
+    }
+    let text: string;
+    try {
+        text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+    } catch {
+        return '';
+    }
+    text = text.replace(/\r\n?/g, '\n').replace(/\n+$/, '');
+    // a fence longer than any run of backticks in the text
+    const longest = Math.max(2, ...(text.match(/`+/g) ?? []).map(run => run.length));
+    const fence = '`'.repeat(longest + 1);
+    return `${fence}\n${text}\n${fence}`;
+}
+
 class FolderViewContentProvider implements vscode.TextDocumentContentProvider {
+    readonly changed = new vscode.EventEmitter<vscode.Uri>();
+    readonly onDidChange = this.changed.event;
+
     async provideTextDocumentContent(uri: vscode.Uri): Promise<string> {
         const folder = folderOfView(uri);
         if (!folder) {
             return '';
         }
         try {
-            return await folderMarkdown(folder);
+            return await folderMarkdown(folder, previousFolderOf(uri));
         } catch (error) {
             return `*${escapeText(i18n('markdown.folderUnreadable', { error: String(error) }))}*\n`;
         }
@@ -222,7 +321,39 @@ class FolderViewContentProvider implements vscode.TextDocumentContentProvider {
 }
 
 export function registerFolderView(context: vscode.ExtensionContext) {
+    const provider = new FolderViewContentProvider();
+    folderViewChanged = provider.changed;
     context.subscriptions.push(
-        vscode.workspace.registerTextDocumentContentProvider(FOLDER_VIEW_SCHEME, new FolderViewContentProvider()),
+        provider.changed,
+        vscode.workspace.registerTextDocumentContentProvider(FOLDER_VIEW_SCHEME, provider),
+        vscode.commands.registerCommand(BROWSE_FOLDER_COMMAND, browseFolder),
     );
+}
+
+/** "Browse Folder": the Explorer's context menu on a folder, and the Command Palette */
+export const BROWSE_FOLDER_COMMAND = 'office.markdown.browseFolder';
+
+/**
+ * Shows a folder's listing in the Markdown editor. From the Explorer: the folder right-clicked,
+ * or each folder selected. From the Command Palette: the workspace folder, picked among several,
+ * or one chosen in a dialog without a workspace.
+ */
+async function browseFolder(clicked?: vscode.Uri, selected?: vscode.Uri[]) {
+    const folders = selected?.length ? selected : clicked ? [clicked] : [];
+    if (folders.length === 0) {
+        const workspaceFolders = vscode.workspace.workspaceFolders ?? [];
+        const folder = workspaceFolders.length === 1
+            ? workspaceFolders[0].uri
+            : workspaceFolders.length > 1
+                ? (await vscode.window.showWorkspaceFolderPick())?.uri
+                : (await vscode.window.showOpenDialog({ canSelectFiles: false, canSelectFolders: true, canSelectMany: false }))?.[0];
+        if (folder) {
+            folders.push(folder);
+        }
+    }
+    for (const folder of folders) {
+        if (await isFolder(folder)) {
+            await openFolderView(folder);
+        }
+    }
 }

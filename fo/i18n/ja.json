@@ -30,6 +30,8 @@
       "folderLinkTitle": "フォルダーを開く <クリック>\n新しいタブでフォルダーを開く <{key}+クリック>",
       "fileLinkTitle": "ファイルを開く <クリック>\n新しいタブでファイルを開く <{key}+クリック>",
       "parentLinkTitle": "親フォルダーを開く <クリック>\n新しいタブで親フォルダーを開く <{key}+クリック>",
+      "folderPrevious": "戻る",
+      "previousLinkTitle": "{name} に戻る <クリック>",
       "folderTitle": "{name} ディレクトリ",
       "folderReadmeNoticeTitle": "読み取り専用",
       "folderReadmeNotice": "{name} はここでは読み取り専用です。変更するには: {link}"

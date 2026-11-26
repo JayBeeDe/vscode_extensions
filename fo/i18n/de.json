@@ -30,6 +30,8 @@
       "folderLinkTitle": "Ordner öffnen <Klick>\nOrdner in neuem Tab öffnen <{key}+Klick>",
       "fileLinkTitle": "Datei öffnen <Klick>\nDatei in neuem Tab öffnen <{key}+Klick>",
       "parentLinkTitle": "Übergeordneten Ordner öffnen <Klick>\nÜbergeordneten Ordner in neuem Tab öffnen <{key}+Klick>",
+      "folderPrevious": "Zurück",
+      "previousLinkTitle": "Zurück zu {name} <Klick>",
       "folderTitle": "Verzeichnis {name}",
       "folderReadmeNoticeTitle": "Schreibgeschützt",
       "folderReadmeNotice": "{name} wird hier schreibgeschützt angezeigt: {link}, um es zu ändern."

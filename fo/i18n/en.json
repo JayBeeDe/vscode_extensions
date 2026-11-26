@@ -30,6 +30,8 @@
       "folderLinkTitle": "Open folder <Click>\nOpen folder in a new tab <{key}+Click>",
       "fileLinkTitle": "Open file <Click>\nOpen file in a new tab <{key}+Click>",
       "parentLinkTitle": "Open parent folder <Click>\nOpen parent folder in a new tab <{key}+Click>",
+      "folderPrevious": "Previous",
+      "previousLinkTitle": "Back to {name} <Click>",
       "folderTitle": "{name} directory",
       "folderReadmeNoticeTitle": "Read-only",
       "folderReadmeNotice": "{name} is shown here read-only: {link} to change it."

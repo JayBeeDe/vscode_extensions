@@ -30,6 +30,8 @@
       "folderLinkTitle": "Ouvrir le dossier <Clic>\nOuvrir le dossier dans un nouvel onglet <{key}+Clic>",
       "fileLinkTitle": "Ouvrir le fichier <Clic>\nOuvrir le fichier dans un nouvel onglet <{key}+Clic>",
       "parentLinkTitle": "Ouvrir le dossier parent <Clic>\nOuvrir le dossier parent dans un nouvel onglet <{key}+Clic>",
+      "folderPrevious": "Précédent",
+      "previousLinkTitle": "Revenir à {name} <Clic>",
       "folderTitle": "Répertoire {name}",
       "folderReadmeNoticeTitle": "Lecture seule",
       "folderReadmeNotice": "{name} est affiché ici en lecture seule : {link} pour le modifier."

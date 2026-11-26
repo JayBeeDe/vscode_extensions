@@ -141,6 +141,12 @@ The links, the toolbar, the menus, the tables, the outline sidebar and the HTML 
 
 The editor's keyboard shortcuts are listed in [Keyboard shortcuts](#keyboard-shortcuts).
 
+### Browsing a folder
+
+Right-click a folder in the Explorer and choose **Browse Folder** to see it in the Markdown editor, as a read-only page: its subfolders, then its files, each a link, followed by the folder's README when it has one: `README.md`, else `README.markdown`, else a `README` without extension, shown as plain text as written. Entries hidden by `files.exclude` are left out. A click opens a file or a subfolder in the page's place, Ctrl+click (⌘+click on macOS) in a new tab. A link to a folder in a Markdown file opens the same page.
+
+From the Command Palette, **Browse Folder** shows the workspace folder, or the one you pick when there are several.
+
 ### Using VS Code's Markdown editor instead
 
 To open Markdown files in VS Code's built-in text editor instead, add this to your `settings.json`:

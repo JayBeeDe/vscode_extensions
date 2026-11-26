@@ -20,7 +20,7 @@ import {
 } from '@/service/markdown/blockScroll';
 import { parseWebviewResourceUri } from '@/common/webviewUri';
 import { consumePendingMatch, openInEditor, openMarkdownAsText } from '@/service/markdown/searchReveal';
-import { folderOfView, isFolder, openFolderView, openInPlaceOf } from '@/service/markdown/folderView';
+import { folderHasMarkdownReadme, folderOfView, folderViewUri, isFolder, openFolderView, openInPlaceOf, previousFolderOf } from '@/service/markdown/folderView';
 
 async function exists(uri: vscode.Uri): Promise<boolean> {
     try {
@@ -262,6 +262,10 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
         });
         handler.on("init", async () => {
             const workspaceUri = this.getWorkspaceUriByFileUtil(linkBaseUri);
+            // a folder's listing without a README.md or README.markdown has no outline to show: the
+            // sidebar stays closed, whatever foss-office.markdown.sidebar says
+            const viewedFolder = folderOfView(uri);
+            const noOutline = !!viewedFolder && !await folderHasMarkdownReadme(viewedFolder);
             handler.emit("open", {
                 content, rootPath,
                 workspaceBaseUrl: workspaceUri ? webview.asWebviewUri(workspaceUri).toString().replace(/\?.+$/, '') : '',
@@ -273,7 +277,7 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
                 pendingMatch: consumePendingMatch(uri),
                 // a PDF or DOCX export started from another panel
                 exporting: MarkdownService.exporting,
-                config: { ...this.getMarkdownWebviewConfig(config), readOnly },
+                config: { ...this.getMarkdownWebviewConfig(config), readOnly, ...(noOutline ? { sidebar: 'none' } : {}) },
             })
             this.countOwner = handler;
             this.updateCount(content, handler)
@@ -308,8 +312,13 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
                 // a wrong local link: say where it led, the path one click away to check it
                 void showLinkNotFound(localUri.with({ query: '', fragment: '' }));
             } else if (localUri && await isFolder(localUri.with({ query: '', fragment: '' }))) {
-                // a folder: its files and subfolders, then its README; from a folder's view, in its place
-                void openFolderView(localUri, replacing);
+                // a folder: its files and subfolders, then its README; from a folder's view, in its place.
+                // Taking a folder page's place, the new page links back to it ("Previous"), once:
+                // following that link opens the page without a "Previous" of its own
+                const target = localUri.with({ query: '', fragment: '' });
+                const previous = previousFolderOf(uri);
+                const goingBack = !!previous && folderViewUri(previous).toString() === folderViewUri(target).toString();
+                void openFolderView(localUri, replacing, replacing && !goingBack ? folderOfView(uri) : undefined);
             } else if (localUri) {
                 // from a folder's view, the file takes its place
                 void openInPlaceOf(replacing, viewColumn => openInEditor(localUri, viewColumn));

@@ -238,3 +238,8 @@
     -webkit-font-smoothing: antialiased;
   }
 }
+
+// the "Previous" link heading the files column (folderView.ts): an arrow back, not a folder
+.vditor--readonly .vditor-reset > table:first-of-type th:last-child > a::before {
+  content: "\ea9b";
+}

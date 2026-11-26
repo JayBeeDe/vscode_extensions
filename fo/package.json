@@ -299,8 +299,22 @@
 				"command": "office.markdown.paste",
 				"title": "Enhance paste in markdown",
 				"enablement": "!office.extensionHost.web"
+			},
+			{
+				"command": "office.markdown.browseFolder",
+				"title": "Browse Folder",
+				"icon": "$(list-tree)"
 			}
 		],
+		"menus": {
+			"explorer/context": [
+				{
+					"command": "office.markdown.browseFolder",
+					"when": "explorerResourceIsFolder",
+					"group": "navigation@10"
+				}
+			]
+		},
 		"keybindings": [
 			{
 				"command": "office.markdown.paste",

@@ -30,6 +30,8 @@
       "folderLinkTitle": "打开文件夹 <单击>\n在新标签页中打开文件夹 <{key}+单击>",
       "fileLinkTitle": "打开文件 <单击>\n在新标签页中打开文件 <{key}+单击>",
       "parentLinkTitle": "打开上级文件夹 <单击>\n在新标签页中打开上级文件夹 <{key}+单击>",
+      "folderPrevious": "返回",
+      "previousLinkTitle": "返回 {name} <单击>",
       "folderTitle": "{name} 目录",
       "folderReadmeNoticeTitle": "只读",
       "folderReadmeNotice": "{name} 在此处以只读方式显示：{link} 以进行修改。"

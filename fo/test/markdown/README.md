@@ -10,6 +10,14 @@ test/markdown/
 ├── Home.md             ← start from this file
 ├── Callouts.md         ← callout tests
 ├── Showcase.md         ← tables, code, math, a Mermaid diagram (the README screenshot)
+├── Folder-Navigation.md ← browsing folders: Browse Folder, the Previous link, README fallbacks
+├── Folders/             ← the folders it browses
+│   ├── With README.markdown/
+│   │   ├── README.markdown
+│   │   └── Nested/
+│   ├── With plain README/
+│   │   └── README
+│   └── Without README/
 ├── Projects/
 │   ├── Vditor.md
 │   └── Roadmap.md

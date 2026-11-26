@@ -1,0 +1,11 @@
+WITH PLAIN README
+=================
+
+This folder has neither README.md nor README.markdown: this README without
+extension is shown as plain text, exactly as written, in a code block.
+
+  Expected      What to check
+  --------      -------------
+  *not bold*    the asterisks stay as typed
+  # no heading  this line is not a heading
+  outline       the outline sidebar stays closed

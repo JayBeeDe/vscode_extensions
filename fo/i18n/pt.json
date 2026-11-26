@@ -30,6 +30,8 @@
       "folderLinkTitle": "Abrir a pasta <Clique>\nAbrir a pasta em uma nova aba <{key}+Clique>",
       "fileLinkTitle": "Abrir o arquivo <Clique>\nAbrir o arquivo em uma nova aba <{key}+Clique>",
       "parentLinkTitle": "Abrir a pasta superior <Clique>\nAbrir a pasta superior em uma nova aba <{key}+Clique>",
+      "folderPrevious": "Anterior",
+      "previousLinkTitle": "Voltar para {name} <Clique>",
       "folderTitle": "Diretório {name}",
       "folderReadmeNoticeTitle": "Somente leitura",
       "folderReadmeNotice": "{name} é exibido aqui somente para leitura: {link} para alterá-lo."

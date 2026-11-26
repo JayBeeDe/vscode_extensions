@@ -30,6 +30,8 @@
       "folderLinkTitle": "Открыть папку <Щелчок>\nОткрыть папку в новой вкладке <{key}+Щелчок>",
       "fileLinkTitle": "Открыть файл <Щелчок>\nОткрыть файл в новой вкладке <{key}+Щелчок>",
       "parentLinkTitle": "Открыть родительскую папку <Щелчок>\nОткрыть родительскую папку в новой вкладке <{key}+Щелчок>",
+      "folderPrevious": "Назад",
+      "previousLinkTitle": "Вернуться к {name} <Щелчок>",
       "folderTitle": "Каталог {name}",
       "folderReadmeNoticeTitle": "Только чтение",
       "folderReadmeNotice": "{name} показан здесь только для чтения: {link}, чтобы изменить его."

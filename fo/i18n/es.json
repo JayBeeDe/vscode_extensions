@@ -30,6 +30,8 @@
       "folderLinkTitle": "Abrir la carpeta <Clic>\nAbrir la carpeta en una pestaña nueva <{key}+Clic>",
       "fileLinkTitle": "Abrir el archivo <Clic>\nAbrir el archivo en una pestaña nueva <{key}+Clic>",
       "parentLinkTitle": "Abrir la carpeta superior <Clic>\nAbrir la carpeta superior en una pestaña nueva <{key}+Clic>",
+      "folderPrevious": "Anterior",
+      "previousLinkTitle": "Volver a {name} <Clic>",
       "folderTitle": "Directorio {name}",
       "folderReadmeNoticeTitle": "Solo lectura",
       "folderReadmeNotice": "{name} se muestra aquí en solo lectura: {link} para cambiarlo."
