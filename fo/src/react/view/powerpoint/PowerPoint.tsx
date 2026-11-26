@@ -2,8 +2,9 @@ import { Alert, Layout } from "antd";
 import { PPTXViewer } from "pptxviewjs";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { handler, useDocumentLoading } from "../../util/vscode";
+import { getConfigs } from "../../util/vscodeConfig";
 import { loadOfficeBuffer } from "../../util/loadOfficeContent";
-import { $t } from "../../i18n/i18nConfig.ts";
+import { $t, getLanguage } from "../../i18n/i18nConfig.ts";
 import { loadMasterImages } from "./masterImages";
 import { renderTextLayer, selectTextLayer, textRecorder } from "./textLayer";
 import './PowerPoint.css';
@@ -108,6 +109,59 @@ function disposeViewer(viewer: PPTXViewer) {
         delete globals.currentProcessor;
         delete globals.currentZipData;
     }
+}
+
+/** 0:42, 12:05, 1:02:09 */
+function formatElapsed(seconds: number): string {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor(seconds / 60) % 60;
+    const s = String(seconds % 60).padStart(2, '0');
+    return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${s}` : `${m}:${s}`;
+}
+
+/** How long the current slide has been shown: mounted again (key) for each slide. */
+function SlideTimer() {
+    const [start] = useState(() => Date.now());
+    const [now, setNow] = useState(start);
+    useEffect(() => {
+        const timer = setInterval(() => setNow(Date.now()), 1000);
+        return () => clearInterval(timer);
+    }, []);
+    return <span className="ppt-slide-timer">{formatElapsed(Math.floor((now - start) / 1000))}</span>;
+}
+
+const pad = (value: number) => String(value).padStart(2, '0');
+const CLOCK_TOKENS: Record<string, (date: Date) => string> = {
+    HH: date => pad(date.getHours()),
+    H: date => String(date.getHours()),
+    hh: date => pad(date.getHours() % 12 || 12),
+    h: date => String(date.getHours() % 12 || 12),
+    mm: date => pad(date.getMinutes()),
+    ss: date => pad(date.getSeconds()),
+    A: date => (date.getHours() < 12 ? 'AM' : 'PM'),
+    a: date => (date.getHours() < 12 ? 'am' : 'pm'),
+};
+
+/**
+ * The time of day: with the foss-office.presentation.clockFormat pattern (HH:mm, h:mm A...; text
+ * in [brackets] kept as is), or for `auto` hours and minutes as the VS Code language writes them.
+ */
+function formatClock(date: Date, pattern: string, language: string): string {
+    if (!pattern.trim() || pattern === 'auto') return date.toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit' });
+    return pattern.replace(/\[([^\]]*)\]|HH|H|hh|h|mm|ss|A|a/g, (token, literal?: string) =>
+        literal ?? CLOCK_TOKENS[token](date));
+}
+
+function Clock() {
+    const [now, setNow] = useState(() => new Date());
+    const [pattern, setPattern] = useState<string>(() => getConfigs()?.presentationClockFormat ?? 'auto');
+    useEffect(() => {
+        // every second, so that the minute changes on time
+        const timer = setInterval(() => setNow(new Date()), 1000);
+        handler.on('presentationClockFormat', (value: unknown) => setPattern(typeof value === 'string' ? value : 'auto'));
+        return () => clearInterval(timer);
+    }, []);
+    return <span className="ppt-clock">{formatClock(now, pattern, getLanguage())}</span>;
 }
 
 /**
@@ -697,11 +751,16 @@ export default function PowerPoint() {
                                 ))}
                             </div>
                             <div className="ppt-thumbnails-footer">
-                                {slideCount > 0
-                                    ? $t('presentation.status', { number: currentIndex + 1, count: slideCount })
-                                    : $t('presentation.slides')}
-                                {slideCount > 0 && zoom !== 1 && ` · ${Math.round(zoom * 100)}%`}
-                                {thumbsLoading && ` · ${$t('presentation.loadingThumbnails')}`}
+                                {/* back to 0:00 on each slide, and on each deck (slideCount is 0 while it loads) */}
+                                <span className="ppt-footer-start">{slideCount > 0 && <SlideTimer key={currentIndex} />}</span>
+                                <Clock />
+                                <span className="ppt-thumbnails-status">
+                                    {slideCount > 0
+                                        ? $t('presentation.status', { number: currentIndex + 1, count: slideCount })
+                                        : $t('presentation.slides')}
+                                    {slideCount > 0 && zoom !== 1 && ` · ${Math.round(zoom * 100)}%`}
+                                    {thumbsLoading && ` · ${$t('presentation.loadingThumbnails')}`}
+                                </span>
                             </div>
                         </div>
                         {/* the sidebar's right edge: drag it, or the arrow keys once focused, to resize */}

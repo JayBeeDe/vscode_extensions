@@ -950,6 +950,17 @@
 						"markdownDescription": "The zoom the PDF viewer opens a PDF with, and the one Ctrl/Cmd+0 goes back to. The toolbar's zoom changes it for the open PDF only."
 					}
 				}
+			},
+			{
+				"title": "Presentation",
+				"order": 6,
+				"properties": {
+					"foss-office.presentation.clockFormat": {
+						"type": "string",
+						"default": "auto",
+						"markdownDescription": "Format of the clock under the presentation viewer's slide list. `auto`: hours and minutes as the VS Code display language writes them (VS Code does not let a webview read the system's regional format). Otherwise a pattern: `HH` hours 00–23, `H` 0–23, `hh` hours 01–12, `h` 1–12, `mm` minutes, `ss` seconds, `A` AM/PM, `a` am/pm; any other character, or text in `[brackets]`, is kept as is. Examples: `HH:mm`, `h:mm A`, `HH:mm:ss`."
+					}
+				}
 			}
 		]
 	}

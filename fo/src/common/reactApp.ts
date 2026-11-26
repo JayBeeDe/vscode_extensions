@@ -2,6 +2,7 @@ import axios from 'axios';
 import * as vscode from 'vscode';
 import { extensionResource, getExtensionUri, readExtensionText } from './extensionResource';
 import { getEpubSettings } from '@/provider/epubSettings';
+import { getPresentationClockFormat } from '@/provider/presentationSettings';
 import { getDocumentGoogleFonts, getDocumentTheme, getEpubTheme, getTheme } from './theme';
 import { withLoadingOverlay } from './loadingStatus';
 
@@ -42,6 +43,7 @@ export class ReactApp {
             theme: getTheme(),
             epubTheme: getEpubTheme(),
             epubSettings: getEpubSettings(),
+            presentationClockFormat: getPresentationClockFormat(),
             documentTheme: getDocumentTheme(),
             documentGoogleFonts: getDocumentGoogleFonts(),
         });

@@ -9,6 +9,7 @@ import { extensionResource, getExtensionResourceRoots, readExtensionText } from 
 import { resolveLanguage } from '@/i18n';
 import { getPdfViewerStrings } from './pdfViewerStrings';
 import { bindEpubSettings } from './epubSettings';
+import { bindPresentationSettings } from './presentationSettings';
 import { bindPdfSidebar, getPdfScrolling, getPdfSidebar, getPdfSpread, getPdfTool, getPdfZoom } from './pdfSettings';
 import { bindDocumentTheme, bindEpubTheme, bindPdfTheme, bindTheme, getPdfTheme, getTheme } from '@/common/theme';
 import { trackDocumentLoading, withLoadingOverlay } from '@/common/loadingStatus';
@@ -97,6 +98,7 @@ export class OfficeViewerProvider implements vscode.CustomEditorProvider<OfficeD
 			case '.ppsm':
 			case '.potm':
 				route = 'ppt';
+				bindPresentationSettings(handler);
 				break;
 			case '.pdf':
 				bindPdfTheme(handler);
