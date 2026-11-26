@@ -7,7 +7,7 @@
  * (.docx, .pptx, .epub) and LibreOffice (the .pdf made from the .docx) on the PATH.
  */
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -86,7 +86,8 @@ async function documents() {
         run('soffice', [`-env:UserInstallation=file://${profile}`, '--headless', '--convert-to',
             'pdf:writer_pdf_Export:{"ExportBookmarks":{"type":"boolean","value":"true"}}',
             '--outdir', profile, docx]);
-        renameSync(join(profile, 'Sample.pdf'), output('pdf', 'Document.pdf'));
+        // copied, not moved: the temporary folder can be on another file system
+        copyFileSync(join(profile, 'Sample.pdf'), output('pdf', 'Document.pdf'));
         console.log('  pdf/Document.pdf');
     } finally {
         rmSync(profile, { recursive: true, force: true });
@@ -128,17 +129,84 @@ async function pdfPages() {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Presentation: .pptx (pandoc), .ppsx and .potx (other content types)
+// Presentation: .pptx (pandoc), .ppsx and .potx (other content types), each with its own look:
+// 4:3, 16:9, dark
 // ---------------------------------------------------------------------------------------------
 
+/** Rewrites the text of the package parts whose path matches `pattern`. */
+async function editParts(zip, pattern, change) {
+    for (const path of Object.keys(zip.files).filter(path => pattern.test(path))) {
+        zip.file(path, change(await zip.file(path).async('string')));
+    }
+}
+
+/** 16:9: the slide and every placeholder of the masters and layouts a third wider. */
+async function widescreen(zip) {
+    const ratio = 16 / 12;
+    await editParts(zip, /^ppt\/presentation\.xml$/, xml => xml.replace(/<p:sldSz [^>]*\/>/, '<p:sldSz cx="12192000" cy="6858000"/>'));
+    await editParts(zip, /^ppt\/(slideMasters|slideLayouts)\/[^/]+\.xml$/, xml => xml
+        .replace(/(<a:off x=")(\d+)/g, (_, start, x) => start + Math.round(x * ratio))
+        .replace(/(<a:ext cx=")(\d+)/g, (_, start, cx) => start + Math.round(cx * ratio)));
+}
+
+const fill = rgb => `<a:solidFill><a:srgbClr val="${rgb}"/></a:solidFill>`;
+
+/**
+ * Dark: white text on black, every colour explicit. A theme-based dark deck (colours swapped in
+ * the theme or the master's colour map) shows black text in pptxviewjs and in LibreOffice's
+ * "automatic" colour, so the master gets a black background fill (`dark`) and each run of the
+ * slides a white one (`darkSlides`).
+ */
+async function dark(zip) {
+    await editParts(zip, /^ppt\/slideMasters\/[^/]+\.xml$/, xml => xml
+        .replace(/<p:bg>.*?<\/p:bg>/, `<p:bg><p:bgPr>${fill('000000')}<a:effectLst/></p:bgPr></p:bg>`));
+}
+
+async function darkSlides(zip) {
+    await editParts(zip, /^ppt\/slides\/slide\d+\.xml$/, xml => xml
+        // every run white: an empty <a:rPr/> gets a fill, a full one gets it first (before its fonts)
+        .replace(/<a:rPr([^>]*?)\s*\/>/g, `<a:rPr$1>${fill('FFFFFF')}</a:rPr>`)
+        .replace(/<a:rPr([^>]*)>(?!<a:solidFill>)(?=<(?!\/a:rPr))/g, `<a:rPr$1>${fill('FFFFFF')}`)
+        // the bullets and numbers white too: their own colour first, the paragraph's default run last
+        .replace(/<a:pPr([^>]*?)\s*\/>/g, '<a:pPr$1></a:pPr>')
+        .replace(/<a:pPr([^>]*)>(.*?)<\/a:pPr>/g, `<a:pPr$1><a:buClr><a:srgbClr val="FFFFFF"/></a:buClr>$2<a:defRPr>${fill('FFFFFF')}</a:defRPr></a:pPr>`)
+        // the table style's light rows would hide white text: the header in the accent, the rest dark
+        .replace(/<a:tbl>.*?<\/a:tbl>/gs, table => table
+            .split('</a:tr>')
+            // pandoc writes an empty <a:tcPr/> in the header cells only
+            .map((row, index) => row
+                .replace(/<a:tcPr\s*\/>/g, '')
+                .replace(/<\/a:txBody><\/a:tc>/g, `</a:txBody><a:tcPr>${fill(index === 0 ? '4472C4' : '262626')}</a:tcPr></a:tc>`))
+            .join('</a:tr>')));
+}
+
+/**
+ * The deck from presentation.md, on pandoc's own reference deck changed by `restyle`, the
+ * slides pandoc makes then changed by `finish`.
+ */
+async function presentation(restyle, finish) {
+    const dir = mkdtempSync(join(tmpdir(), 'fo-pptx-'));
+    try {
+        const reference = join(dir, 'reference.pptx');
+        const zip = await JSZip.loadAsync(execFileSync('pandoc', ['--print-default-data-file', 'reference.pptx']));
+        await restyle?.(zip);
+        writeFileSync(reference, await zip.generateAsync({ type: 'nodebuffer' }));
+        const pptx = join(dir, 'deck.pptx');
+        run('pandoc', ['presentation.md', '--resource-path=.', `--reference-doc=${reference}`, '-o', pptx]);
+        if (!finish) return readFileSync(pptx);
+        const deck = await JSZip.loadAsync(readFileSync(pptx));
+        await finish(deck);
+        return deck.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' });
+    } finally {
+        rmSync(dir, { recursive: true, force: true });
+    }
+}
+
 async function presentations() {
-    const pptx = output('presentation', 'Sample.pptx');
-    run('pandoc', ['presentation.md', '--resource-path=.', '-o', pptx]);
-    console.log('  presentation/Sample.pptx');
-    const buffer = readFileSync(pptx);
-    write('presentation', 'Slideshow.ppsx', await withMainContentType(buffer, '/ppt/presentation.xml',
+    write('presentation', 'Sample.pptx', await presentation());
+    write('presentation', 'Slideshow.ppsx', await withMainContentType(await presentation(widescreen), '/ppt/presentation.xml',
         'application/vnd.openxmlformats-officedocument.presentationml.slideshow.main+xml'));
-    write('presentation', 'Template.potx', await withMainContentType(buffer, '/ppt/presentation.xml',
+    write('presentation', 'Template.potx', await withMainContentType(await presentation(dark, darkSlides), '/ppt/presentation.xml',
         'application/vnd.openxmlformats-officedocument.presentationml.template.main+xml'));
 }
 

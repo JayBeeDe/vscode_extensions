@@ -56,9 +56,9 @@ with the libraries the extension already uses (ExcelJS, SheetJS, hyparquet-write
 
 | File             | What to check |
 | ---------------- | ------------- |
-| `Sample.pptx`    | 7 slides: a title slide, bullets with nesting and speaker notes, two columns, an image, a table, Unicode, a last slide. |
-| `Slideshow.ppsx` | The same deck as a slide show. |
-| `Template.potx`  | The same deck as a template. |
+| `Sample.pptx`    | 7 slides, 4:3: a title slide, bullets with nesting and speaker notes, two columns, an image, a table, Unicode, a last slide. |
+| `Slideshow.ppsx` | The same deck as a slide show, in 16:9: the slide fills a wide view without bands. |
+| `Template.potx`  | The same deck as a template, dark: white text, bullets and numbers on a black background, the table's cells dark. Every colour is explicit (the master's background, each run, bullet and cell): a theme-based dark deck shows black text in this viewer and in LibreOffice's "automatic" colour. |
 
 ## PDF
 
