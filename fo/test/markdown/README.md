@@ -38,6 +38,7 @@ test/markdown/
 | Embed | `![[Notes/Meeting-Notes]]` | Home, Vditor, Callouts |
 | Block ID | `^block-id` at the end of a paragraph | API, Glossary, Meeting-Notes |
 | Block link | `[[page#^block-id]]`, `[[#^id]]` | Daily, Vditor, Glossary |
+| Tooltip | `[text](url "tooltip")`, `![alt](src "tooltip")` | Home, Popups, `Folders/With README.markdown` (read-only page) |
 | Tag | `#obsidian/test` | Frontmatter and body of each file |
 | Callout | `> [!NOTE]` and others | Callouts.md, each note |
 

@@ -35,6 +35,16 @@ Jump to "To-do Summary" on this page: [[#^home-todos]]
 
 Reference a term definition: [[Reference/Glossary#^term-wikilink]]
 
+## Tooltips
+
+Markdown links and images with a tooltip of their own, and the same without one, to compare on hover:
+
+- With a tooltip: [the Vditor project](https://github.com/Vanessa219/vditor "Vditor, the editor foss-office is built on"), [the Glossary](Reference/Glossary.md "Every term of this vault")
+- Without one: [the CodeMirror project](https://codemirror.net/), [the Roadmap](Projects/Roadmap.md)
+
+![The foss-office logo](../../images/logo.png "The foss-office logo, with a tooltip")
+![The Markdown icon](../../images/markdown.png)
+
 ## Tags
 
 Tags of this vault: #obsidian/test #status/active
