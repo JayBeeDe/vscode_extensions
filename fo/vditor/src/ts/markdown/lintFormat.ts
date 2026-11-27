@@ -897,7 +897,7 @@ export const formatMarkdownText = (markdown: string, options: LintFormatOptions 
 const calloutDefaults = new Map<string, {icon: string, title: string}>();
 
 /** The icon and title Lute gives a callout of this type with none written (💡 and "Tip" for TIP). */
-const defaultCallout = (lute: Lute, type: string) => {
+export const defaultCallout = (lute: Lute, type: string) => {
     if (!calloutDefaults.has(type)) {
         const html = lute.Md2VditorDOM(`> [!${type}]\n> x\n`);
         calloutDefaults.set(type, {

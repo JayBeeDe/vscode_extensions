@@ -1,4 +1,4 @@
-import {mapTextLines} from "./lintFormat";
+import {defaultCallout, mapTextLines} from "./lintFormat";
 
 /**
  * What Lute drops between the Markdown and the editor's DOM, given back by wrapping its renderers
@@ -14,6 +14,10 @@ import {mapTextLines} from "./lintFormat";
  *   its label's (the file changed elsewhere).
  * - IR mode, a block's Obsidian block ID (`text ^id`): Lute keeps it in `data-block-id`, which its
  *   IR writer drops (the WYSIWYG one writes it). It is put back at the end of the block's text.
+ * - A callout's title equal to its type's name (`> [!NOTE] Note`): Lute writes neither the icon
+ *   nor the title when both are the type's own, as for an untitled callout (`> [!NOTE]`), which
+ *   looks the same. The callouts whose title is written are marked as read, and written without
+ *   their type's icon, which makes Lute write their title (an icon of their own is kept).
  */
 
 const LIST_ITEM = String.raw`^(\s*(?:>\s?)*\s*(?:[-*+]|\d+[.)])\s+\S.*?\s)`;
@@ -101,6 +105,74 @@ export const keepBlockIdInCopy = (root: Element, range: Range) => {
     }
 };
 
+/** A callout written with a title (`> [!NOTE] Note`): Lute's DOM doesn't say it, this does */
+const TITLED = "data-callout-titled";
+const CALLOUT_HEADER_RE = /^\s*(?:>\s?)+\[![^\]\s]+\][+-]?(.*)$/;
+
+/** Per callout of `markdown`, in order: whether its header has a title (or an icon) written. */
+const calloutTitlesWritten = (markdown: string) => {
+    const written: boolean[] = [];
+    mapTextLines(markdown, (text) => {
+        const match = CALLOUT_HEADER_RE.exec(text);
+        if (match) {
+            written.push(!!match[1].trim());
+        }
+        return text;
+    });
+    return written;
+};
+
+const parse = (html: string) => {
+    const template = document.createElement("template");
+    template.innerHTML = html;
+    return template;
+};
+
+const callouts = (root: ParentNode) => Array.from(root.querySelectorAll("[data-type='callout']"));
+
+/** The callouts of `html` marked titled as `written` says, in order (left as they are when counts differ) */
+const markTitledCallouts = (html: string, written: boolean[]) => {
+    if (!written.some(Boolean)) {
+        return html;
+    }
+    const template = parse(html);
+    const found = callouts(template.content);
+    if (found.length !== written.length) {
+        return html;
+    }
+    found.forEach((callout, index) => {
+        if (written[index]) {
+            callout.setAttribute(TITLED, "1");
+        }
+    });
+    return template.innerHTML;
+};
+
+/**
+ * Titled callouts without their type's icon, so that Lute writes their title (the WYSIWYG span,
+ * the IR attribute); an icon of their own is kept, Lute writing it with the title.
+ */
+const unIconTitledCallouts = (html: string, lute: Lute) => {
+    if (!html.includes(TITLED)) {
+        return html;
+    }
+    const template = parse(html);
+    for (const callout of Array.from(template.content.querySelectorAll(`[${TITLED}]`))) {
+        const icon = defaultCallout(lute, callout.getAttribute("data-subtype") || "")?.icon;
+        if (!icon) {
+            continue;
+        }
+        const span = callout.querySelector(":scope > .vditor-callout__info > .vditor-callout__icon");
+        if (span?.textContent === icon) {
+            span.textContent = "";
+        }
+        if (callout.getAttribute("data-callout-icon") === icon) {
+            callout.setAttribute("data-callout-icon", "");
+        }
+    }
+    return template.innerHTML;
+};
+
 const withIrBlockIds = (html: string) => {
     if (!html.includes("data-block-id")) {
         return html;
@@ -111,19 +183,27 @@ const withIrBlockIds = (html: string) => {
     return template.innerHTML;
 };
 
-/** Makes `lute` keep list items' block IDs, definitions' titles and IR block IDs (see above). */
+/** Makes `lute` keep list items' block IDs, definitions' titles, IR block IDs, callout titles (see above). */
 export const keepWhatLuteDrops = (lute: Lute) => {
     const titles = new Map<string, string>();
     const fromMarkdown = (render: (markdown: string) => string) => (markdown: string) => {
         rememberTitles(markdown, titles);
-        return render(escapeListItemIds(markdown));
+        return markTitledCallouts(render(escapeListItemIds(markdown)), calloutTitlesWritten(markdown));
     };
     const toMarkdown = (render: (html: string) => string) => (html: string) =>
-        writeTitles(unescapeListItemIds(render(html)), titles);
+        writeTitles(unescapeListItemIds(render(unIconTitledCallouts(html, lute))), titles);
+    // a block re-read as it is typed: its callouts keep their mark, and their title
+    const fromDOM = (render: (html: string) => string) => (html: string) =>
+        markTitledCallouts(render(unIconTitledCallouts(html, lute)),
+            html.includes(TITLED) ? callouts(parse(html).content).map((callout) => callout.hasAttribute(TITLED)) : []);
     // IR re-reads the editor's DOM through its IR writer, which drops the block IDs: given back first
-    const fromIrDOM = (render: (html: string) => string) => (html: string) => render(withIrBlockIds(html));
+    const fromIrDOM = (render: (html: string) => string) => {
+        const spin = fromDOM(render);
+        return (html: string) => spin(withIrBlockIds(html));
+    };
     lute.Md2VditorDOM = fromMarkdown(lute.Md2VditorDOM.bind(lute));
     lute.Md2VditorIRDOM = fromMarkdown(lute.Md2VditorIRDOM.bind(lute));
+    lute.SpinVditorDOM = fromDOM(lute.SpinVditorDOM.bind(lute));
     lute.SpinVditorIRDOM = fromIrDOM(lute.SpinVditorIRDOM.bind(lute));
     lute.VditorDOM2Md = toMarkdown(lute.VditorDOM2Md.bind(lute));
     const irToMarkdown = toMarkdown(lute.VditorIRDOM2Md.bind(lute));
