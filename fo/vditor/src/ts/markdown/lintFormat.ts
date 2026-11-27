@@ -1,8 +1,13 @@
 /**
  * The Markdown the editor writes follows markdownlint's default rules
  * (https://github.com/DavidAnson/markdownlint), with the decisions taken for this editor:
- * - not applied: MD010 (hard tabs), MD013 (line length), MD024 (duplicate headings), MD053
- *   (unused reference definitions), MD059 (link text);
+ * - not applied: MD010 (hard tabs), MD013 (line length), MD024 (duplicate headings), MD033 (inline
+ *   HTML: the editor writes HTML on purpose, its HTML editor), MD053 (unused reference
+ *   definitions), MD059 (link text), and MD018 (no space after `#`) for an Obsidian tag at a line
+ *   start (`#tag`): a tag stays a tag, even if markdownlint reads it as a heading;
+ * - a front matter `title:` with a value is the top-level heading (markdownlint's
+ *   front_matter_title): no `#` heading is added (MD041), and the `#` one is removed (MD025), or
+ *   every heading goes one level down when there are several; an empty `title:` is removed;
  * - MD025 (one top-level heading) and MD036 (emphasis as a heading) act while editing, in the
  *   toolbar and when the caret leaves a line;
  * - every other rule is fixed here.
@@ -12,11 +17,11 @@
  * Lute writes it (the markers, the heading levels), and on Lute's Markdown (spacing, links).
  */
 
+import {frontMatterTitleState, removeEmptyFrontMatterTitle} from "../util/frontMatterTitle";
+
 export interface LintFormatOptions {
     /** the file name, for a first heading (MD041) */
     fileName?: string;
-    /** `#word` is an Obsidian tag, not a heading missing its space (MD018) */
-    obsidianTags?: boolean;
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -413,9 +418,37 @@ export const normalizeEditorDom = (root: Element, options: LintFormatOptions = {
     for (const element of Array.from(root.querySelectorAll("em[data-marker], strong[data-marker]"))) {
         element.setAttribute("data-marker", (element.getAttribute("data-marker") || "").replace(/_/g, "*"));
     }
-    // MD041: the first block is a top-level heading
+    // the front matter's title: with a value, it is the top-level heading; empty, it goes
+    const frontMatter = Array.from(root.children).find((child) => child.getAttribute("data-type") === "yaml-front-matter");
+    const yamlCode = frontMatter?.querySelector("code[data-type='yaml-front-matter']");
+    let titled = false;
+    if (frontMatter && yamlCode) {
+        const state = frontMatterTitleState(yamlCode.textContent || "");
+        if (state === "empty") {
+            const rest = removeEmptyFrontMatterTitle(yamlCode.textContent || "");
+            if (rest.trim()) {
+                yamlCode.textContent = rest;
+            } else {
+                frontMatter.remove();
+            }
+        }
+        titled = state === "value";
+    }
+    // MD025: under a front matter title, the `#` heading is removed; several are kept, every
+    // heading one level down (chapters)
+    if (titled) {
+        const tops = topHeadings(root).filter((heading) => heading.tagName === "H1");
+        if (tops.length === 1) {
+            tops[0].remove();
+        } else if (tops.length > 1) {
+            for (const heading of topHeadings(root)) {
+                setHeadingLevel(heading, Math.min(6, headingLevel(heading) + 1));
+            }
+        }
+    }
+    // MD041: the first block is a top-level heading (or the front matter's title)
     const firstBlock = Array.from(root.children).find((child) => child.getAttribute("data-type") !== "yaml-front-matter");
-    if (options.fileName && (!firstBlock || firstBlock.tagName !== "H1")) {
+    if (options.fileName && !titled && (!firstBlock || firstBlock.tagName !== "H1")) {
         const title = titleFromFileName(options.fileName);
         if (title) {
             const heading = root.ownerDocument.createElement("h1");
@@ -500,8 +533,9 @@ const allPunctuationNoQuestion = /[.,;:!。，；：！]+$/;
 const fixHeadingLines = (markdown: string, options: LintFormatOptions) => mapTextLines(markdown, (text, index, lines) => {
     const previous = index > 0 ? lines[index - 1] : undefined;
     const inParagraph = previous && !previous.code && !isBlank(previous.text) && !/^\s*#/.test(previous.text);
-    // MD018: `#word` at a line start is a heading missing its space (unless it's a tag)
-    if (!options.obsidianTags && !inParagraph && /^ {0,3}#{1,6}[^#\s]/.test(text) && !/^ {0,3}#{1,6}\d/.test(text)) {
+    // MD018: `##word` at a line start is a heading missing its space; `#word` is an Obsidian tag,
+    // kept as written whatever foss-office.markdown.useObsidianTags says
+    if (!inParagraph && /^ {0,3}#{2,6}[^#\s]/.test(text) && !/^ {0,3}#{1,6}\d/.test(text)) {
         text = text.replace(/^( {0,3}#{1,6})/, "$1 ");
     }
     const heading = /^ {0,3}(#{1,6})[ \t]+(.*?)[ \t]*$/.exec(text) || /^ {0,3}(#{1,6})$/.exec(text);

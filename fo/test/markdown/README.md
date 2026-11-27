@@ -11,6 +11,7 @@ test/markdown/
 ├── Callouts.md         ← callout tests
 ├── Showcase.md         ← tables, code, math, a Mermaid diagram (the README screenshot)
 ├── Popups.md           ← one sample per editor popup (front matter, links, image, HTML, footnote...)
+├── Front-Matter-Title.md ← a front matter title: Heading 1 grayed out, the `#` heading removed on save
 ├── Folder-Navigation.md ← browsing folders: Browse Folder, the Previous link, README fallbacks
 ├── Folders/             ← the folders it browses
 │   ├── With README.markdown/

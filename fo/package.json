@@ -604,7 +604,7 @@
 					"foss-office.markdown.useObsidianTags": {
 						"type": "boolean",
 						"default": false,
-						"markdownDescription": "Treat `#word` as an Obsidian tag in the Markdown editor: shown as a tag, and a double-click or Ctrl+click searches the workspace for it. When off, `#word` is plain text, and at the start of a line it is written as a heading `# word` (markdownlint MD018). Applies to Markdown files opened afterwards."
+						"markdownDescription": "Treat `#word` as an Obsidian tag in the Markdown editor: shown as a tag, and a double-click or Ctrl+click searches the workspace for it. When off, `#word` is plain text. Either way, it is saved as written, even at the start of a line (where markdownlint reads it as a heading missing its space, MD018). Applies to Markdown files opened afterwards."
 					},
 					"foss-office.markdown.workspacePathAsImageBasePath": {
 						"type": "boolean",

@@ -1,3 +1,4 @@
+import { syncTopHeadingButton } from "./ts/util/singleTitle";
 import "./assets/less/index.less";
 import * as adapterRender from "./ts/markdown/adapterRender";
 import { codeRender } from "./ts/markdown/codeRender";
@@ -160,11 +161,7 @@ class Vditor {
             this.formatLute = setLute(this.luteOptions());
             this.formatLute.SetVditorWYSIWYG(true);
         }
-        return formatMarkdownLint(markdown, this.formatLute, new DOMParser(), {
-            fileName,
-            obsidianTags: this.vditor.options.preview.markdown.obsidian !== false
-                && this.vditor.options.preview.markdown.obsidianTag !== false,
-        });
+        return formatMarkdownLint(markdown, this.formatLute, new DOMParser(), {fileName});
     }
 
     /** The Markdown as the editor reads it: what Lute would drop (`<br>`, `<img>`, extra table cells) rewritten */
@@ -377,6 +374,7 @@ class Vditor {
         }
 
         renderToc(this.vditor);
+        syncTopHeadingButton(this.vditor);
 
         if (!markdown) {
             hidePanel(this.vditor, ["headings", "submenu", "hint"]);
@@ -468,6 +466,8 @@ class Vditor {
             this.vditor.lute = setLute(this.luteOptions());
 
             initUI(this.vditor);
+            // a front matter title: "Heading 1" greyed out from the start (MD025)
+            syncTopHeadingButton(this.vditor);
 
             if (mergedOptions.after) {
                 mergedOptions.after();

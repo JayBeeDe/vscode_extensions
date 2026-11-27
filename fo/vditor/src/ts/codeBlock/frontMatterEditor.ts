@@ -1,6 +1,7 @@
 import { showHtmlEditorPopover } from "../htmlInline/htmlInlineEditor";
 import {resolveAdjacentElementFromRange} from "../util/rangeAdjacentElement";
 import {isReadOnly} from "../util/readOnly";
+import {syncTopHeadingButton} from "../util/singleTitle";
 import {setSelectionFocus} from "../util/selection";
 
 /**
@@ -51,6 +52,8 @@ export const showFrontMatterEditorPopover = (vditor: IVditor, blockElement: HTML
                 syncCode.textContent = yaml;
             }
             block = spinFrontMatterBlock(vditor, block) ?? block;
+            // a title given: "Heading 1" greyed out at once (MD025)
+            syncTopHeadingButton(vditor);
             return block;
         },
         // the YAML emptied: no front matter any more

@@ -1,4 +1,5 @@
 import { processAfterRender } from "../ir/process";
+import { hasFrontMatterTitle } from "./frontMatterTitle";
 import { afterRenderEvent } from "../wysiwyg/afterRenderEvent";
 import { renderTocNow } from "./toc";
 
@@ -43,7 +44,8 @@ const emphasisOnlyText = (block: HTMLElement): string | null => {
 };
 
 const headingLevelBefore = (block: HTMLElement) => {
-    let hasTop = false;
+    // the front matter's title is the top-level heading too
+    let hasTop = hasFrontMatterTitle(block.parentElement);
     let level = 0;
     for (let previous = block.previousElementSibling; previous; previous = previous.previousElementSibling) {
         const match = /^H([1-6])$/.exec(previous.tagName);

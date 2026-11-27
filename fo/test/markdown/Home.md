@@ -1,21 +1,18 @@
 ---
-title: Home
 tags: [obsidian, test, hub]
+title: Home
 ---
-
-# Test Vault Home
-
 This is the entry point of the multi-file Obsidian syntax test vault. From this page you can jump to every sub-page to check **cross-file wikilinks**, **block references**, **embeds** and **callouts**.
 
 ## Quick Navigation
 
-| Topic | Links |
-| --- | --- |
-| Projects | [[Projects/Vditor]], [[Projects/Roadmap]] |
-| Notes | [[Notes/Meeting-Notes]], [[Notes/Daily-2026-06-24]] |
-| Reference | [[Reference/API]], [[Reference/Glossary]] |
-| Callout | [[Callouts]] |
-| Popups | [[Popups]] |
+| Topic     | Links                                               |
+| --------- | --------------------------------------------------- |
+| Projects  | [[Projects/Vditor]], [[Projects/Roadmap]]           |
+| Notes     | [[Notes/Meeting-Notes]], [[Notes/Daily-2026-06-24]] |
+| Reference | [[Reference/API]], [[Reference/Glossary]]           |
+| Callout   | [[Callouts]]                                        |
+| Popups    | [[Popups]]                                          |
 
 ## Wikilink Examples
 
