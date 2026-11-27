@@ -231,6 +231,31 @@ export function applyEpubTheme(rendition: Rendition | null, settings: EpubSettin
     const css = themeRulesToCss(buildThemeRules(settings, theme));
     for (const content of rendition.getContents() as unknown as Contents[]) {
         content.addStylesheetCss(css, EPUB_THEME_STYLE_KEY);
+        recolorBlackText(content.document, theme === 'dark' ? fg : null);
+    }
+}
+
+const RECOLORED = 'data-epub-recolored';
+
+/**
+ * On the dark page, text the book's styles keep black (`all: initial` or `color: initial` override
+ * the theme's body colour: Project Gutenberg's header does) takes the page's text colour `fg`;
+ * `null` gives such text its own colour back (another theme).
+ */
+function recolorBlackText(doc: Document | undefined, fg: string | null) {
+    if (!doc?.body) return;
+    for (const el of doc.querySelectorAll<HTMLElement>(`[${RECOLORED}]`)) {
+        el.style.removeProperty('color');
+        el.removeAttribute(RECOLORED);
+    }
+    if (!fg) return;
+    const view = doc.defaultView;
+    if (!view) return;
+    for (const el of doc.body.querySelectorAll<HTMLElement>('*')) {
+        if (view.getComputedStyle(el).color === 'rgb(0, 0, 0)' && !el.style.color) {
+            el.style.setProperty('color', fg, 'important');
+            el.setAttribute(RECOLORED, '');
+        }
     }
 }
 
