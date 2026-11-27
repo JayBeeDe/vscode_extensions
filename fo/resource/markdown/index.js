@@ -290,7 +290,8 @@ async function openMarkdown(md) {
       // a folder's listing (folderView.ts): to read and follow its links, not to edit
       if (readOnly) {
         editor.vditor.element.classList.add('vditor--readonly');
-        editor.disabled();
+        // the custom buttons that change or export the page are grayed out too
+        editor.disabled(['insert-mermaid', 'exportPdf', 'exportDocx', 'exportHtml']);
       }
       openOutlineIfHeadings(editor, sidebar);
       // the file shows once its diagrams are drawn, or at once, each diagram with its own spinner
@@ -305,8 +306,10 @@ async function openMarkdown(md) {
         trackDiagrams(root);
       }
       observeWorkspaceAbsoluteImages(document.getElementById('vditor'), workspaceBaseUrl);
-      disableSlowExports(!!exporting);
-      handler.on('exporting', disableSlowExports);
+      // PDF and DOCX grayed out while an export runs; on a read-only page, always
+      const setSlowExportsBusy = (busy) => disableSlowExports(!!busy || !!readOnly);
+      setSlowExportsBusy(exporting);
+      handler.on('exporting', setSlowExportsBusy);
       handler.on('theme', (theme) => {
         editor.setColorTheme(theme);
       });

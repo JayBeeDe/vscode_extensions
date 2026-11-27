@@ -147,6 +147,8 @@ The editor's keyboard shortcuts are listed in [Keyboard shortcuts](#keyboard-sho
 
 Right-click a folder in the Explorer and choose **Browse Folder** to see it in the Markdown editor, as a read-only page: its subfolders, then its files, each a link, followed by the folder's README when it has one: `README.md`, else `README.markdown`, else a `README` without extension, shown as plain text as written. Entries hidden by `files.exclude` are left out. A click opens a file or a subfolder in the page's place, Ctrl+click (⌘+click on macOS) in a new tab. A link to a folder in a Markdown file opens the same page.
 
+The page can be read, selected and copied, not changed: the text cursor shows a lock, a tooltip says it is read-only, and the toolbar's editing, Mermaid diagram and export buttons are grayed out.
+
 From the Command Palette, **Browse Folder** shows the workspace folder, or the one you pick when there are several.
 
 ### Using VS Code's Markdown editor instead

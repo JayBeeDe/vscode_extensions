@@ -372,7 +372,7 @@
   .vditor-wysiwyg & [data-type="yaml-front-matter"] .vditor-properties {
     // the text cursor with a lock: selectable, not editable (the text cursor without the image);
     // the tooltip says so too (wysiwyg/index.ts)
-    cursor: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48ZyBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNCAzaDJxMSAwIDEgMXYxNnEwIDEtMSAxSDRNMTAgM0g4cS0xIDAtMSAxdjE2cTAgMSAxIDFoMiIgZmlsbD0ibm9uZSIvPjxwYXRoIGQ9Ik0xNSAxNXYtMi41YTIuNSAyLjUgMCAwIDEgNSAwVjE1IiBmaWxsPSJub25lIi8+PHJlY3QgeD0iMTMiIHk9IjE1IiB3aWR0aD0iOSIgaGVpZ2h0PSI3IiByeD0iMSIvPjwvZz48ZyBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMS4yIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiIGZpbGw9IiMwMDAiPjxwYXRoIGQ9Ik00IDNoMnExIDAgMSAxdjE2cTAgMS0xIDFINE0xMCAzSDhxLTEgMC0xIDF2MTZxMCAxIDEgMWgyIiBmaWxsPSJub25lIi8+PHBhdGggZD0iTTE1IDE1di0yLjVhMi41IDIuNSAwIDAgMSA1IDBWMTUiIGZpbGw9Im5vbmUiLz48cmVjdCB4PSIxMyIgeT0iMTUiIHdpZHRoPSI5IiBoZWlnaHQ9IjciIHJ4PSIxIi8+PC9nPjwvc3ZnPg==") 7 12, text;
+    cursor: @read-only-text-cursor;
     user-select: text;
 
     .vditor-html-inline__display,

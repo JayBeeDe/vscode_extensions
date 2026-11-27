@@ -145,6 +145,12 @@
     &--disabled {
       color: var(--second-color) !important;
       cursor: not-allowed !important;
+
+      // Insert image's file input, over the button, has a cursor of its own (its file selector
+      // button's): out of the pointer's way, the button's own cursor shows (setToolbar.ts disables it)
+      input {
+        pointer-events: none;
+      }
     }
   }
 }

@@ -1431,6 +1431,7 @@
     "toggleLineWrap": "Ajuste de línea",
     "htmlReadOnly": "HTML, de solo lectura aquí: {key}+clic para editarlo",
     "frontMatterReadOnly": "Front matter, de solo lectura aquí: {key}+clic para editarlo",
+    "readOnlyPage": "Solo lectura: esta lista de carpeta no se puede editar",
     "linkTooltip": "Información sobre herramientas (opcional)",
     "linkHoverEdit": "{tooltip}, <{key}+Clic> para editar",
     "linkHoverOpenEdit": "Abrir {url} en una pestaña nueva, <{key}+Clic> para editar el enlace",

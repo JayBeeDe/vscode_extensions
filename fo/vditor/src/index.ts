@@ -206,11 +206,12 @@ class Vditor {
     }
 
     /** Disable the editor */
-    public disabled() {
+    /** Disable the editor; `extraToolbars`: the custom buttons to gray out with the editing ones */
+    public disabled(extraToolbars: string[] = []) {
         hidePanel(this.vditor, ["subToolbar", "hint", "popover"]);
         disableToolbar(
             this.vditor.toolbar.elements,
-            Constants.EDIT_TOOLBARS.concat(["undo", "redo", "edit-mode"]),
+            Constants.EDIT_TOOLBARS.concat(["undo", "redo", "edit-mode"], extraToolbars),
         );
         this.vditor[this.vditor.currentMode].element.setAttribute(
             "contenteditable",

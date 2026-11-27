@@ -1451,6 +1451,7 @@
     "toggleLineWrap": "Alternar quebra de linha",
     "htmlReadOnly": "HTML, somente leitura aqui: {key}+clique para editá-lo",
     "frontMatterReadOnly": "Front matter, somente leitura aqui: {key}+clique para editá-lo",
+    "readOnlyPage": "Somente leitura: esta lista de pasta não pode ser editada",
     "linkTooltip": "Dica de ferramenta (opcional)",
     "linkHoverEdit": "{tooltip}, <{key}+Clique> para editar",
     "linkHoverOpenEdit": "Abrir {url} em uma nova guia, <{key}+Clique> para editar o link",

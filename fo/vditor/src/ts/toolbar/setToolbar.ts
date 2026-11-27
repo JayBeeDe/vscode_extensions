@@ -62,6 +62,23 @@ export const setCurrentToolbar = (toolbar: { [key: string]: HTMLElement }, names
     });
 };
 
+/**
+ * A grayed out button is out of reach too: not in the Tab order, its file input (Insert image)
+ * disabled, so that it can be neither focused nor used.
+ */
+const setToolbarItemReachable = (itemElement: HTMLElement, reachable: boolean) => {
+    if (reachable) {
+        itemElement.removeAttribute("aria-disabled");
+        itemElement.removeAttribute("tabindex");
+    } else {
+        itemElement.setAttribute("aria-disabled", "true");
+        itemElement.setAttribute("tabindex", "-1");
+    }
+    itemElement.querySelectorAll("input").forEach((input) => {
+        input.disabled = !reachable;
+    });
+};
+
 export const enableToolbar = (toolbar: { [key: string]: HTMLElement }, names: string[]) => {
     names.forEach((name) => {
         if (!toolbar[name]) {
@@ -70,6 +87,7 @@ export const enableToolbar = (toolbar: { [key: string]: HTMLElement }, names: st
         const itemElement = toolbar[name].children[0];
         if (itemElement && itemElement.classList.contains(Constants.CLASS_MENU_DISABLED)) {
             itemElement.classList.remove(Constants.CLASS_MENU_DISABLED);
+            setToolbarItemReachable(itemElement as HTMLElement, true);
         }
     });
 };
@@ -82,6 +100,7 @@ export const disableToolbar = (toolbar: { [key: string]: HTMLElement }, names: s
         const itemElement = toolbar[name].children[0];
         if (itemElement && !itemElement.classList.contains(Constants.CLASS_MENU_DISABLED)) {
             itemElement.classList.add(Constants.CLASS_MENU_DISABLED);
+            setToolbarItemReachable(itemElement as HTMLElement, false);
         }
     });
 };

@@ -38,10 +38,11 @@
       opacity: 0.3;
       cursor: not-allowed;
 
-      // read-only on purpose (a folder's listing): to be read, not dimmed
+      // read-only on purpose (a folder's listing): to be read, not dimmed; the text cursor with a
+      // lock, as on rendered HTML (links keep their pointer)
       .vditor--readonly & {
         opacity: 1;
-        cursor: auto;
+        cursor: @read-only-text-cursor;
       }
     }
 

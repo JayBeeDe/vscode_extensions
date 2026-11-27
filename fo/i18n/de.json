@@ -1368,6 +1368,7 @@
     "toggleLineWrap": "Zeilenumbruch umschalten",
     "htmlReadOnly": "HTML, hier schreibgeschützt: {key}+Klick zum Bearbeiten",
     "frontMatterReadOnly": "Front Matter, hier schreibgeschützt: {key}+Klick zum Bearbeiten",
+    "readOnlyPage": "Schreibgeschützt: diese Ordnerliste kann nicht bearbeitet werden",
     "linkTooltip": "Tooltip (optional)",
     "linkHoverEdit": "{tooltip}, <{key}+Klick> zum Bearbeiten",
     "linkHoverOpenEdit": "{url} in einem neuen Tab öffnen, <{key}+Klick> zum Bearbeiten des Links",

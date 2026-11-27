@@ -1456,6 +1456,7 @@
     "toggleLineWrap": "切换自动换行",
     "htmlReadOnly": "HTML，此处只读：{key}+单击进行编辑",
     "frontMatterReadOnly": "Front matter，此处只读：{key}+单击进行编辑",
+    "readOnlyPage": "只读：此文件夹列表无法编辑",
     "linkTooltip": "工具提示（可选）",
     "linkHoverEdit": "{tooltip}，<{key}+单击> 进行编辑",
     "linkHoverOpenEdit": "在新标签页中打开 {url}，<{key}+单击> 编辑链接",

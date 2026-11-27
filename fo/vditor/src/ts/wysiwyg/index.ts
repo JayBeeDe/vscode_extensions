@@ -1,3 +1,4 @@
+import {isReadOnly} from "../util/readOnly";
 import { Constants } from "../constants";
 import { hidePanel } from "../toolbar/setToolbar";
 import { isCtrl, isFirefox, isMacPlatform } from "../util/compatibility";
@@ -372,6 +373,17 @@ class WYSIWYG {
         // rendered HTML and the front matter's panel are read-only here: their tooltip says so, and
         // how to edit them
         this.element.addEventListener("mouseover", (event: MouseEvent & { target: HTMLElement }) => {
+            // a read-only page (a folder's listing) says so everywhere, but where something has a
+            // tooltip of its own: a link (its own box, util/linkHoverTooltip.ts), a titled image…
+            if (isReadOnly(vditor)) {
+                const own = event.target.closest?.("a, [title]");
+                if (own && own !== this.element && this.element.contains(own)) {
+                    this.element.removeAttribute("title");
+                } else {
+                    this.element.setAttribute("title", window.VditorI18n.readOnlyPage);
+                }
+                return;
+            }
             const html = event.target.closest?.(
                 "[data-type='html-block'][contenteditable='false'], [data-type='html-inline'][contenteditable='false']");
             const key = isMacPlatform() ? "⌥" : "Alt";
