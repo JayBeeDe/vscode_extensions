@@ -328,6 +328,23 @@ export function registerFolderView(context: vscode.ExtensionContext) {
         vscode.workspace.registerTextDocumentContentProvider(FOLDER_VIEW_SCHEME, provider),
         vscode.commands.registerCommand(BROWSE_FOLDER_COMMAND, browseFolder),
     );
+    openFolderViewOnStartup();
+}
+
+/**
+ * foss-office.openMarkdownFolderViewOnStartup: a window opened on a folder (the first one of a
+ * workspace of several) with no file open shows it in the Markdown editor. Files restored from
+ * the last session count as open; tabs that aren't files (the Welcome page) don't.
+ */
+function openFolderViewOnStartup() {
+    if (!vscode.workspace.getConfiguration('foss-office').get<boolean>('openMarkdownFolderViewOnStartup')) return;
+    const first = vscode.workspace.workspaceFolders?.[0]?.uri;
+    if (!first) return;
+    const fileOpen = vscode.window.tabGroups.all.flatMap((group) => group.tabs).some((tab) =>
+        tab.input instanceof vscode.TabInputText || tab.input instanceof vscode.TabInputTextDiff
+        || tab.input instanceof vscode.TabInputCustom || tab.input instanceof vscode.TabInputNotebook);
+    if (fileOpen) return;
+    void isFolder(first).then((folder) => folder && openFolderView(first));
 }
 
 /** "Browse Folder": the Explorer's context menu on a folder, and the Command Palette */

@@ -504,6 +504,11 @@
 						],
 						"default": "auto",
 						"markdownDescription": "Theme of every viewer and editor of the extension. The eBook pages follow `#foss-office.epub.theme#`, the Markdown pages `#foss-office.markdown.theme#`, the document pages `#foss-office.document.theme#` and the PDF pages `#foss-office.pdf.theme#`."
+					},
+					"foss-office.openMarkdownFolderViewOnStartup": {
+						"type": "boolean",
+						"default": false,
+						"markdownDescription": "When a window opens on a folder with no file open, show the folder in the Markdown editor, as **Browse Folder** does. In a workspace of several folders, the first one. Files restored from the last session count as open; the Welcome page doesn't."
 					}
 				}
 			},

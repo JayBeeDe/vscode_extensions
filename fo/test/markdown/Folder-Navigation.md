@@ -19,6 +19,11 @@ The **Previous** link sits in the right cell of the listing's first row, across 
 | 9 | In the Explorer, right-click `test/markdown/Folders` and choose **Browse Folder** | The `Folders` page, with no **Previous** |
 | 10 | Command Palette, **Browse Folder** | The workspace folder's page, with no **Previous** |
 | 11 | Open `With README.markdown/` and hover its README's **Tooltips** section | The text shows the read-only cursor (a lock) and the tooltip "Read-only: this folder listing cannot be edited"; a link shows its own box (its tooltip, or the URL), an image with a tooltip its own tooltip, never the read-only one |
+| 12 | Set `foss-office.openMarkdownFolderViewOnStartup` to `true`, close every editor, then File › Open Folder on `test/markdown/Folders` (or reload the window) | The `Folders` page opens by itself, with no **Previous** |
+| 13 | Same, with a file left open (restored from the last session) | The file is restored, no folder page opens |
+| 14 | Same, with only VS Code's Welcome page open | The `Folders` page opens |
+| 15 | Same, in a workspace of several folders | Only the first folder's page opens |
+| 16 | Set it back to `false` (the default), close every editor, reload | Nothing opens |
 
 ## Notes
 
