@@ -521,6 +521,58 @@ const fixMarkerSpacing = (markdown: string) => mapTextLines(markdown, (text) => 
     .replace(/^((?:\s*>)+) {2,}(?=\S)/, (_match, prefix: string) => `${prefix} `)
     .replace(/^(\s*(?:>\s?)*\s*)([-*+]|\d+[.)]) {2,}(?=\S)/, "$1$2 "));
 
+const isSpace = (char: string) => /\s/.test(char);
+const isPunctuation = (char: string) => /[\p{P}\p{S}]/u.test(char);
+
+/**
+ * MD037 on one kind of marker (`**`, `_`…): the markers are paired as Markdown pairs them, each
+ * one opening or closing by what stands on its sides (`**bold**, next`: the `**` before the comma
+ * closes), then the spaces inside a pair are removed (`** bold **` is `**bold**`). Pairing only the
+ * markers next to a space would pair the wrong ones: `**a**, **b**` would lose the space after the
+ * comma. A `*` starting a list item, and a `_` inside a word (`snake_case`), are no emphasis.
+ */
+const trimInsideEmphasis = (part: string, marker: string) => {
+    const escaped = marker.replace(/\*/g, "\\*");
+    const re = new RegExp(`(?<![*_\\\\])${escaped}(?![*_])`, "g");
+    const pairs: Array<[number, number]> = [];
+    const open: number[] = [];
+    let match: RegExpExecArray | null;
+    while ((match = re.exec(part))) {
+        const index = match.index;
+        const before = part[index - 1] ?? " ";
+        const after = part[index + marker.length] ?? " ";
+        if (marker === "*" && isSpace(after) && /^\s*(?:>\s*)*$/.test(part.slice(0, index))) {
+            continue;
+        }
+        if (marker.startsWith("_") && /[\p{L}\p{N}]/u.test(before) && /[\p{L}\p{N}]/u.test(after)) {
+            continue;
+        }
+        // CommonMark's flanking: an opener is followed by a non-space (a punctuation only if a
+        // space or a punctuation is before it), a closer the reverse. With a space inside, the one
+        // markdownlint removes: `** bold**` opens (a space after, a space or punctuation before),
+        // `**bold **,` closes (a space before, a space or punctuation after)
+        const leftFlanking = !isSpace(after) && (!isPunctuation(after) || isSpace(before) || isPunctuation(before));
+        const rightFlanking = !isSpace(before) && (!isPunctuation(before) || isSpace(after) || isPunctuation(after));
+        const spacedOpener = isSpace(after) && (isSpace(before) || isPunctuation(before));
+        const spacedCloser = isSpace(before) && (isSpace(after) || isPunctuation(after));
+        if (open.length && (rightFlanking || spacedCloser)) {
+            pairs.push([open.pop() as number, index]);
+        } else if (leftFlanking || spacedOpener) {
+            open.push(index);
+        }
+    }
+    // from the end, so that the positions before stay right
+    pairs.sort((x, y) => y[0] - x[0]);
+    for (const [start, end] of pairs) {
+        const inner = part.slice(start + marker.length, end);
+        const trimmed = inner.trim();
+        if (trimmed && trimmed !== inner) {
+            part = part.slice(0, start + marker.length) + trimmed + part.slice(end);
+        }
+    }
+    return part;
+};
+
 /** MD011 reversed links, MD034 bare URLs, MD037/MD038/MD039 spaces inside markers. */
 const fixInline = (markdown: string) => mapTextLines(markdown, (text) => {
     if (/^\s*\|/.test(text) && /\|\s*$/.test(text)) {
@@ -549,34 +601,10 @@ const fixInline = (markdown: string) => mapTextLines(markdown, (text) => {
         }
         return `${ticks}${trimmed}${ticks}`;
     });
-    // MD037: no spaces inside emphasis markers, as markdownlint fixes it: markers of the same kind
-    // standing alone (not glued to the word on both sides) are paired in order; the spaces on the
-    // inner side of each pair are removed
+    // MD037: no spaces inside emphasis markers, as markdownlint fixes it
     fixed = outsideInlineCode(fixed, (part) => {
         for (const marker of ["***", "**", "*", "___", "__", "_"]) {
-            const escaped = marker.replace(/\*/g, "\\*");
-            const re = new RegExp(`(?<![*_\\\\])${escaped}(?![*_])`, "g");
-            const positions: number[] = [];
-            let match: RegExpExecArray | null;
-            while ((match = re.exec(part))) {
-                const before = part[match.index - 1] ?? " ";
-                const after = part[match.index + marker.length] ?? " ";
-                // a marker with spaces on both sides, or one side, is a candidate
-                if (/\s/.test(before) || /\s/.test(after)) {
-                    positions.push(match.index);
-                }
-            }
-            for (let i = positions.length - 2 - (positions.length % 2); i >= 0; i -= 2) {
-                const open = positions[i];
-                const close = positions[i + 1];
-                let inner = part.slice(open + marker.length, close);
-                const trimmed = inner.trim();
-                if (!trimmed || trimmed === inner) {
-                    continue;
-                }
-                inner = trimmed;
-                part = part.slice(0, open + marker.length) + inner + part.slice(close);
-            }
+            part = trimInsideEmphasis(part, marker);
         }
         return part;
     });
@@ -819,6 +847,46 @@ export const formatMarkdownText = (markdown: string, options: LintFormatOptions 
     }
 };
 
+const calloutDefaults = new Map<string, {icon: string, title: string}>();
+
+/** The icon and title Lute gives a callout of this type with none written (💡 and "Tip" for TIP). */
+const defaultCallout = (lute: Lute, type: string) => {
+    if (!calloutDefaults.has(type)) {
+        const html = lute.Md2VditorDOM(`> [!${type}]\n> x\n`);
+        calloutDefaults.set(type, {
+            icon: html.match(/class="vditor-callout__icon">([^<]*)</)?.[1] ?? "",
+            title: html.match(/class="vditor-callout__title">([^<]*)</)?.[1] ?? "",
+        });
+    }
+    return calloutDefaults.get(type);
+};
+
+/**
+ * A callout with a title of its own and its type's default icon (`> [!TIP] title`, shown with 💡)
+ * is written back without the icon: Lute writes the icon it shows before the title, which would
+ * put 💡 in the file. An icon of its own (`> [!TIP] :rocket: title`) is kept, and so is the default
+ * icon of an untitled callout (`> [!NOTE]`): Lute then writes neither, the title shown being the
+ * default one. WYSIWYG keeps the icon and title in spans, IR in attributes.
+ */
+export const clearDefaultCalloutIcons = (root: ParentNode, lute: Lute) => {
+    for (const callout of Array.from(root.querySelectorAll("[data-type='callout']"))) {
+        const defaults = defaultCallout(lute, callout.getAttribute("data-subtype") || "");
+        if (!defaults?.icon) {
+            continue;
+        }
+        const span = callout.querySelector(":scope > .vditor-callout__info > .vditor-callout__icon");
+        const titleSpan = callout.querySelector(":scope > .vditor-callout__info > .vditor-callout__title");
+        if (span?.textContent === defaults.icon && titleSpan && titleSpan.textContent.trim() !== defaults.title) {
+            span.textContent = "";
+        }
+        const title = callout.getAttribute("data-callout-title");
+        if (callout.getAttribute("data-callout-icon") === defaults.icon && title !== null
+            && title.trim() !== defaults.title) {
+            callout.setAttribute("data-callout-icon", "");
+        }
+    }
+};
+
 /** The DOM toolkit the formatter parses the editor's HTML with: the page's, or linkedom in tests. */
 export interface DomParserLike {
     parseFromString(html: string, type: "text/html"): Document;
@@ -841,6 +909,7 @@ export const formatMarkdown = (markdown: string, lute: Lute, parser: DomParserLi
             const doc = parser.parseFromString(`<!doctype html><html><body><div>${html}</div></body></html>`, "text/html");
             const root = doc.body.firstElementChild as Element;
             normalizeEditorDom(root, options);
+            clearDefaultCalloutIcons(root, lute);
             const next = formatMarkdownText(lute.VditorDOM2Md(root.innerHTML), options);
             if (next === text) {
                 break;

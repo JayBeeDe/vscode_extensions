@@ -21,6 +21,18 @@ Back to [[Home]]. This page tests every callout type, combined with links to oth
 > [!CAUTION] Caution
 > Do not confuse with [[Reference/API#^api-errors]].
 
+## Titles
+
+A callout is saved as written (open, save, compare the source): untitled, its built-in icon and
+title are shown but not written; with a title of its own, the icon shown before it is not written
+either.
+
+> [!NOTE]
+> Untitled, as GitHub writes its alerts: the source keeps `> [!NOTE]`.
+
+> [!TIP] A title of its own
+> The source keeps `> [!TIP] A title of its own`, without the 💡 shown before it.
+
 ## Custom Types
 
 > [!question] Frequently asked question
