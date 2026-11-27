@@ -670,8 +670,13 @@ const fixWhitespace = (markdown: string) => {
 
 /**
  * MD022 headings, MD031 code blocks, MD032 lists, MD058 tables: a blank line around each,
- * also inside a quote (with its `>`); MD028: a blank line inside a quote gets `>`.
+ * also inside a quote (with its `>`). MD028: two quotes (or callouts) one after the other, also
+ * inside a quote, are kept apart by an HTML comment, which shows nothing: a `>` on the blank line
+ * between them, the other fix, would join them into one.
  */
+/** Between two quotes: an HTML comment, shown as nothing, so that they stay two (MD028). */
+const QUOTE_SEPARATOR = "<!-- -->";
+
 const fixBlankLinesAround = (markdown: string) => {
     const lines = splitLines(markdown);
     const quotePrefix = (text: string) => /^(\s*(?:>\s?)+)/.exec(text)?.[1].trimEnd() ?? "";
@@ -704,6 +709,8 @@ const fixBlankLinesAround = (markdown: string) => {
         }
         return "text";
     };
+    const quoteDepth = (text: string) => (quotePrefix(text).match(/>/g) ?? []).length;
+    const lastContent = (from: Line[]) => [...from].reverse().find((item) => !isBlank(strip(item.text)));
     // an HTML block ends at a blank line: none goes between its lines
     const htmlLines = htmlBlockLines(lines);
     const out: Line[] = [];
@@ -728,11 +735,16 @@ const fixBlankLinesAround = (markdown: string) => {
             const prefix = quotePrefix(line.text);
             out.push({ text: prefix, code: false });
         }
-        // MD028: a blank line between two quotes becomes `>`
-        if (current === "blank" && !line.code && previous && quotePrefix(previous.text)) {
-            const next = lines[i + 1];
-            if (next && quotePrefix(next.text)) {
-                out.push({ text: quotePrefix(previous.text), code: false });
+        // MD028: a line blank at a level (blank, or only `>` inside a quote) between two quotes one
+        // level deeper (the last line written with text and the next one) gets the comment that
+        // keeps them apart, at its level: `<!-- -->`, or `> <!-- -->` between two quotes in a quote
+        if (current === "blank" && !line.code) {
+            const level = quoteDepth(line.text);
+            const before = lastContent(out);
+            const after = lines.slice(i + 1).find((item) => !isBlank(strip(item.text)));
+            if (before && after && !before.code && quoteDepth(before.text) > level && quoteDepth(after.text) > level) {
+                const prefix = quotePrefix(line.text);
+                out.push(line, {text: prefix ? `${prefix} ${QUOTE_SEPARATOR}` : QUOTE_SEPARATOR, code: false}, {text: prefix, code: false});
                 continue;
             }
         }

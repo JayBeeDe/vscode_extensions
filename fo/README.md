@@ -143,6 +143,8 @@ The links, the toolbar, the menus, the tables, the horizontal rules, the outline
 
 The editor's keyboard shortcuts are listed in [Keyboard shortcuts](#keyboard-shortcuts).
 
+A Markdown file is saved following [markdownlint](https://github.com/DavidAnson/markdownlint)'s rules. Two quotes or callouts one after the other are kept apart by an empty HTML comment, `<!-- -->`, which shows nothing: the other way to satisfy its rule MD028, a `>` on the blank line between them, would join them into one.
+
 ### Browsing a folder
 
 Right-click a folder in the Explorer and choose **Browse Folder** to see it in the Markdown editor, as a read-only page: its subfolders, then its files, each a link, followed by the folder's README when it has one: `README.md`, else `README.markdown`, else a `README` without extension, shown as plain text as written. Entries hidden by `files.exclude` are left out. A click opens a file or a subfolder in the page's place, Ctrl+click (⌘+click on macOS) in a new tab. A link to a folder in a Markdown file opens the same page.
