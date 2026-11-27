@@ -10,6 +10,7 @@ test/markdown/
 ├── Home.md             ← start from this file
 ├── Callouts.md         ← callout tests
 ├── Showcase.md         ← tables, code, math, a Mermaid diagram (the README screenshot)
+├── Popups.md           ← one sample per editor popup (front matter, links, image, HTML, footnote...)
 ├── Folder-Navigation.md ← browsing folders: Browse Folder, the Previous link, README fallbacks
 ├── Folders/             ← the folders it browses
 │   ├── With README.markdown/
@@ -47,6 +48,7 @@ test/markdown/
 3. Edit wikilinks, callouts and tags, save, and check that the Markdown source round-trips correctly.
 4. Open `Callouts.md` and check the five built-in callout types and the custom types.
 5. In `Reference/Glossary.md`, check same-page and cross-page block references such as `[[#^sample-block]]`.
+6. Open `Popups.md` and edit each sample in its popup (front matter, link, reference link, image, inline and block HTML, footnote, code block language, table menus), save, and check that the source is unchanged.
 
 ## File Relationships (Overview)
 

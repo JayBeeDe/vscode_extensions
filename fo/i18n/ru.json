@@ -351,6 +351,7 @@
     "languageSearch": "Поиск языка",
     "toggleLineWrap": "Перенос строк",
     "htmlReadOnly": "HTML, здесь только для чтения: {key}+щелчок для редактирования",
+    "frontMatterReadOnly": "Front matter, здесь только для чтения: {key}+щелчок для редактирования",
     "linkTooltip": "Всплывающая подсказка (необязательно)",
     "linkHoverEdit": "{tooltip}, <{key}+Щелчок> для редактирования",
     "linkHoverOpenEdit": "Открыть {url} в новой вкладке, <{key}+Щелчок> для редактирования ссылки",

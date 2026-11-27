@@ -15,6 +15,7 @@ This is the entry point of the multi-file Obsidian syntax test vault. From this 
 | Notes | [[Notes/Meeting-Notes]], [[Notes/Daily-2026-06-24]] |
 | Reference | [[Reference/API]], [[Reference/Glossary]] |
 | Callout | [[Callouts]] |
+| Popups | [[Popups]] |
 
 ## Wikilink Examples
 

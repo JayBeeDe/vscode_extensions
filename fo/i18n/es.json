@@ -1430,6 +1430,7 @@
     "languageSearch": "Buscar lenguaje",
     "toggleLineWrap": "Ajuste de línea",
     "htmlReadOnly": "HTML, de solo lectura aquí: {key}+clic para editarlo",
+    "frontMatterReadOnly": "Front matter, de solo lectura aquí: {key}+clic para editarlo",
     "linkTooltip": "Información sobre herramientas (opcional)",
     "linkHoverEdit": "{tooltip}, <{key}+Clic> para editar",
     "linkHoverOpenEdit": "Abrir {url} en una pestaña nueva, <{key}+Clic> para editar el enlace",

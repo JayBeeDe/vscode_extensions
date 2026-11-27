@@ -1463,6 +1463,7 @@
     "languageSearch": "Search language",
     "toggleLineWrap": "Toggle line wrap",
     "htmlReadOnly": "HTML, read-only here: {key}+click to edit it",
+    "frontMatterReadOnly": "Front matter, read-only here: {key}+click to edit it",
     "linkTooltip": "Tooltip (optional)",
     "linkHoverEdit": "{tooltip}, <{key}+Click> to edit",
     "linkHoverOpenEdit": "Open {url} in a new tab, <{key}+Click> to edit the link",

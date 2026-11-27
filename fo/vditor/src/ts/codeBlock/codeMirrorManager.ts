@@ -31,9 +31,6 @@ import {
     deactivateInlineMathEditorsInScope,
     flushInlineMathToSyncCode,
 } from "../math/inlineMathCodeMirror";
-import {
-    flushFrontMatterYamlToSyncCode,
-} from "./frontMatterEditor";
 import {isReadOnly} from "../util/readOnly";
 
 export { focusCodeBlockChromeLanguage, isInsideCodeBlockChrome } from "./codeBlockChrome";
@@ -2143,7 +2140,6 @@ export const flushCodeMirrorToSyncCode = (vditor: IVditor) => {
 export const buildEditorHtmlForMarkdown = (vditor: IVditor) => {
     flushCodeMirrorToSyncCode(vditor);
     flushInlineMathToSyncCode(vditor[vditor.currentMode].element);
-    flushFrontMatterYamlToSyncCode(vditor);
     const editor = getModeEditor(vditor);
     if (!editor) {
         return "";

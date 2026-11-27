@@ -29,8 +29,10 @@ const decodeMdSourceAttr = (raw: string | null): string => {
     return raw.replaceAll(MD_SOURCE_ESC_NEWLINE, "\n");
 };
 
-type HtmlEditTarget = {
+export type HtmlEditTarget = {
     anchorElement: HTMLElement;
+    /** the source's language in the editor; HTML unless said (the front matter: YAML) */
+    language?: string;
     focusElement: HTMLElement;
     getSource: () => string;
     applySource: (source: string) => HTMLElement | null;
@@ -386,6 +388,7 @@ const scheduleFocusHtmlEditorAtStart = (view: EditorView) => {
 const mountHtmlEditorCodeMirror = (
     host: HTMLElement,
     initialSource: string,
+    language: string,
     onSave: () => void,
     onCancel: () => void,
 ) => {
@@ -426,7 +429,7 @@ const mountHtmlEditorCodeMirror = (
         ],
     });
     activeHtmlEditorPopover = { view, languageCompartment, wrapCompartment, lineWrapEnabled: false };
-    loadCodeMirrorHighlightLanguage("html").then((lang) => {
+    loadCodeMirrorHighlightLanguage(language).then((lang) => {
         if (!lang || activeHtmlEditorPopover?.view !== view) {
             scheduleFocusHtmlEditorAtStart(view);
             return;
@@ -541,7 +544,7 @@ export const showHtmlEditorPopover = (vditor: IVditor, target: HtmlEditTarget) =
     panel.appendChild(cmHost);
     panel.appendChild(actions);
     popover.appendChild(panel);
-    const view = mountHtmlEditorCodeMirror(cmHost, initialSource, save, cancel);
+    const view = mountHtmlEditorCodeMirror(cmHost, initialSource, target.language ?? "html", save, cancel);
     // lines wrap every time the editor opens; the button unwraps them for this edit only, not remembered
     applyHtmlEditorLineWrap(wrapButton, true);
     scheduleHtmlEditorPopoverPosition(vditor, target.anchorElement);

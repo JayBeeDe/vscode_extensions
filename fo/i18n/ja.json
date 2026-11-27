@@ -348,6 +348,7 @@
     "languageSearch": "言語を検索",
     "toggleLineWrap": "行の折り返しの切り替え",
     "htmlReadOnly": "HTML（ここでは読み取り専用）: {key}+クリックで編集",
+    "frontMatterReadOnly": "フロントマター（ここでは読み取り専用）: {key}+クリックで編集",
     "linkTooltip": "ツールチップ（任意）",
     "linkHoverEdit": "{tooltip}、<{key}+クリック>で編集",
     "linkHoverOpenEdit": "{url} を新しいタブで開く、<{key}+クリック>でリンクを編集",

@@ -38,6 +38,7 @@ import { removeHeading } from "./setHeading";
 import { focusWysiwygCodeBlock, showCode } from "./showCode";
 import { enterInlineMathEdit, skipZwspAfterInlineMath } from "../math/inlineMathCodeMirror";
 import { handleHtmlEditorAltEnter } from "../htmlInline/htmlInlineEditor";
+import { handleFrontMatterAltEnter } from "../codeBlock/frontMatterEditor";
 
 /** A paragraph's text, not a block of its own (code, math, HTML, table...) the caret can't go into */
 const isTextBlock = (element: Element | null): element is HTMLElement =>
@@ -275,7 +276,7 @@ export const processKeydown = (vditor: IVditor, event: KeyboardEvent) => {
 
     // alt+enter
     if (event.altKey && event.key === "Enter" && !isCtrl(event) && !event.shiftKey) {
-        if (handleHtmlEditorAltEnter(vditor, range)) {
+        if (handleHtmlEditorAltEnter(vditor, range) || handleFrontMatterAltEnter(vditor, range)) {
             event.preventDefault();
             return true;
         }

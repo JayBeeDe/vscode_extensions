@@ -111,8 +111,7 @@ class WYSIWYG {
         return this.popover.classList.contains("vditor-panel--link")
             || this.popover.classList.contains("vditor-panel--link-ref")
             || this.popover.classList.contains("vditor-panel--image")
-            || this.popover.classList.contains("vditor-panel--html-inline")
-            || this.popover.classList.contains("vditor-panel--front-matter");
+            || this.popover.classList.contains("vditor-panel--html-inline");
     }
 
     private copy(event: ClipboardEvent, vditor: IVditor) {
@@ -370,12 +369,18 @@ class WYSIWYG {
             }
         });
 
-        // rendered HTML is read-only here: its tooltip says so, and how to edit it
+        // rendered HTML and the front matter's panel are read-only here: their tooltip says so, and
+        // how to edit them
         this.element.addEventListener("mouseover", (event: MouseEvent & { target: HTMLElement }) => {
             const html = event.target.closest?.(
                 "[data-type='html-block'][contenteditable='false'], [data-type='html-inline'][contenteditable='false']");
+            const key = isMacPlatform() ? "⌥" : "Alt";
             if (html && !html.hasAttribute("title")) {
-                html.setAttribute("title", window.VditorI18n.htmlReadOnly.replace("{key}", isMacPlatform() ? "⌥" : "Alt"));
+                html.setAttribute("title", window.VditorI18n.htmlReadOnly.replace("{key}", key));
+            }
+            const panel = event.target.closest?.("[data-type='yaml-front-matter'] .vditor-properties");
+            if (panel && !panel.hasAttribute("title")) {
+                panel.setAttribute("title", window.VditorI18n.frontMatterReadOnly.replace("{key}", key));
             }
         });
 

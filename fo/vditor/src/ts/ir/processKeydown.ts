@@ -32,6 +32,7 @@ import {getEditorRange, getSelectPosition, setSelectionFocus} from "../util/sele
 import {keydownToc} from "../util/toc";
 import {expandMarkerWithMathSync} from "./expandMarkerSync";
 import {handleHtmlEditorAltEnter} from "../htmlInline/htmlInlineEditor";
+import { handleFrontMatterAltEnter } from "../codeBlock/frontMatterEditor";
 import {handleLinkPopoverAltEnter} from "../wysiwyg/highlightToolbarWYSIWYG";
 import {processAfterRender} from "./process";
 import {skipZwspAfterInlineMath} from "../math/inlineMathCodeMirror";
@@ -172,7 +173,7 @@ export const processKeydown = (vditor: IVditor, event: KeyboardEvent) => {
 
     // alt+enter: open the html / link / image edit popup
     if (event.altKey && event.key === "Enter" && !isCtrl(event) && !event.shiftKey) {
-        if (handleHtmlEditorAltEnter(vditor, range)) {
+        if (handleHtmlEditorAltEnter(vditor, range) || handleFrontMatterAltEnter(vditor, range)) {
             event.preventDefault();
             return true;
         }

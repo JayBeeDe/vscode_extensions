@@ -33,7 +33,10 @@ export const clearActiveHeadingMarker = (vditor: IVditor) => {
     }
 };
 
-/** The HTML block whose editor is open, its </> marker shown meanwhile (the editor takes the focus) */
+/**
+ * The HTML block (or the front matter) whose editor is open, its </> (---) marker shown meanwhile
+ * (the editor takes the focus)
+ */
 const EDITING_CLASS = "vditor-html-block--editing";
 
 export const markEditedHtmlBlock = (vditor: IVditor, block: HTMLElement | null) => {
@@ -43,7 +46,8 @@ export const markEditedHtmlBlock = (vditor: IVditor, block: HTMLElement | null) 
     for (const item of vditor[vditor.currentMode].element.querySelectorAll(`.${EDITING_CLASS}`)) {
         item.classList.remove(EDITING_CLASS);
     }
-    if (block?.getAttribute("data-type") === "html-block") {
+    const type = block?.getAttribute("data-type");
+    if (type === "html-block" || type === "yaml-front-matter") {
         block.classList.add(EDITING_CLASS);
     }
 };
