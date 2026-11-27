@@ -75,10 +75,12 @@ They are published to the VS Code Marketplace by the GitHub Actions workflow in 
 - A user-facing string of `fo` goes in all 8 `fo/i18n/<language>.json`; `fo/vditor/src/js/i18n/` is generated from them at build time (git-ignored): never edit it
 - Check a change in a real browser before reporting it done: for `fo`'s Markdown editor, a page loading `fo/resource/markdown/dist/` driven by `puppeteer-core` with the installed Chromium (`/usr/bin/chromium-browser`). That Chromium is a snap: it cannot read `/tmp` nor hidden folders, so the test page goes in a temporary folder inside the project, removed afterwards
 - Say what was tested and how, and what was not (e.g. "not tried in VS Code itself")
+- Screenshots: when a change alters anything visible in a screenshot shown in an extension's `README.md` (`fo/images/screenshot-*.png`, `cacdhc/images/screenshots.png`, `gvo/images/screenshots.png`), every affected screenshot is updated too, each one taken again the way it was made (for `fo`, both the light and the dark high contrast one, from the same sample file, e.g. `fo/test/markdown/Showcase.md` for the Markdown editor). A screenshot that cannot be taken again faithfully (VS Code itself, a theme, a composite such as `cacdhc/images/screenshots.kra`) is listed in the results message as out of date, for the user to update
 
 ## Success Criteria
 
 - The build passes, the lint and (for `fo`) the i18n check report no error
 - The change was checked working, in a browser or in the dev window (`npm run desktop`)
 - A user-visible change (setting, behavior, internet access) is reflected in the extension's `README.md`
+- The screenshots showing what changed are updated, or listed as out of date
 - The results message ends with the commit command(s), following the rules above
