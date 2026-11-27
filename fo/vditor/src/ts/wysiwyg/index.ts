@@ -57,7 +57,7 @@ import { focusWysiwygCodeBlock, showCode } from "./showCode";
 import { getMarkdown } from "../markdown/getMarkdown";
 import { fireContentInput } from "../util/saveToolbarState";
 import { linkClickEvent } from "../util/linkClick";
-import { linkHoverTooltipEvent } from "../util/linkHoverTooltip";
+import { EDITOR_TOOLTIP_ATTRIBUTE, linkHoverTooltipEvent } from "../util/linkHoverTooltip";
 import { initTableHandle } from "./tableHandle";
 import { expandMarkerWithMathSync } from "../ir/expandMarkerSync";
 import { handleHtmlEditorClick, isHtmlContentClick } from "../htmlInline/htmlInlineEditor";
@@ -374,14 +374,10 @@ class WYSIWYG {
         // how to edit them
         this.element.addEventListener("mouseover", (event: MouseEvent & { target: HTMLElement }) => {
             // a read-only page (a folder's listing) says so everywhere, but where something has a
-            // tooltip of its own: a link (its own box, util/linkHoverTooltip.ts), a titled image…
+            // tooltip of its own (a link, a titled image…): a tooltip the browser never shows, the
+            // nearest one showing in the editor's tooltip box (util/linkHoverTooltip.ts)
             if (isReadOnly(vditor)) {
-                const own = event.target.closest?.("a, [title]");
-                if (own && own !== this.element && this.element.contains(own)) {
-                    this.element.removeAttribute("title");
-                } else {
-                    this.element.setAttribute("title", window.VditorI18n.readOnlyPage);
-                }
+                this.element.setAttribute(EDITOR_TOOLTIP_ATTRIBUTE, window.VditorI18n.readOnlyPage);
                 return;
             }
             const html = event.target.closest?.(

@@ -96,11 +96,24 @@ const tooltipText = (vditor: IVditor, url: string, title: string) => {
 };
 
 /**
- * A tooltip on the markdown links, saying what a click does. It is a box of its own: the link's
- * title attribute is its tooltip in the markdown, so it is never changed for this. In WYSIWYG it
- * is only taken off while the pointer is on the link, the browser showing it too otherwise, and
- * put back before anything else happens (a key, a click, the pointer leaving), so that the
- * markdown never lacks it.
+ * A tooltip of the editor's own that the browser never shows (a title attribute would be shown by
+ * the browser too): the read-only page's. Only the box shows it, the nearest tooltip winning.
+ */
+export const EDITOR_TOOLTIP_ATTRIBUTE = "data-vditor-tooltip";
+
+/** Taller than this, an element's tooltip box shows by the pointer rather than under it. */
+const POINTER_PLACED_MIN_HEIGHT = 48;
+
+/**
+ * The tooltips of the page, all in one box of their own, in the editor's style rather than the
+ * browser's. A markdown link's says what a click does. Any other element of the page with a title
+ * attribute (an image's own tooltip, rendered HTML's, the front matter's, a diagram's, a read-only
+ * page's: wysiwyg/index.ts) shows that title.
+ *
+ * A link's or an image's title attribute is its tooltip in the markdown, so it is never changed
+ * for this: in WYSIWYG it is only taken off while the pointer is on it, the browser showing it too
+ * otherwise, and put back before anything else happens (a key, a click, the pointer leaving), so
+ * that the markdown never lacks it.
  */
 export const linkHoverTooltipEvent = (vditor: IVditor, editorElement: HTMLElement) => {
     let timer = 0;
@@ -121,41 +134,93 @@ export const linkHoverTooltipEvent = (vditor: IVditor, editorElement: HTMLElemen
         hiddenTitle = null;
     };
 
-    const show = (link: HTMLElement, text: string) => {
+    /** The nearest element of the page with a tooltip; an empty title means none, as in a browser. */
+    const resolveTitled = (target: EventTarget | null) => {
+        if (!(target instanceof Element)) {
+            return null;
+        }
+        const titled = target.closest(`[title], [${EDITOR_TOOLTIP_ATTRIBUTE}]`) as HTMLElement | null;
+        if (!titled || !(titled === editorElement || editorElement.contains(titled))) {
+            return null;
+        }
+        return tooltipOf(titled) ? titled : null;
+    };
+
+    const tooltipOf = (element: HTMLElement) => element.hasAttribute("title")
+        ? element.getAttribute("title")
+        : element.getAttribute(EDITOR_TOOLTIP_ATTRIBUTE);
+
+    /** Its title taken off while the box shows (the browser would show it too) */
+    const holdTitle = (element: HTMLElement) => {
+        if (element.hasAttribute("title")) {
+            hiddenTitle = element.getAttribute("title");
+            element.removeAttribute("title");
+        }
+    };
+
+    const show = (element: HTMLElement, text: string, pointerX: number, pointerY: number) => {
         box = document.createElement("div");
         box.className = "vditor-link-hover";
         box.textContent = text;
         vditor.element.appendChild(box);
-        const rect = link.getBoundingClientRect();
+        const rect = element.getBoundingClientRect();
         const width = box.offsetWidth;
         const height = box.offsetHeight;
-        const left = Math.max(8, Math.min(rect.left, window.innerWidth - width - 8));
-        const below = rect.bottom + 6;
+        // under a link or a small element; by the pointer on a big one (an HTML block, the page)
+        const byPointer = rect.height > POINTER_PLACED_MIN_HEIGHT;
+        const anchorLeft = byPointer ? pointerX : rect.left;
+        const anchorTop = byPointer ? pointerY - 2 : rect.top;
+        const anchorBottom = byPointer ? pointerY + 18 : rect.bottom;
+        const left = Math.max(8, Math.min(anchorLeft, window.innerWidth - width - 8));
+        const below = anchorBottom + 6;
         box.style.left = `${left}px`;
-        box.style.top = `${below + height > window.innerHeight - 8 ? rect.top - height - 6 : below}px`;
+        box.style.top = `${below + height > window.innerHeight - 8 ? anchorTop - height - 6 : below}px`;
     };
 
-    editorElement.addEventListener("mouseover", (event) => {
-        showIrImageTooltip(vditor, event.target);
-        showDrawnBlockTooltip(vditor, event.target);
-        const link = resolveLink(vditor, event.target);
+    const update = (target: EventTarget | null, buttons: number, pointerX: number, pointerY: number) => {
+        const link = resolveLink(vditor, target);
         if (link?.element === current) {
             return;
         }
+        if (!link && current && target instanceof Node && current.contains(target)) {
+            const nearer = resolveTitled(target);
+            if (!nearer || nearer === current || !current.contains(nearer)) {
+                // still on it: its title given back meanwhile (wysiwyg/index.ts) is taken off again
+                holdTitle(current);
+                return;
+            }
+        }
+        const element = link?.element ?? resolveTitled(target);
         hide();
         // nothing while a mouse button is down: a drag selecting text
-        if (!link || (event as MouseEvent).buttons !== 0) {
+        if (!element || buttons !== 0) {
             return;
         }
-        current = link.element;
-        if (vditor.currentMode === "wysiwyg" && link.element.hasAttribute("title")) {
-            hiddenTitle = link.element.getAttribute("title");
-            link.element.removeAttribute("title");
+        current = element;
+        let text: string;
+        if (link) {
+            if (vditor.currentMode === "wysiwyg") {
+                holdTitle(element);
+            }
+            text = tooltipText(vditor, link.url, link.title);
+        } else {
+            text = tooltipOf(element) ?? "";
+            holdTitle(element);
         }
-        const text = tooltipText(vditor, link.url, link.title);
-        timer = window.setTimeout(() => show(link.element, text), SHOW_DELAY);
+        timer = window.setTimeout(() => show(element, text, pointerX, pointerY), SHOW_DELAY);
+    };
+
+    editorElement.addEventListener("mouseover", (event: MouseEvent) => {
+        showIrImageTooltip(vditor, event.target);
+        showDrawnBlockTooltip(vditor, event.target);
+        const {target, buttons, clientX, clientY} = event;
+        // once the editor's other listeners have set the titles they set on hover (wysiwyg/index.ts)
+        window.setTimeout(() => update(target, buttons, clientX, clientY), 0);
     });
-    editorElement.addEventListener("mouseleave", hide);
+    editorElement.addEventListener("mouseleave", () => {
+        // (the update of the last mouseover, if any, comes first)
+        window.setTimeout(hide, 0);
+    });
     editorElement.addEventListener("mousedown", hide, true);
     editorElement.addEventListener("keydown", hide, true);
     editorElement.addEventListener("blur", hide);
