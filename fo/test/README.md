@@ -69,9 +69,10 @@ with the libraries the extension already uses (ExcelJS, SheetJS, hyparquet-write
 
 ## eBook
 
-| File          | What to check |
-| ------------- | ------------- |
-| `Sample.epub` | A cover, a table of contents with a nested section, a footnote, a link to another chapter, an image, a table, Unicode, a long chapter for pagination, the font, size and line height settings. |
+| File                       | What to check |
+| -------------------------- | ------------- |
+| `Sample.epub`              | A cover, a table of contents with a nested section, a footnote, a link to another chapter, an image, a table, Unicode, a long chapter for pagination, the font, size and line height settings. |
+| `Alice-in-Wonderland.epub` | A real book, for the README screenshots: Lewis Carroll's *Alice's Adventures in Wonderland*, with its colored cover, in the public domain, from [Project Gutenberg](https://www.gutenberg.org/ebooks/11). Not generated; changed by hand so that its first two pages show the cover next to text: the cover moved to the start of the first text page (Project Gutenberg's header), the separate cover page out of the reading order. In the dark theme, that header's title, author and dates are white (the book's CSS resets their color to black). |
 
 ## xMind
 
