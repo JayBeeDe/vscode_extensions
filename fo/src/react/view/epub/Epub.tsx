@@ -548,16 +548,29 @@ export default function Epub() {
         return () => window.removeEventListener('keydown', onKeyDown);
     }, [flashNav, goNext, goPrev, openSearch]);
 
+    // the pages laid out again whenever the reading area changes size, not only with the window:
+    // the bars around it can appear or change while the book loads, and pages laid out for the
+    // old size are shifted and cut off at the edge
     useEffect(() => {
-        const onResize = () => {
-            const host = readerRef.current;
-            const rendition = renditionRef.current;
-            if (host && rendition) {
-                rendition.resize(host.clientWidth, host.clientHeight);
-            }
+        const host = readerRef.current;
+        if (!host) return;
+        let frame = 0;
+        let applied = '';
+        const observer = new ResizeObserver(() => {
+            cancelAnimationFrame(frame);
+            frame = requestAnimationFrame(() => {
+                const rendition = renditionRef.current;
+                const { clientWidth: width, clientHeight: height } = host;
+                if (!rendition || !width || !height || `${width}x${height}` === applied) return;
+                applied = `${width}x${height}`;
+                rendition.resize(width, height);
+            });
+        });
+        observer.observe(host);
+        return () => {
+            cancelAnimationFrame(frame);
+            observer.disconnect();
         };
-        window.addEventListener('resize', onResize);
-        return () => window.removeEventListener('resize', onResize);
     }, []);
 
     // the search tab's tooltip names Ctrl+F, which opens it
