@@ -61,7 +61,7 @@
     max-height: var(--cm-block-max-height, none);
     scrollbar-gutter: stable;
     font-family: inherit;
-    line-height: calc(var(--vscode-editor-font-size, 13px) * 1.35);
+    line-height: calc(var(--code-font-size) * 1.5);
     .vditor-cm-scrollbar(var(--cm-bg-color));
   }
 
@@ -279,8 +279,8 @@
   justify-content: space-between;
   gap: 8px;
   width: 100%;
-  min-height: 32px;
-  padding: 6px 16px;
+  min-height: 26px;
+  padding: 4px 12px;
   box-sizing: border-box;
   background-color: var(--cm-bg-color);
   border-radius: 6px 6px 0 0;
@@ -301,8 +301,8 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  height: 28px;
-  padding: 0 10px;
+  height: 22px;
+  padding: 0 6px;
   border: none;
   border-radius: var(--vditor-popover-radius, 6px);
   background: var(--cm-lang-trigger-bg, var(--second-bg-color, color-mix(in srgb, var(--cm-fg-color, var(--toolbar-icon-color)) 18%, var(--bg-color, var(--panel-background-color)))));
@@ -327,7 +327,7 @@
   color: var(--cm-delete-color, var(--error-color));
 
   .codicon {
-    font-size: 16px;
+    font-size: 14px;
     line-height: 1;
   }
 }
@@ -337,8 +337,8 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  height: 28px;
-  padding: 0 10px;
+  height: 22px;
+  padding: 0 6px;
   border: none;
   border-radius: var(--vditor-popover-radius, 6px);
   background: var(--cm-lang-trigger-bg, var(--second-bg-color, color-mix(in srgb, var(--cm-fg-color, var(--toolbar-icon-color)) 18%, var(--bg-color, var(--panel-background-color)))));
@@ -365,7 +365,7 @@
   color: inherit;
 
   .codicon {
-    font-size: 16px;
+    font-size: 14px;
     line-height: 1;
   }
 }
@@ -375,8 +375,8 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  height: 28px;
-  padding: 0 10px;
+  height: 22px;
+  padding: 0 6px;
   border: none;
   border-radius: var(--vditor-popover-radius, 6px);
   background: var(--cm-lang-trigger-bg, var(--second-bg-color, color-mix(in srgb, var(--cm-fg-color, var(--toolbar-icon-color)) 18%, var(--bg-color, var(--panel-background-color)))));
@@ -410,15 +410,16 @@
 .vditor-cm-chrome__lang-trigger {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  height: 28px;
-  padding: 15px 12px;
+  gap: 4px;
+  height: 20px;
+  padding: 0 6px;
   border: none;
-  border-radius: var(--vditor-popover-radius, 6px);
-  background: var(--cm-lang-trigger-bg, var(--second-bg-color, color-mix(in srgb, var(--cm-fg-color, var(--toolbar-icon-color)) 18%, var(--bg-color, var(--panel-background-color)))));
-  color: var(--cm-fg-color, var(--toolbar-icon-color));
-  font-size: 12px;
-  font-weight: 500;
+  border-radius: 4px;
+  // small and discreet: the code is what is read, not its language
+  background: transparent;
+  color: color-mix(in srgb, var(--cm-fg-color, var(--toolbar-icon-color)) 60%, transparent);
+  font-size: 11px;
+  font-weight: normal;
   line-height: 1;
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease;
@@ -756,13 +757,16 @@
   }
 }
 
-.vditor-cm-chrome__toolbar button,
+.vditor-cm-chrome__toolbar button {
+  font-family: var(--code-font-family) !important;
+}
+
 .vditor-cm-host .cm-editor,
 .vditor-cm-host .cm-editor .cm-scroller,
 .vditor-cm-host .cm-editor .cm-content,
 .vditor-cm-host .cm-editor .cm-line {
   font-family: var(--code-font-family) !important;
-  font-size: var(--editor-font-size, var(--vscode-editor-font-size, 13px));
+  font-size: var(--code-font-size);
   font-weight: var(--vscode-editor-font-weight, normal);
   font-feature-settings: "liga" 0, "calt" 0;
   font-variant-ligatures: none;
@@ -850,8 +854,8 @@
   .cm-scroller {
     overflow: auto;
     font-family: var(--code-font-family) !important;
-    font-size: var(--editor-font-size, var(--vscode-editor-font-size, 13px));
-    line-height: calc(var(--editor-font-size, var(--vscode-editor-font-size, 13px)) * 1.5);
+    font-size: var(--code-font-size);
+    line-height: calc(var(--code-font-size) * 1.5);
     .vditor-cm-scrollbar(var(--cm-bg-color, var(--code-bg-color, var(--second-bg-color))));
   }
 
@@ -984,7 +988,7 @@
   color: var(--cm-fg-color, var(--toolbar-icon-color));
 
   .codicon {
-    font-size: 16px;
+    font-size: 14px;
     line-height: 1;
   }
 }

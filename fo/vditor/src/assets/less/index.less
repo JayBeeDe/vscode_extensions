@@ -82,6 +82,8 @@
 .vditor {
   --ui-font-size: 13px;
   --editor-font-size: var(--vscode-editor-font-size, 16px);
+  // a monospace font is wider than the text's at the same size: a smaller one looks the same size
+  --code-font-size: calc(var(--editor-font-size) * 0.9);
   --editor-line-height: 1.7;
   --editor-font-family: inherit;
   --code-font-family: var(--editor-font-family, var(--vscode-editor-font-family, @font-family-code));

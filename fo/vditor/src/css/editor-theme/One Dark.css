@@ -9,7 +9,7 @@ html[data-editor-theme="One Dark"],
     --second-color: #5c6370;
 
     /* Border & Divider */
-    --hr-bg: #3f4451;
+    --hr-bg: var(--list-hover-color);
     --border-color: #181a1f;
 
     /* Link & State */

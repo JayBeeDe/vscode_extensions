@@ -139,7 +139,7 @@ Notes:
 
 This extension replaces the default Markdown editor with a WYSIWYG editor.
 
-The links, the toolbar, the menus, the tables, the outline sidebar and the HTML editor take the accent color of your VS Code theme.
+The links, the toolbar, the menus, the tables, the horizontal rules, the outline sidebar and the HTML editor take the accent color of your VS Code theme.
 
 The editor's keyboard shortcuts are listed in [Keyboard shortcuts](#keyboard-shortcuts).
 
