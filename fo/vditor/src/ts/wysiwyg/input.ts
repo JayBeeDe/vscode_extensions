@@ -299,7 +299,7 @@ export const input = (vditor: IVditor, range: Range, event?: InputEvent) => {
         // Set the caret
         setRangeByWbr(vditor.wysiwyg.element, range);
         markPostProcessStep("restore range by wbr");
-        expandMarker(getEditorRange(vditor), vditor.wysiwyg.element);
+        expandMarker(getEditorRange(vditor), vditor.wysiwyg.element, true);
         markPostProcessStep("expand marker");
         renderCodeBlocksInScope(vditor, remountScope);
         markPostProcessStep("render code blocks in scope");

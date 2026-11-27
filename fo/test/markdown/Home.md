@@ -42,6 +42,11 @@ Markdown links and images with a tooltip of their own, and the same without one,
 ![The foss-office logo](../../images/logo.png "The foss-office logo, with a tooltip")
 ![The Markdown icon](../../images/markdown.png)
 
+## Emoji Shortcodes
+
+A shortcode stays as written, shown and saved as text, as in Obsidian: :rocket: :smile:. An emoji
+typed as a character stays one: 🎉.
+
 ## Tags
 
 Tags of this vault: #obsidian/test #status/active

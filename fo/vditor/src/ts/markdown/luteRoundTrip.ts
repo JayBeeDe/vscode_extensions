@@ -18,6 +18,11 @@ import {defaultCallout, mapTextLines} from "./lintFormat";
  *   nor the title when both are the type's own, as for an untitled callout (`> [!NOTE]`), which
  *   looks the same. The callouts whose title is written are marked as read, and written without
  *   their type's icon, which makes Lute write their title (an icon of their own is kept).
+ * - A foldable callout's marker (`> [!NOTE]- Note`, `+`): Lute reads it as the title's start,
+ *   shown, and writes `> [!NOTE] - Note`. It is taken off the header before Lute reads it, kept
+ *   on the callout, and written back after `]`.
+ * - A callout's icon written as a shortcode (`> [!TIP] :rocket: Launch`): Lute writes the emoji.
+ *   The shortcode is kept on the callout and written back in the emoji's place.
  */
 
 const LIST_ITEM = String.raw`^(\s*(?:>\s?)*\s*(?:[-*+]|\d+[.)])\s+\S.*?\s)`;
@@ -107,19 +112,56 @@ export const keepBlockIdInCopy = (root: Element, range: Range) => {
 
 /** A callout written with a title (`> [!NOTE] Note`): Lute's DOM doesn't say it, this does */
 const TITLED = "data-callout-titled";
-const CALLOUT_HEADER_RE = /^\s*(?:>\s?)+\[![^\]\s]+\][+-]?(.*)$/;
+/** A foldable callout's marker, `-` or `+` */
+const FOLD = "data-callout-fold";
+/** A callout's icon written as a shortcode, `:rocket:` */
+const ICON = "data-callout-icon-shortcode";
+const ICON_SHORTCODE_RE = /^\s*(:[\w+-]+:)(?=\s|$)/;
+const CALLOUT_HEADER_RE = /^(\s*(?:>\s?)+\[![^\]\s]+\])([+-]?)(.*)$/;
 
-/** Per callout of `markdown`, in order: whether its header has a title (or an icon) written. */
-const calloutTitlesWritten = (markdown: string) => {
-    const written: boolean[] = [];
+interface CalloutHeader {
+    /** a title (or an icon) written after `[!TYPE]` */
+    titled: boolean;
+    /** the fold marker, "" for none */
+    fold: string;
+    /** the icon's shortcode, "" for none */
+    icon: string;
+}
+
+/** Each callout header of `markdown`, in order */
+const calloutHeaders = (markdown: string) => {
+    const headers: CalloutHeader[] = [];
     mapTextLines(markdown, (text) => {
         const match = CALLOUT_HEADER_RE.exec(text);
         if (match) {
-            written.push(!!match[1].trim());
+            headers.push({titled: !!match[3].trim(), fold: match[2], icon: ICON_SHORTCODE_RE.exec(match[3])?.[1] ?? ""});
         }
         return text;
     });
-    return written;
+    return headers;
+};
+
+/** The headers without their fold marker, which Lute would read as the title's start */
+const withoutFoldMarkers = (markdown: string) => mapTextLines(markdown, (text) => text.replace(CALLOUT_HEADER_RE,
+    (_match, start: string, _fold: string, rest: string) => start + rest));
+
+/**
+ * The headers of Lute's Markdown given back the fold markers and icon shortcodes of `headers` (in
+ * order, when the counts match): the shortcode in the place of the emoji Lute writes.
+ */
+const withCalloutMarks = (markdown: string, headers: CalloutHeader[]) => {
+    if (!headers.some((header) => header.fold || header.icon) || calloutHeaders(markdown).length !== headers.length) {
+        return markdown;
+    }
+    let index = 0;
+    return mapTextLines(markdown, (text) => text.replace(CALLOUT_HEADER_RE,
+        (_match, start: string, fold: string, rest: string) => {
+            const header = headers[index];
+            index += 1;
+            const icon = header.icon && !rest.trimStart().startsWith(header.icon)
+                ? rest.replace(/^(\s+)\S+/, `$1${header.icon}`) : rest;
+            return start + (fold || header.fold) + icon;
+        }));
 };
 
 const parse = (html: string) => {
@@ -130,19 +172,33 @@ const parse = (html: string) => {
 
 const callouts = (root: ParentNode) => Array.from(root.querySelectorAll("[data-type='callout']"));
 
-/** The callouts of `html` marked titled as `written` says, in order (left as they are when counts differ) */
-const markTitledCallouts = (html: string, written: boolean[]) => {
-    if (!written.some(Boolean)) {
+/** The headers the callouts of the editor's DOM keep (its HTML) */
+const headersOf = (html: string): CalloutHeader[] => (![TITLED, FOLD, ICON].some((mark) => html.includes(mark)) ? []
+    : callouts(parse(html).content).map((callout) => ({
+        titled: callout.hasAttribute(TITLED),
+        fold: callout.getAttribute(FOLD) || "",
+        icon: callout.getAttribute(ICON) || "",
+    })));
+
+/** The callouts of `html` given what `headers` says of them, in order (left as they are when counts differ) */
+const markCallouts = (html: string, headers: CalloutHeader[]) => {
+    if (!headers.some((header) => header.titled || header.fold || header.icon)) {
         return html;
     }
     const template = parse(html);
     const found = callouts(template.content);
-    if (found.length !== written.length) {
+    if (found.length !== headers.length) {
         return html;
     }
     found.forEach((callout, index) => {
-        if (written[index]) {
+        if (headers[index].titled) {
             callout.setAttribute(TITLED, "1");
+        }
+        if (headers[index].fold) {
+            callout.setAttribute(FOLD, headers[index].fold);
+        }
+        if (headers[index].icon) {
+            callout.setAttribute(ICON, headers[index].icon);
         }
     });
     return template.innerHTML;
@@ -188,14 +244,13 @@ export const keepWhatLuteDrops = (lute: Lute) => {
     const titles = new Map<string, string>();
     const fromMarkdown = (render: (markdown: string) => string) => (markdown: string) => {
         rememberTitles(markdown, titles);
-        return markTitledCallouts(render(escapeListItemIds(markdown)), calloutTitlesWritten(markdown));
+        return markCallouts(render(withoutFoldMarkers(escapeListItemIds(markdown))), calloutHeaders(markdown));
     };
     const toMarkdown = (render: (html: string) => string) => (html: string) =>
-        writeTitles(unescapeListItemIds(render(unIconTitledCallouts(html, lute))), titles);
-    // a block re-read as it is typed: its callouts keep their mark, and their title
+        withCalloutMarks(writeTitles(unescapeListItemIds(render(unIconTitledCallouts(html, lute))), titles), headersOf(html));
+    // a block re-read as it is typed: its callouts keep their marks (title, fold marker, icon)
     const fromDOM = (render: (html: string) => string) => (html: string) =>
-        markTitledCallouts(render(unIconTitledCallouts(html, lute)),
-            html.includes(TITLED) ? callouts(parse(html).content).map((callout) => callout.hasAttribute(TITLED)) : []);
+        markCallouts(render(unIconTitledCallouts(html, lute)), headersOf(html));
     // IR re-reads the editor's DOM through its IR writer, which drops the block IDs: given back first
     const fromIrDOM = (render: (html: string) => string) => {
         const spin = fromDOM(render);

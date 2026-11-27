@@ -473,6 +473,93 @@ export const isRangeInWikilinkEditingArea = (wikilink: HTMLElement, range: Range
     return isRangeInWikilinkSource(wikilink, range) || isRangeInWikilinkMarker(wikilink, range);
 };
 
+/**
+ * Chrome types a character at a boundary of a wikilink into the text before it: at its very end
+ * (after `]]`, where End puts the caret on a line ending with one) or start (before `[[`), into
+ * the wikilink's marker; at its name's start, into the `[[` marker. A marker is rebuilt when the
+ * line is re-read, which drops the character and loses the caret (the next characters typed at
+ * the line's start). The caret is moved first: outside the wikilink at its very end or start,
+ * into the name's text after `[[` (after a zero-width space, which Lute drops) or before `]]`.
+ */
+export const keepTypingOutOfWikilinkMarkers = (event: KeyboardEvent) => {
+    if (event.isComposing || event.ctrlKey || event.metaKey || event.altKey || event.key.length !== 1) {
+        return;
+    }
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0 || !selection.getRangeAt(0).collapsed) {
+        return;
+    }
+    const range = selection.getRangeAt(0);
+    const node = range.startContainer.nodeType === Node.ELEMENT_NODE
+        ? range.startContainer as Element : range.startContainer.parentElement;
+    const wikilink = node?.closest("[data-type='wikilink'], [data-type='wikilink-embed']") as HTMLElement | null;
+    if (!wikilink) {
+        return;
+    }
+    // the text before or after the caret in the wikilink, its alias display (hidden while it is
+    // edited, before the name) left out
+    const display = wikilink.querySelector(".vditor-wikilink__display");
+    const textOf = (after: boolean) => {
+        const part = document.createRange();
+        part.selectNodeContents(wikilink);
+        if (after) {
+            part.setStart(range.startContainer, range.startOffset);
+        } else {
+            part.setEnd(range.startContainer, range.startOffset);
+        }
+        let text = part.toString();
+        if (display && part.intersectsNode(display) && !display.contains(range.startContainer)) {
+            text = text.replace(display.textContent || "", "");
+        }
+        return text.replace(/\u200b/g, "");
+    };
+    const before = textOf(false);
+    const after = textOf(true);
+    const place = (text: Node, offset: number) => {
+        range.setStart(text, offset);
+        range.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(range);
+    };
+    if (!after || !before) {
+        // outside: a text beside the wikilink to type in, a zero-width space when there is none
+        let text = !after ? wikilink.nextSibling : wikilink.previousSibling;
+        if (text?.nodeType !== Node.TEXT_NODE) {
+            text = document.createTextNode(Constants.ZWSP);
+            if (!after) {
+                wikilink.after(text);
+            } else {
+                wikilink.before(text);
+            }
+        }
+        place(text, !after ? (text.textContent.startsWith(Constants.ZWSP) ? 1 : 0) : text.textContent.length);
+        return;
+    }
+    const markers = wikilink.querySelectorAll(":scope > .vditor-ir__marker");
+    const name = getWikilinkSourceElement(wikilink);
+    if (!name || markers.length < 2) {
+        return;
+    }
+    if (before === markers[0].textContent) {
+        // the name's start: after a zero-width space at its start
+        let text = name.firstChild;
+        if (text?.nodeType !== Node.TEXT_NODE) {
+            text = document.createTextNode("");
+            name.prepend(text);
+        }
+        if (!text.textContent.startsWith(Constants.ZWSP)) {
+            text.textContent = Constants.ZWSP + text.textContent;
+        }
+        place(text, 1);
+    } else if (after === markers[markers.length - 1].textContent) {
+        // the name's end
+        const text = name.lastChild;
+        if (text?.nodeType === Node.TEXT_NODE) {
+            place(text, text.textContent.length);
+        }
+    }
+};
+
 export const escapeWikilinkRange = (range: Range, wikilink: HTMLElement) => {
     if (range.startContainer === wikilink) {
         if (range.startOffset > wikilink.childNodes.length / 2) {

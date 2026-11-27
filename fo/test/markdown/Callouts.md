@@ -33,6 +33,29 @@ either.
 > [!TIP] A title of its own
 > The source keeps `> [!TIP] A title of its own`, without the 💡 shown before it.
 
+## Folding and Icons
+
+Saved as written: the fold marker right after `]` (the title shown without it), and an icon
+written as a shortcode (shown as its emoji).
+
+> [!NOTE]- Folded
+> A foldable callout, folded.
+
+<!-- -->
+
+> [!WARNING]+ Open
+> A foldable callout, open.
+
+<!-- -->
+
+> [!TIP] :rocket: Launch
+> An icon of its own, written `:rocket:`.
+
+## Typing After a Wikilink
+
+Click the end of the IMPORTANT callout's line above ("Action items: …"), press End and type: the
+text goes after the wikilink, not to the line's start.
+
 ## Custom Types
 
 > [!question] Frequently asked question

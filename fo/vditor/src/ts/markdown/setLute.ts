@@ -17,6 +17,9 @@ export const setLute = (options: ILuteOptions) => {
     lute.SetLinkBase(options.linkBase);
     lute.SetLinkPrefix(options.linkPrefix);
     lute.SetMark(options.mark);
+    // an emoji shortcode (`:rocket:`) is text, shown and saved as written (as in Obsidian): read as
+    // an emoji, it was saved as one in WYSIWYG mode
+    lute.SetEmoji(false);
     if (options.obsidian) {
         lute.SetObsidian(true);
     } else {

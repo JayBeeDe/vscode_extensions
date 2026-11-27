@@ -147,6 +147,8 @@ A Markdown file is saved following [markdownlint](https://github.com/DavidAnson/
 
 A front matter `title:` with a value is the document's title, as markdownlint reads it: the toolbar's **Heading 1** is grayed out, and on save the `#` heading is removed (with several, every heading goes one level down). An empty `title:` is removed on save. Two things are kept as written even though markdownlint reports them: HTML (MD033), and an Obsidian tag at the start of a line, `#tag` (MD018).
 
+An emoji shortcode such as `:rocket:` is shown and saved as written, as in Obsidian; a callout's icon written as one (`> [!TIP] :rocket: Launch`) shows its emoji. A foldable callout keeps its marker (`> [!NOTE]- Title`).
+
 ### Browsing a folder
 
 Right-click a folder in the Explorer and choose **Browse Folder** to see it in the Markdown editor, as a read-only page: its subfolders, then its files, each a link, followed by the folder's README when it has one: `README.md`, else `README.markdown`, else a `README` without extension, shown as plain text as written. Entries hidden by `files.exclude` are left out. A click opens a file or a subfolder in the page's place, Ctrl+click (⌘+click on macOS) in a new tab. A link to a folder in a Markdown file opens the same page.

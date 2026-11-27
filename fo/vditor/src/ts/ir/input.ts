@@ -236,7 +236,7 @@ export const input = (vditor: IVditor, range: Range, ignoreSpace = false, event?
         }
 
         setRangeByWbr(vditor.ir.element, range);
-        expandMarker(getEditorRange(vditor), vditor.ir.element);
+        expandMarker(getEditorRange(vditor), vditor.ir.element, true);
     });
 
     let remountScope = spinScope;

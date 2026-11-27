@@ -17,7 +17,7 @@ import { insertPastedCode } from "./processCode";
 import { getSelectText } from "./getSelectText";
 import { hasClosestByAttribute, hasClosestByMatchTag } from "./hasClosest";
 import { matchHotKey } from "./hotKey";
-import { getEditorRange } from "./selection";
+import { getEditorRange, keepTypingOutOfWikilinkMarkers } from "./selection";
 import { saveCacheFocus } from "./cacheFocus";
 import { clearActiveHeadingMarker } from "./updateActiveHeadingMarker";
 import { handleAutoSymbolPair } from "./autoSymbol";
@@ -209,6 +209,7 @@ export const hotkeyEvent = (vditor: IVditor, editorElement: HTMLElement) => {
             return;
         }
         if (vditor.currentMode === "wysiwyg" || vditor.currentMode === "ir") {
+            keepTypingOutOfWikilinkMarkers(event);
             handleAutoSymbolPair(event);
         }
         // hint: up/down selection

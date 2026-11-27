@@ -115,7 +115,13 @@ const previousIsNode = (range: Range) => {
     return false;
 };
 
-export const expandMarker = (range: Range, root: HTMLElement) => {
+/**
+ * Expands the inline node the caret is in or next to (its markers shown). Reaching a wikilink or a
+ * tag from beside it puts the caret in its name, to edit it; `afterTyping` (the caret restored
+ * after the text typed beside it is re-read) leaves the caret where the text is typed, so that
+ * the next characters follow the previous ones instead of going into the wikilink's name.
+ */
+export const expandMarker = (range: Range, root: HTMLElement, afterTyping = false) => {
     let collapsedExpandedWikilink: HTMLElement | null = null;
     root.querySelectorAll(".vditor-ir__node--expand").forEach((item) => {
         if ((item as HTMLElement).classList.contains("vditor-code-block--cm")) {
@@ -159,7 +165,9 @@ export const expandMarker = (range: Range, root: HTMLElement) => {
         }
         nextNode.classList.add("vditor-ir__node--expand");
         nextNode.classList.remove("vditor-ir__node--hidden");
-        focusExpandedInlineNode(nextNode, range, false, true);
+        if (!afterTyping) {
+            focusExpandedInlineNode(nextNode, range, false, true);
+        }
         return;
     }
 
@@ -170,7 +178,9 @@ export const expandMarker = (range: Range, root: HTMLElement) => {
         }
         previousNode.classList.add("vditor-ir__node--expand");
         previousNode.classList.remove("vditor-ir__node--hidden");
-        focusExpandedInlineNode(previousNode, range, true, true);
+        if (!afterTyping) {
+            focusExpandedInlineNode(previousNode, range, true, true);
+        }
         return;
     }
 };
