@@ -91,10 +91,7 @@
       "editInVscode": "Редактировать в VS Code",
       "previousPage": "Предыдущая страница",
       "nextPage": "Следующая страница",
-      "save": "Сохранить",
       "saved": "Сохранено",
-      "zoomIn": "Увеличить",
-      "zoomOut": "Уменьшить",
       "readOnlyBadge": "Только чтение",
       "emptyFile": "Файл пуст",
       "noFilePath": "Нет пути к файлу",
@@ -1311,10 +1308,7 @@
       "_if": "Если",
       "and": "И",
       "or": "Или",
-      "concat": "Сцепить",
-      "divide": "Деление",
-      "product": "Произведение",
-      "subtract": "Вычитание"
+      "concat": "Сцепить"
     },
     "validation": {
       "required": "значение обязательно",

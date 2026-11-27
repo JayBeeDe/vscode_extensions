@@ -90,10 +90,7 @@
       "editInVscode": "Modifier dans VS Code",
       "previousPage": "Page précédente",
       "nextPage": "Page suivante",
-      "save": "Enregistrer",
       "saved": "Enregistré",
-      "zoomIn": "Zoom avant",
-      "zoomOut": "Zoom arrière",
       "readOnlyBadge": "Lecture seule",
       "emptyFile": "Le fichier est vide",
       "noFilePath": "Aucun chemin de fichier",
@@ -1221,10 +1218,7 @@
       "_if": "Si",
       "and": "Et",
       "or": "Ou",
-      "concat": "Concaténer",
-      "divide": "Diviser",
-      "product": "Produit",
-      "subtract": "Soustraire"
+      "concat": "Concaténer"
     },
     "validation": {
       "required": "la valeur est obligatoire",

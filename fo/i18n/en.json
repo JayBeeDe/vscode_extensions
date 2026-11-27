@@ -92,10 +92,7 @@
       "editInVscode": "Edit In VS Code",
       "previousPage": "Previous page",
       "nextPage": "Next page",
-      "save": "Save",
       "saved": "Saved successfully",
-      "zoomIn": "Zoom in",
-      "zoomOut": "Zoom out",
       "readOnlyBadge": "Read-only",
       "emptyFile": "Empty file content",
       "noFilePath": "No file path",
@@ -1226,10 +1223,7 @@
       "_if": "If",
       "and": "And",
       "or": "Or",
-      "concat": "Concat",
-      "divide": "Divide",
-      "product": "Product",
-      "subtract": "Subtract"
+      "concat": "Concat"
     },
     "validation": {
       "required": "it must be required",

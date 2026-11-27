@@ -22,7 +22,14 @@ const SAME_IN_EVERY_LANGUAGE = new Set(['Schema', 'foss-office', 'XMind', 'EPUB'
 // Which files use which section, and how they name keys.
 const USAGE = {
     host: { files: ['src'], exclude: ['src/react', 'src/i18n'], calls: [/\bi18n\(\s*['"]([^'"]+)['"]/g] },
-    viewer: { files: ['src/react'], exclude: ['src/react/view/excel/x-spreadsheet'], calls: [/\$t\(\s*['"]([^'"]+)['"]/g] },
+    viewer: {
+        files: ['src/react'],
+        exclude: ['src/react/view/excel/x-spreadsheet'],
+        // $t('…'); a key written alone, given to $t later (the xMind toolbar's "unavailable" reasons)
+        calls: [/\$t\(\s*['"]([^'"]+)['"]/g, /['"](xmind\.unavailable\.\w+)['"]/g],
+        // $t(`xmind.tips.${tipKey}.title`)
+        prefixes: [/\$t\(\s*`([^`$]+)\$\{/g],
+    },
     spreadsheet: {
         files: ['src/react/view/excel'],
         calls: [/(?<![\w$.])tf?\(\s*['"]([^'"]+)['"]/g],

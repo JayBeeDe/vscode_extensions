@@ -88,10 +88,7 @@
       "editInVscode": "在 VS Code 中编辑",
       "previousPage": "上一页",
       "nextPage": "下一页",
-      "save": "保存",
       "saved": "保存成功",
-      "zoomIn": "放大",
-      "zoomOut": "缩小",
       "readOnlyBadge": "只读",
       "emptyFile": "文件内容为空",
       "noFilePath": "没有文件路径",
@@ -1218,10 +1215,7 @@
       "concat": "字符拼接",
       "_if": "条件判断",
       "and": "和",
-      "or": "或",
-      "divide": "除",
-      "product": "乘积",
-      "subtract": "减"
+      "or": "或"
     },
     "validation": {
       "required": "此值必填",

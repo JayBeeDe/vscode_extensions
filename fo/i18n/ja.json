@@ -88,10 +88,7 @@
       "editInVscode": "VS Code で編集",
       "previousPage": "前のページ",
       "nextPage": "次のページ",
-      "save": "保存",
       "saved": "保存しました",
-      "zoomIn": "拡大",
-      "zoomOut": "縮小",
       "readOnlyBadge": "読み取り専用",
       "emptyFile": "ファイルの内容が空です",
       "noFilePath": "ファイル パスがありません",
@@ -1301,10 +1298,7 @@
       "_if": "条件",
       "and": "かつ",
       "or": "または",
-      "concat": "連結",
-      "divide": "除算",
-      "product": "積",
-      "subtract": "減算"
+      "concat": "連結"
     },
     "validation": {
       "required": "値は必須です",
