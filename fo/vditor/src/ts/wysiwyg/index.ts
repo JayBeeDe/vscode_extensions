@@ -1,3 +1,4 @@
+import { keepBlockIdInCopy } from "../markdown/luteRoundTrip";
 import {isReadOnly} from "../util/readOnly";
 import { Constants } from "../constants";
 import { hidePanel } from "../toolbar/setToolbar";
@@ -182,6 +183,7 @@ class WYSIWYG {
         const tempElement = document.createElement("div");
         tempElement.appendChild(range.cloneContents());
         sanitizeCodeBlocksInCopyFragment(tempElement, vditor.wysiwyg.element, range);
+        keepBlockIdInCopy(tempElement, range);
 
         event.clipboardData.setData("text/plain", vditor.lute.VditorDOM2Md(tempElement.innerHTML).trim());
         event.clipboardData.setData("text/html", "");

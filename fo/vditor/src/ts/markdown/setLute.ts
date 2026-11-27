@@ -1,3 +1,4 @@
+import {keepWhatLuteDrops} from "./luteRoundTrip";
 import {keepTableCellSpaces} from "./tableCellSpace";
 
 export const setLute = (options: ILuteOptions) => {
@@ -26,5 +27,5 @@ export const setLute = (options: ILuteOptions) => {
     if (options.lazyLoadImage) {
         lute.SetImageLazyLoading(options.lazyLoadImage);
     }
-    return keepTableCellSpaces(lute);
+    return keepTableCellSpaces(keepWhatLuteDrops(lute));
 };

@@ -1,3 +1,4 @@
+import { keepBlockIdInCopy } from "../markdown/luteRoundTrip";
 import { Constants } from "../constants";
 import { isCtrl, isFirefox } from "../util/compatibility";
 import {
@@ -115,6 +116,7 @@ class IR {
         const tempElement = document.createElement("div");
         tempElement.appendChild(range.cloneContents());
         sanitizeCodeBlocksInCopyFragment(tempElement, vditor.ir.element, range);
+        keepBlockIdInCopy(tempElement, range);
 
         event.clipboardData.setData("text/plain", vditor.lute.VditorIRDOM2Md(tempElement.innerHTML).trim());
         event.clipboardData.setData("text/html", "");

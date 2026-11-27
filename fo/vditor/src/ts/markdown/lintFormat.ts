@@ -96,7 +96,7 @@ const outsideInlineCode = (text: string, fix: (part: string) => string): string 
 };
 
 /** Applies `fix` to each text line outside code. */
-const mapTextLines = (markdown: string, fix: (text: string, index: number, lines: Line[]) => string) => {
+export const mapTextLines = (markdown: string, fix: (text: string, index: number, lines: Line[]) => string) => {
     const lines = splitLines(markdown);
     lines.forEach((line, index) => {
         if (!line.code) {
@@ -663,8 +663,9 @@ const fixUndefinedReferences = (markdown: string) => {
         return outsideInlineCode(text, (part) => part.replace(
             /(!?)(?<![\\\]\[])\[([^\[\]\n]+)\](?:\[([^\[\]\n]*)\])?(?![(:\[\]])/g,
             (match, bang: string, first: string, second: string | undefined) => {
-                // [!note] callouts, [ ] / [x] task boxes, [^1] footnotes, [[wiki]] links
-                if (bang || /^[!^ xX]/.test(first) || /^\s*$/.test(first)) {
+                // [!note] callouts, [ ] / [x] task boxes, [^1] footnotes, [[wiki]] links, and the
+                // table of contents, [toc]
+                if (bang || /^[!^ xX]/.test(first) || /^\s*$/.test(first) || (!second && /^toc$/i.test(first))) {
                     return match;
                 }
                 const label = second ? second : first;
@@ -929,27 +930,6 @@ export const clearDefaultCalloutIcons = (root: ParentNode, lute: Lute) => {
         if (callout.getAttribute("data-callout-icon") === defaults.icon && title !== null
             && title.trim() !== defaults.title) {
             callout.setAttribute("data-callout-icon", "");
-        }
-    }
-};
-
-/**
- * IR mode: an Obsidian block ID (`text ^id`) is kept by Lute in the block's `data-block-id`, which
- * its IR writer drops (the WYSIWYG one writes it). It is put back at the end of the block's text,
- * where Lute writes it as it was: `text ^id`.
- */
-export const restoreIrBlockIds = (root: ParentNode) => {
-    for (const block of Array.from(root.querySelectorAll("[data-block-id]"))) {
-        const id = block.getAttribute("data-block-id");
-        const walker = block.ownerDocument.createTreeWalker(block, NodeFilter.SHOW_TEXT);
-        let last: Node | null = null;
-        while (walker.nextNode()) {
-            if (walker.currentNode.textContent?.trim()) {
-                last = walker.currentNode;
-            }
-        }
-        if (id && last && !last.textContent.trimEnd().endsWith(`^${id}`)) {
-            last.textContent = last.textContent.replace(/(\s*)$/, ` ^${id}$1`);
         }
     }
 };
