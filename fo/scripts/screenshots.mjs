@@ -345,8 +345,18 @@ async function capture(job) {
         // the viewer loaded again at that size (Developer: Reload Webviews): some fit their content
         // to the size they open at (the xMind editor's zoom)
         trace('reloading the viewer');
-        await page.keyboard.press('F1');
-        await page.waitForSelector('.quick-input-widget input', { visible: true, timeout: 10000 });
+        // (the focus in the viewer can keep F1: then the title bar is clicked first, for VS Code)
+        for (let i = 0; ; i++) {
+            if (i) {
+                const bar = await page.evaluate(() => { const b = document.querySelector('.part.titlebar').getBoundingClientRect(); return { x: b.x + b.width * 0.3, y: b.y + b.height / 2 }; });
+                await page.mouse.click(bar.x, bar.y);
+                await sleep(300);
+            }
+            await page.keyboard.press('F1');
+            const opened = await page.waitForSelector('.quick-input-widget input', { visible: true, timeout: 4000 }).then(() => true, () => false);
+            if (opened) break;
+            if (i === 2) throw new Error('the command palette did not open');
+        }
         await page.keyboard.type('Developer: Reload Webviews');
         await sleep(800);
         await page.keyboard.press('Enter');
