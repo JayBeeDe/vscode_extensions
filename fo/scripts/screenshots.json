@@ -1,0 +1,45 @@
+{
+    "profiles": {
+        "light": {
+            "settings": {
+                "workbench.colorTheme": "Light+"
+            }
+        },
+        "dark": {
+            "cacdhc": true,
+            "settings": {
+                "workbench.colorTheme": "Custom Accentuation Color Dark High Contrast",
+                "cacdhc.accentuationColor": "#7764d9"
+            }
+        },
+        "export": {
+            "extends": "dark",
+            "settings": {
+                "workbench.editor.showTabs": "multiple",
+                "breadcrumbs.enabled": true
+            }
+        }
+    },
+    "screenshots": [
+        { "name": "markdown", "file": "test/markdown/Showcase.md", "profiles": ["light", "dark"], "ready": ".vditor-reset h1, .vditor-reset h2" },
+        { "name": "document", "file": "test/document/Sample.docx", "profiles": ["light", "dark"] },
+        { "name": "spreadsheet", "file": "test/spreadsheet/Sample.xlsx", "profiles": ["light", "dark"] },
+        { "name": "parquet", "file": "test/parquet/Sample.parquet", "profiles": ["light", "dark"] },
+        {
+            "name": "presentation", "file": "test/presentation/Sample.pptx", "profiles": ["light", "dark"],
+            "steps": [{ "click": [110, 580], "wait": 1500 }],
+            "ignore": [[0, 720, 220, 40]]
+        },
+        { "name": "pdf", "file": "test/pdf/Document.pdf", "profiles": ["light", "dark"] },
+        {
+            "name": "ebook", "file": "test/ebook/Alice-in-Wonderland.epub", "profiles": ["light", "dark"]
+        },
+        { "name": "xmind", "file": "test/xmind/Sample.xmind", "profiles": ["light", "dark"] },
+        {
+            "name": "export", "image": "screenshot-export.png", "file": "test/markdown/Showcase.md", "profiles": ["export"], "ready": ".vditor-reset h1, .vditor-reset h2",
+            "openFolder": true, "keepLayout": true,
+            "clip": { "part": ".part.editor", "width": 788, "height": 150 },
+            "box": [".vditor-toolbar [data-type=\"exportPdf\"]", ".vditor-toolbar [data-type=\"exportDocx\"]", ".vditor-toolbar [data-type=\"exportHtml\"]"]
+        }
+    ]
+}
