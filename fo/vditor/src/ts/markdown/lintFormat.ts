@@ -933,6 +933,27 @@ export const clearDefaultCalloutIcons = (root: ParentNode, lute: Lute) => {
     }
 };
 
+/**
+ * IR mode: an Obsidian block ID (`text ^id`) is kept by Lute in the block's `data-block-id`, which
+ * its IR writer drops (the WYSIWYG one writes it). It is put back at the end of the block's text,
+ * where Lute writes it as it was: `text ^id`.
+ */
+export const restoreIrBlockIds = (root: ParentNode) => {
+    for (const block of Array.from(root.querySelectorAll("[data-block-id]"))) {
+        const id = block.getAttribute("data-block-id");
+        const walker = block.ownerDocument.createTreeWalker(block, NodeFilter.SHOW_TEXT);
+        let last: Node | null = null;
+        while (walker.nextNode()) {
+            if (walker.currentNode.textContent?.trim()) {
+                last = walker.currentNode;
+            }
+        }
+        if (id && last && !last.textContent.trimEnd().endsWith(`^${id}`)) {
+            last.textContent = last.textContent.replace(/(\s*)$/, ` ^${id}$1`);
+        }
+    }
+};
+
 /** The DOM toolkit the formatter parses the editor's HTML with: the page's, or linkedom in tests. */
 export interface DomParserLike {
     parseFromString(html: string, type: "text/html"): Document;
